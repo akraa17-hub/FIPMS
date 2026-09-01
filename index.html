@@ -1103,6 +1103,26 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
   </div>
 </div>
 
+<div class="modal-overlay" id="cloudEmptyOverlay">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-h">
+      <h3><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98A6.5 6.5 0 1 0 5.64 16.6"/><path d="M12 13v9"/><path d="m8 17 4-4 4 4"/></svg>السحابة فارغة</h3>
+      <button class="x-btn" id="ceoClose"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-b">
+      <p style="font-size:.9rem;font-weight:600">وجدنا بيانات محلية في هذا المتصفح (<span id="ceoCount"></span>) بينما السحابة فارغة.</p>
+      <p style="font-size:.82rem;color:var(--muted)">اضغط «رفع الآن» لنقل بياناتك إلى السحابة ومشاركتها مع فريقك — بياناتك المحلية لن تُمس.</p>
+    </div>
+    <div class="modal-f">
+      <button class="btn btn-soft" id="btnCeoDismiss">تجاهل</button>
+      <button class="btn btn-primary" id="btnCeoUpload">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+        رفع الآن
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 <div class="busy" id="busy"><div class="spinner"></div><span id="busyTxt">جارٍ إنشاء الملف…</span></div>
 <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.json" hidden>
@@ -3593,6 +3613,7 @@ let cloudSnap = {lands:null, archive:null, tax:null, reg:null};
 let reloadTimer = null;
 let realtimeChannel = null;
 let connEditing = false;
+let cloudEmptyDismissed = false;
 
 function can(perm){
   if(!cloudReady) return true;
@@ -3705,6 +3726,13 @@ async function afterCloudLogin(){
   renderCloudCard();
   updateCloudBadge();
   subscribeCloud();
+  if(!cloudEmptyDismissed && records.length === 0){
+    const snap = readLocalSnapshot();
+    if(snap.records.length > 0){
+      $('#ceoCount').textContent = `${snap.records.length} قطعة${snap.archive.length ? ' · ' + snap.archive.length + ' مؤرشف' : ''}${snap.taxLog.length ? ' · ' + snap.taxLog.length + ' طلب ضريبة' : ''}${snap.regLog.length ? ' · ' + snap.regLog.length + ' طلب تسجيل' : ''}`;
+      $('#cloudEmptyOverlay').classList.add('open');
+    }
+  }
   toast('تم الاتصال بالسحابة — أهلاً ' + (email || ''));
 }
 let otpPendingEmail = '';
@@ -3819,10 +3847,11 @@ async function loadAllCloud(){
 }
 async function syncStore(store){
   if(!sbClient || !cloudReady) return;
+  const snapKey = store === 'lands' ? 'lands' : (store === 'archive' ? 'archive' : (store === 'tax' ? 'tax' : 'reg'));
+  if(!cloudSnap[snapKey]) return;
   try{
     if(store === 'lands'){
-      const snap = cloudSnap.lands || new Map();
-      const now = new Map(records.map(r=>[r.id, r]));
+      const snap = cloudSnap.lands;
       for(const r of records){
         const cur = JSON.stringify(r);
         if(snap.get(r.id) !== cur){
@@ -3830,16 +3859,8 @@ async function syncStore(store){
           snap.set(r.id, cur);
         }
       }
-      for(const id of snap.keys()){
-        if(!now.has(id)){
-          await sbClient.from('lands').delete().eq('id', id);
-          snap.delete(id);
-        }
-      }
-      cloudSnap.lands = snap;
     }else if(store === 'archive'){
-      const snap = cloudSnap.archive || new Map();
-      const now = new Map(archive.map(x=>[x.id, x]));
+      const snap = cloudSnap.archive;
       for(const x of archive){
         const cur = JSON.stringify(x);
         if(snap.get(x.id) !== cur){
@@ -3848,19 +3869,10 @@ async function syncStore(store){
           snap.set(x.id, cur);
         }
       }
-      for(const id of snap.keys()){
-        if(!now.has(id)){
-          await sbClient.from('archive').delete().eq('id', id);
-          snap.delete(id);
-        }
-      }
-      cloudSnap.archive = snap;
     }else if(store === 'tax' || store === 'reg'){
       const table = store === 'tax' ? 'tax_log' : 'reg_log';
       const arr = store === 'tax' ? taxLog : regLog;
-      const snapKey = store === 'tax' ? 'tax' : 'reg';
-      const snap = cloudSnap[snapKey] || new Map();
-      const now = new Map(arr.map(x=>[x.id, x]));
+      const snap = cloudSnap[store === 'tax' ? 'tax' : 'reg'];
       for(const x of arr){
         const cur = JSON.stringify(x);
         if(snap.get(x.id) !== cur){
@@ -3869,13 +3881,6 @@ async function syncStore(store){
           snap.set(x.id, cur);
         }
       }
-      for(const id of snap.keys()){
-        if(!now.has(id)){
-          await sbClient.from(table).delete().eq('id', id);
-          snap.delete(id);
-        }
-      }
-      cloudSnap[snapKey] = snap;
     }
   }catch(e){
     toast('تعذر حفظ التعديل في السحابة: ' + (e.message || e), 'err');
@@ -4054,7 +4059,7 @@ function renderCloudCard(){
   }else{
     el.innerHTML = `<div class="b-item"><div class="bi-ico" style="background:var(--ok-soft);color:var(--ok-txt)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
       <div><h4>${esc(cloudUser ? cloudUser.email : '')} — ${esc(cloudUser ? cloudUser.role : '')}</h4>
-      <p>المزامنة لحظية مع الفريق · آخر مزامنة: ${lastSyncAt ? lastSyncAt.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) : '—'}</p>
+      <p>المزامنة لحظية مع الفريق · آخر مزامنة: ${lastSyncAt ? lastSyncAt.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) : '—'}${records.length === 0 ? '<br><span style="color:var(--amber-txt);font-weight:800">تنبيه: السحابة فارغة — ارفع بياناتك المحلية لتعبئتها</span>' : ''}</p>
       <div class="bi-actions">
         <button class="btn btn-soft btn-sm" id="btnSyncNow">مزامنة الآن</button>
         <button class="btn btn-soft btn-sm" id="btnChangePw">تعيين كلمة مرور</button>
@@ -4065,21 +4070,41 @@ function renderCloudCard(){
       </div></div></div>`;
   }
 }
+function readLocalSnapshot(){
+  const out = {records:[], archive:[], taxLog:[], regLog:[], templates:null, customStatuses:null, taxTrackStatuses:null, regTrackStatuses:null, taxPrefs:null, regPrefs:null};
+  const get = k => { try{ const s = localStorage.getItem(k); return s ? JSON.parse(s) : null; }catch(e){ return null; } };
+  const r = get(STORAGE_KEY);
+  if(Array.isArray(r)) out.records = r.map(x=>Object.assign({status:''}, x));
+  else if(r && Array.isArray(r.records)) out.records = r.records.map(x=>Object.assign({status:''}, x));
+  const a = get(ARCHIVE_KEY); if(Array.isArray(a)) out.archive = a;
+  const t = get(TAX_LOG_KEY); if(Array.isArray(t)) out.taxLog = t;
+  const g = get(REG_LOG_KEY); if(Array.isArray(g)) out.regLog = g;
+  const tp = get(TPL_KEY); if(Array.isArray(tp)) out.templates = tp.map(normalizeTpl);
+  const cs = get(STATUSES_KEY); if(Array.isArray(cs)) out.customStatuses = cs;
+  const ts = get(TAX_TRACK_STATUSES_KEY); if(Array.isArray(ts)) out.taxTrackStatuses = ts;
+  const rs = get(REG_STATUSES_KEY); if(Array.isArray(rs)) out.regTrackStatuses = rs;
+  const tf = get(TAX_PREFS_KEY); if(tf && typeof tf === 'object') out.taxPrefs = tf;
+  const rf = get(REG_PREFS_KEY); if(rf && typeof rf === 'object') out.regPrefs = rf;
+  return out;
+}
 async function uploadLocalToCloud(){
   if(!sbClient || !cloudReady){ toast('سجّل دخولك أولاً', 'warn'); return; }
-  if(!confirm('سيتم رفع بياناتك المحلية الحالية (القطع، الأرشيف، الطلبات، القوالب، الحالات) إلى السحابة ودمجها مع ما هو موجود. متابعة؟')) return;
+  const snap = readLocalSnapshot();
+  const total = snap.records.length + snap.archive.length + snap.taxLog.length + snap.regLog.length;
+  if(!total){ toast('لا توجد بيانات محلية في هذا المتصفح للرفع', 'warn'); return; }
+  if(!confirm(`سيتم رفع بياناتك المحلية الحالية إلى السحابة ودمجها: ${snap.records.length} قطعة · ${snap.archive.length} مؤرشف · ${snap.taxLog.length} طلب ضريبة · ${snap.regLog.length} طلب تسجيل. متابعة؟`)) return;
   busy(true, 'جارٍ رفع البيانات المحلية…');
   try{
-    for(const r of records){ await sbClient.from('lands').upsert(recordToRow(r)); }
-    for(const x of archive){ const e2 = Object.assign({}, x); delete e2.id; await sbClient.from('archive').upsert({id:x.id, entry:e2}); }
-    for(const x of taxLog){ const e2 = Object.assign({}, x); delete e2.id; await sbClient.from('tax_log').upsert({id:x.id, entry:e2}); }
-    for(const x of regLog){ const e2 = Object.assign({}, x); delete e2.id; await sbClient.from('reg_log').upsert({id:x.id, entry:e2}); }
-    await persistSetting('templates', templates);
-    await persistSetting('customStatuses', customStatuses);
-    await persistSetting('taxTrackStatuses', taxTrackStatuses);
-    await persistSetting('regTrackStatuses', regTrackStatuses);
-    await persistSetting('taxPrefs', taxPrefs);
-    await persistSetting('regPrefs', regPrefs);
+    for(const r of snap.records){ await sbClient.from('lands').upsert(recordToRow(r)); }
+    for(const x of snap.archive){ const e2 = Object.assign({}, x); delete e2.id; await sbClient.from('archive').upsert({id:x.id, entry:e2, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}); }
+    for(const x of snap.taxLog){ const e2 = Object.assign({}, x); delete e2.id; await sbClient.from('tax_log').upsert({id:x.id, entry:e2, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}); }
+    for(const x of snap.regLog){ const e2 = Object.assign({}, x); delete e2.id; await sbClient.from('reg_log').upsert({id:x.id, entry:e2, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}); }
+    if(Array.isArray(snap.templates) && snap.templates.length) await persistSetting('templates', snap.templates);
+    if(Array.isArray(snap.customStatuses) && snap.customStatuses.length) await persistSetting('customStatuses', snap.customStatuses);
+    if(Array.isArray(snap.taxTrackStatuses) && snap.taxTrackStatuses.length) await persistSetting('taxTrackStatuses', snap.taxTrackStatuses);
+    if(Array.isArray(snap.regTrackStatuses) && snap.regTrackStatuses.length) await persistSetting('regTrackStatuses', snap.regTrackStatuses);
+    if(snap.taxPrefs) await persistSetting('taxPrefs', snap.taxPrefs);
+    if(snap.regPrefs) await persistSetting('regPrefs', snap.regPrefs);
     await persistSetting('dataVersion', DATA_VERSION);
     await loadAllCloud();
     renderAll();
@@ -4198,7 +4223,7 @@ function bindEvents(){
   $('#btnCancel').addEventListener('click', closeModal);
   $('#modalOverlay').addEventListener('click', e=>{ if(e.target === $('#modalOverlay')) closeModal(); });
   $('#btnSave').addEventListener('click', saveModal);
-  document.addEventListener('keydown', e=>{ if(e.key === 'Escape'){ closeModal(); if($('#taxModalOverlay').classList.contains('open')) closeTaxModal(); if($('#regModalOverlay').classList.contains('open')) closeRegModal(); if($('#regTrackOverlay').classList.contains('open')) closeRegTrackModal(); if($('#taxTrackOverlay').classList.contains('open')) closeTaxTrackModal(); if($('#authOverlay').classList.contains('open')) $('#authOverlay').classList.remove('open'); if($('#usersOverlay').classList.contains('open')) $('#usersOverlay').classList.remove('open'); if($('#rolesOverlay').classList.contains('open')) $('#rolesOverlay').classList.remove('open'); } });
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape'){ closeModal(); if($('#taxModalOverlay').classList.contains('open')) closeTaxModal(); if($('#regModalOverlay').classList.contains('open')) closeRegModal(); if($('#regTrackOverlay').classList.contains('open')) closeRegTrackModal(); if($('#taxTrackOverlay').classList.contains('open')) closeTaxTrackModal(); if($('#authOverlay').classList.contains('open')) $('#authOverlay').classList.remove('open'); if($('#usersOverlay').classList.contains('open')) $('#usersOverlay').classList.remove('open'); if($('#rolesOverlay').classList.contains('open')) $('#rolesOverlay').classList.remove('open'); if($('#cloudEmptyOverlay').classList.contains('open')){ cloudEmptyDismissed = true; $('#cloudEmptyOverlay').classList.remove('open'); } } });
 
   $('#regSearch').addEventListener('input', e=>{ state.search = e.target.value; state.page = 1; renderRegistry(); if(tpl && tpl.scope === 'filtered') renderPreview(); });
   $('#fbar').addEventListener('change', e=>{
@@ -4696,6 +4721,17 @@ function bindEvents(){
     const item = {id:+b.dataset.rid, type:b.dataset.rtype};
     if(b.dataset.ract === 'restore') restoreFromRecycle(item);
     else if(confirm('حذف نهائي لا يمكن التراجع عنه؟')) purgeFromRecycle(item);
+  });
+
+  /* ===== Cloud empty prompt events ===== */
+  const dismissCeo = ()=>{ cloudEmptyDismissed = true; $('#cloudEmptyOverlay').classList.remove('open'); };
+  $('#ceoClose').addEventListener('click', dismissCeo);
+  $('#btnCeoDismiss').addEventListener('click', dismissCeo);
+  $('#cloudEmptyOverlay').addEventListener('click', e=>{ if(e.target === $('#cloudEmptyOverlay')) dismissCeo(); });
+  $('#btnCeoUpload').addEventListener('click', ()=>{
+    cloudEmptyDismissed = true;
+    $('#cloudEmptyOverlay').classList.remove('open');
+    uploadLocalToCloud();
   });
 
   /* ===== Registration events ===== */
