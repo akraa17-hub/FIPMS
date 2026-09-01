@@ -3550,6 +3550,7 @@ const DATA_VERSION = 3;
 const CONN_KEY = 'fipms_conn_v1';
 const RECYCLE_KEY = 'fipms_recycle_v1';
 const CACHED_USER_KEY = 'fipms_cached_user_v1';
+const CONN_DEFAULTS = {url:'https://wlhmoxxbxhunnlqugkzv.supabase.co', key:'sb_publishable_ghzCycPP5jNsEpkExUIPvQ_kZXAL9Dj'};
 const PERMS = [
   {k:'view', t:'عرض البيانات والتقارير'},
   {k:'export', t:'تصدير الملفات (Excel/PDF/صورة)'},
@@ -3583,6 +3584,7 @@ let connCfg = {url:'', key:''};
 let cloudSnap = {lands:null, archive:null, tax:null, reg:null};
 let reloadTimer = null;
 let realtimeChannel = null;
+let connEditing = false;
 
 function can(perm){
   if(!cloudReady) return true;
@@ -3592,7 +3594,11 @@ function isCloudOwner(){
   return !!(cloudUser && cloudUser.perms.includes('manage_connection'));
 }
 function loadConnCfg(){
-  try{ const s = localStorage.getItem(CONN_KEY); if(s){ const p = JSON.parse(s); if(p && p.url) connCfg = {url:p.url, key:p.key}; } }catch(e){}
+  try{
+    const s = localStorage.getItem(CONN_KEY);
+    if(s){ const p = JSON.parse(s); if(p && p.url){ connCfg = {url:p.url, key:p.key}; return; } }
+  }catch(e){}
+  connCfg = Object.assign({}, CONN_DEFAULTS);
 }
 function saveConnCfg(){
   try{ localStorage.setItem(CONN_KEY, JSON.stringify(connCfg)); }catch(e){}
@@ -3956,16 +3962,17 @@ function autoBackupCloud(){
 function renderCloudCard(){
   const el = $('#cloudCardBody');
   if(!el) return;
-  if(!connCfg.url){
+  if(!connCfg.url || connEditing){
     el.innerHTML = `<div class="b-item"><div class="bi-ico" style="background:var(--sky-soft);color:var(--sky-txt)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98A6.5 6.5 0 1 0 5.64 16.6"/><path d="M12 13v9"/><path d="m8 17 4-4 4 4"/></svg></div>
-      <div><h4>الاتصال السحابي غير مُعدّ</h4>
-      <p>أدخل رابط مشروع Supabase والمفتاح العام لمشاركة النظام مع فريقك بمزامنة لحظية.</p>
+      <div><h4>إعدادات الاتصال السحابي</h4>
+      <p>رابط مشروع Supabase والمفتاح العام (publishable) — يُحفظ محلياً في هذا المتصفح.</p>
       <div style="display:flex;flex-direction:column;gap:8px;max-width:520px">
-        <input type="text" id="connUrl" placeholder="https://xxxx.supabase.co" style="border:1px solid var(--border2);border-radius:9px;padding:8px 11px;font-size:.82rem;outline:none">
-        <input type="text" id="connKey" placeholder="sb_publishable_..." style="border:1px solid var(--border2);border-radius:9px;padding:8px 11px;font-size:.82rem;outline:none;direction:ltr;text-align:start">
+        <input type="text" id="connUrl" value="${esc(connCfg.url || '')}" placeholder="https://xxxx.supabase.co" style="border:1px solid var(--border2);border-radius:9px;padding:8px 11px;font-size:.82rem;outline:none;direction:ltr;text-align:start">
+        <input type="text" id="connKey" value="${esc(connCfg.key || '')}" placeholder="sb_publishable_..." style="border:1px solid var(--border2);border-radius:9px;padding:8px 11px;font-size:.82rem;outline:none;direction:ltr;text-align:start">
         <div class="bi-actions">
           <button class="btn btn-primary btn-sm" id="btnConnSave">حفظ الاتصال</button>
           <button class="btn btn-soft btn-sm" id="btnConnTest">اختبار الاتصال</button>
+          <button class="btn btn-soft btn-sm" id="btnConnCancel">إلغاء</button>
         </div>
       </div></div></div>`;
   }else if(!cloudReady){
@@ -4485,10 +4492,14 @@ function bindEvents(){
       connCfg.url = $('#connUrl').value.trim();
       connCfg.key = $('#connKey').value.trim();
       saveConnCfg();
+      connEditing = false;
       sbClient = null;
       ensureSb();
       renderCloudCard();
       toast('تم حفظ إعدادات الاتصال');
+    }else if(id === 'btnConnCancel'){
+      connEditing = false;
+      renderCloudCard();
     }else if(id === 'btnConnTest'){
       const url = $('#connUrl').value.trim(), key = $('#connKey').value.trim();
       if(!url || typeof supabase === 'undefined'){ toast('أدخل الرابط والمفتاح', 'err'); return; }
@@ -4508,8 +4519,7 @@ function bindEvents(){
       $('#authOverlay').classList.add('open');
     }else if(id === 'btnConnEdit'){
       if(!can('manage_connection')){ toast('إعدادات الاتصال للمالك فقط', 'err'); return; }
-      connCfg = {url:'', key:''};
-      saveConnCfg();
+      connEditing = true;
       renderCloudCard();
     }else if(id === 'btnSyncNow'){
       loadAllCloud().then(()=>{ renderAll(); toast('تمت المزامنة'); });
