@@ -1,0 +1,55 @@
+# دليل إعداد النظام السحابي متعدد المستخدمين (FIPMS)
+
+## الخطوة 1: قاعدة البيانات (مرة واحدة — 5 دقائق)
+1. افتح مشروعك على https://supabase.com/dashboard
+2. من القائمة اليسرى: **SQL Editor** ← **New query**
+3. انسخ محتوى ملف `supabase/schema.sql` كاملاً والصقه ← **Run**
+4. فعل السطر الأخير في الملف (تعيين المالك) وافتح التعليق ثم **Run**:
+   ```sql
+   insert into public.user_roles (email, role) values ('akram@arshglobal.com.sa', 'مالك')
+   on conflict (email) do update set role = 'مالك';
+   ```
+
+## الخطوة 2: إعداد المصادقة
+1. **Authentication ← Providers ← Email**: تأكد أنه Enabled
+2. **Authentication ← Sign In / Providers**: عطّل خيار *Confirm email* (ليتمكن المستخدم من الدخول فوراً بعد إضافة حسابه)
+
+## الخطوة 3: نشر دالة إدارة المستخدمين
+1. ثبّت Supabase CLI (مرة واحدة):
+   ```
+   npm i -g supabase
+   supabase login
+   supabase link --project-ref wlhmoxxbxhunnlqugkzv
+   ```
+2. من مجلد المشروع:
+   ```
+   supabase functions deploy manage-users
+   ```
+3. أو بدلاً من CLI: **Edge Functions ← Create** باسم `manage-users` والصق محتوى ملف `supabase/manage-users/index.ts`
+
+## الخطوة 4: تفعيل النظام داخل التطبيق
+1. افتح التطبيق ← **النسخ الاحتياطي والإعدادات** ← بطاقة «الاتصال السحابي»
+2. أدخل:
+   - الرابط: `https://wlhmoxxbxhunnlqugkzv.supabase.co`
+   - المفتاح العام (publishable): `sb_publishable_ghzCycPP5jNsEpkExUIPvQ_kZXAL9Dj`
+3. **اختبار الاتصال** ← **حفظ**
+4. سجّل دخولك ببريد المالك → ستظهر شاشات «المستخدمون» و«الأدوار»
+5. أضف موظفيك (بريد + كلمة مرور مؤقتة + الدور) ثم وزّع عليهم بيانات الدخول
+
+## الخطوة 5: النشر على GitHub Pages
+1. ارفع ملف `نظام-متابعة-الأراضي.html` إلى مستودعك https://github.com/akraa17-hub/FIPMS
+2. في المستودع: **Settings ← Pages ← Source: Deploy from a branch** ← الفرع `main` ← **Save**
+3. بعد دقيقة يظهر الرابط: `https://akraa17-hub.github.io/FIPMS/`
+4. وزّع الرابط على الفريق — كل مستخدم يدخل ببريده وكلمة مروره ويرى التحديثات لحظياً
+
+## ملاحظات أمان مهمة
+- مفتاح `sb_publishable` مخصص للمتصفح وآمن للنشر العام — الوصول الفعلي يفرضه RLS وتسجيل الدخول
+- لا تشارك أبداً مفتاح `service_role` — يبقى داخل Supabase والدالة فقط
+- النسخ الاحتياطي: Supabase يحتفظ بنسخ تلقائية + استخدم «تصدير نسخة احتياطية» من الإعدادات دورياً
+
+## استكشاف الأخطاء
+| المشكلة | الحل |
+|---|---|
+| فشل تسجيل الدخول لمستخدم جديد | تأكد أن Confirm email معطل، وأعد تصفير كلمته من شاشة المستخدمين |
+| «لا صلاحية» عند الحفظ | تحقق من دور المستخدم في شاشة «المستخدمون» |
+| لا تحديثات لحظية | تأكد أن سكربت SQL نُفذ كاملاً (قسم Realtime) |
