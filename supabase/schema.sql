@@ -100,7 +100,7 @@ returns boolean language sql stable security definer set search_path = public as
   )
 $$;
 
--- ---------- 4) سياسات RLS ----------
+-- ---------- 4) سياسات RLS (قابلة لإعادة التشغيل بأمان) ----------
 alter table public.lands        enable row level security;
 alter table public.archive      enable row level security;
 alter table public.tax_log      enable row level security;
@@ -110,67 +110,96 @@ alter table public.roles        enable row level security;
 alter table public.user_roles   enable row level security;
 
 -- lands
+drop policy if exists lands_select on public.lands;
 create policy lands_select on public.lands for select
   using (public.has_perm('view') and (deleted_at is null or public.has_perm('recycle')));
+drop policy if exists lands_insert on public.lands;
 create policy lands_insert on public.lands for insert
   with check (public.has_perm('edit_records'));
+drop policy if exists lands_update on public.lands;
 create policy lands_update on public.lands for update
   using (public.has_perm('edit_records') or public.has_perm('recycle') or public.has_perm('manage_settings'));
+drop policy if exists lands_delete on public.lands;
 create policy lands_delete on public.lands for delete
   using (public.has_perm('recycle') or public.has_perm('reset_data'));
 
 -- archive
+drop policy if exists archive_select on public.archive;
 create policy archive_select on public.archive for select
   using (public.has_perm('view') and (deleted_at is null or public.has_perm('recycle')));
+drop policy if exists archive_insert on public.archive;
 create policy archive_insert on public.archive for insert
   with check (public.has_perm('archive_records'));
+drop policy if exists archive_update on public.archive;
 create policy archive_update on public.archive for update
   using (public.has_perm('archive_records') or public.has_perm('recycle'));
+drop policy if exists archive_delete on public.archive;
 create policy archive_delete on public.archive for delete
   using (public.has_perm('recycle') or public.has_perm('reset_data'));
 
 -- tax_log
+drop policy if exists tax_select on public.tax_log;
 create policy tax_select on public.tax_log for select
   using (public.has_perm('view') and (deleted_at is null or public.has_perm('recycle')));
+drop policy if exists tax_insert on public.tax_log;
 create policy tax_insert on public.tax_log for insert
   with check (public.has_perm('issue_tax'));
+drop policy if exists tax_update on public.tax_log;
 create policy tax_update on public.tax_log for update
   using (public.has_perm('issue_tax') or public.has_perm('follow_tax') or public.has_perm('recycle'));
+drop policy if exists tax_delete on public.tax_log;
 create policy tax_delete on public.tax_log for delete
   using (public.has_perm('recycle') or public.has_perm('reset_data'));
 
 -- reg_log
+drop policy if exists reg_select on public.reg_log;
 create policy reg_select on public.reg_log for select
   using (public.has_perm('view') and (deleted_at is null or public.has_perm('recycle')));
+drop policy if exists reg_insert on public.reg_log;
 create policy reg_insert on public.reg_log for insert
   with check (public.has_perm('issue_reg'));
+drop policy if exists reg_update on public.reg_log;
 create policy reg_update on public.reg_log for update
   using (public.has_perm('issue_reg') or public.has_perm('follow_reg') or public.has_perm('recycle'));
+drop policy if exists reg_delete on public.reg_log;
 create policy reg_delete on public.reg_log for delete
   using (public.has_perm('recycle') or public.has_perm('reset_data'));
 
 -- app_settings
+drop policy if exists settings_select on public.app_settings;
 create policy settings_select on public.app_settings for select
   using (public.has_perm('view'));
+drop policy if exists settings_insert on public.app_settings;
 create policy settings_insert on public.app_settings for insert
   with check (public.has_perm('manage_templates') or public.has_perm('manage_statuses') or public.has_perm('manage_settings'));
+drop policy if exists settings_update on public.app_settings;
 create policy settings_update on public.app_settings for update
   using (public.has_perm('manage_templates') or public.has_perm('manage_statuses') or public.has_perm('manage_settings'));
+drop policy if exists settings_delete on public.app_settings;
 create policy settings_delete on public.app_settings for delete
   using (public.has_perm('manage_settings') or public.has_perm('reset_data'));
 
 -- roles (تعديل تعريفات الأدوار: المالك فقط)
+drop policy if exists roles_select on public.roles;
 create policy roles_select on public.roles for select using (public.has_perm('view'));
+drop policy if exists roles_insert on public.roles;
 create policy roles_insert on public.roles for insert with check (public.has_perm('manage_connection'));
+drop policy if exists roles_update on public.roles;
 create policy roles_update on public.roles for update using (public.has_perm('manage_connection'));
+drop policy if exists roles_delete on public.roles;
 create policy roles_delete on public.roles for delete using (public.has_perm('manage_connection'));
 
--- user_roles (المالك والمشرف)
-create policy user_roles_select on public.user_roles for select using (public.has_perm('manage_users'));
+-- user_roles (القراءة لأي مستخدم مسجّل — الإدارة للمالك والمشرف)
+drop policy if exists user_roles_select on public.user_roles;
+create policy user_roles_select on public.user_roles for select
+  using (auth.role() = 'authenticated');
+drop policy if exists user_roles_insert on public.user_roles;
 create policy user_roles_insert on public.user_roles for insert
   with check (public.has_perm('manage_users') and (role <> 'مالك' or public.has_perm('manage_connection')));
+drop policy if exists user_roles_update on public.user_roles;
 create policy user_roles_update on public.user_roles for update
   using (public.has_perm('manage_users'));
+drop policy if exists user_roles_delete on public.user_roles;
 create policy user_roles_delete on public.user_roles for delete
   using (public.has_perm('manage_users'));
 
@@ -202,6 +231,6 @@ exception when duplicate_object then null;
 end $$;
 
 -- ---------- 6) تعيين المالك ----------
--- استبدل البريد أدناه ببريد المالك ثم شغّل:
--- insert into public.user_roles (email, role) values ('akram@arshglobal.com.sa', 'مالك')
--- on conflict (email) do update set role = 'مالك';
+-- شغّل هذا السطر منفرداً بعد استبدال البريد ببريد المالك:
+insert into public.user_roles (email, role) values ('akr.aa17@gmail.com', 'مالك')
+on conflict (email) do update set role = 'مالك';
