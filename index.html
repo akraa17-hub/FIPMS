@@ -1057,13 +1057,19 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
       <button class="x-btn" id="authClose"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="modal-b">
-      <div class="fld"><label>البريد الإلكتروني</label><input type="email" id="authEmail" placeholder="name@company.com"></div>
-      <div class="fld"><label>كلمة المرور</label><input type="password" id="authPassword" placeholder="••••••••"></div>
+      <div class="fld" id="authLoginFields"><label>البريد الإلكتروني</label><input type="email" id="authEmail" placeholder="name@company.com"></div>
+      <div class="fld" id="authPassField"><label>كلمة المرور</label><input type="password" id="authPassword" placeholder="••••••••"></div>
       <a href="#" id="authForgot" style="font-size:.76rem;color:var(--primary);font-weight:700;text-decoration:none">نسيت كلمة المرور؟</a>
+      <div id="recoveryFields" style="display:none">
+        <div class="fld"><label>كلمة المرور الجديدة</label><input type="password" id="recoveryPassword" placeholder="6 أحرف فأكثر"></div>
+        <div class="fld"><label>تأكيد كلمة المرور</label><input type="password" id="recoveryPassword2" placeholder="أعد كتابتها"></div>
+        <div class="hint" id="recoveryHint">أدخل إعدادات الاتصال من الإعدادات أولاً إن لم تكن محفوظة، ثم عيّن كلمتك الجديدة هنا.</div>
+      </div>
       <div class="hint" id="authError" style="color:var(--danger-txt)"></div>
     </div>
     <div class="modal-f">
       <button class="btn btn-soft" id="authCancelBtn">إلغاء</button>
+      <button class="btn btn-primary" id="btnRecoverySubmit" style="display:none">حفظ كلمة المرور الجديدة</button>
       <button class="btn btn-primary" id="btnAuthLogin">دخول</button>
     </div>
   </div>
@@ -3602,9 +3608,39 @@ function initCloudSession(){
   sbClient.auth.getSession().then(({data})=>{
     if(data && data.session){
       cloudSession = data.session;
-      afterCloudLogin();
+      if(isRecoveryFlow()){ showRecoveryForm(); }
+      else afterCloudLogin();
     }
   }).catch(()=>{});
+}
+function isRecoveryFlow(){
+  try{ return /type=recovery/.test(window.location.hash); }catch(e){ return false; }
+}
+function showRecoveryForm(){
+  $('#authLoginFields').style.display = 'none';
+  $('#authPassField').style.display = 'none';
+  $('#authForgot').style.display = 'none';
+  $('#btnAuthLogin').style.display = 'none';
+  $('#recoveryFields').style.display = 'block';
+  $('#btnRecoverySubmit').style.display = '';
+  $('#authError').textContent = '';
+  $('#authOverlay').classList.add('open');
+}
+async function submitRecoveryPassword(){
+  if(!sbClient || !cloudSession){ toast('أدخل إعدادات الاتصال من الإعدادات أولاً', 'err'); return; }
+  const p1 = $('#recoveryPassword').value, p2 = $('#recoveryPassword2').value;
+  if(p1.length < 6){ toast('كلمة المرور يجب ألا تقل عن 6 أحرف', 'err'); return; }
+  if(p1 !== p2){ toast('كلمتا المرور غير متطابقتين', 'err'); return; }
+  try{
+    const {error} = await sbClient.auth.updateUser({password:p1});
+    if(error){ toast('فشل تعيين كلمة المرور: ' + error.message, 'err'); return; }
+    try{ history.replaceState(null, '', window.location.pathname + window.location.search); }catch(e){}
+    $('#authOverlay').classList.remove('open');
+    toast('تم تعيين كلمة المرور بنجاح');
+    await afterCloudLogin();
+  }catch(e){
+    toast('تعذر الاتصال بالسحابة', 'err');
+  }
 }
 function updateCloudBadge(){
   const b = $('#cloudModeBadge');
@@ -4463,6 +4499,12 @@ function bindEvents(){
       }).catch(err=>toast('تعذر الاتصال: ' + (err.message || err), 'err'));
     }else if(id === 'btnOpenAuth'){
       $('#authError').textContent = '';
+      $('#authLoginFields').style.display = '';
+      $('#authPassField').style.display = '';
+      $('#authForgot').style.display = '';
+      $('#btnAuthLogin').style.display = '';
+      $('#recoveryFields').style.display = 'none';
+      $('#btnRecoverySubmit').style.display = 'none';
       $('#authOverlay').classList.add('open');
     }else if(id === 'btnConnEdit'){
       if(!can('manage_connection')){ toast('إعدادات الاتصال للمالك فقط', 'err'); return; }
@@ -4487,6 +4529,7 @@ function bindEvents(){
   $('#btnAuthLogin').addEventListener('click', ()=>{
     loginCloud($('#authEmail').value.trim(), $('#authPassword').value);
   });
+  $('#btnRecoverySubmit').addEventListener('click', submitRecoveryPassword);
   $('#authForgot').addEventListener('click', async e=>{
     e.preventDefault();
     if(!ensureSb()){ toast('أدخل إعدادات الاتصال أولاً', 'warn'); return; }
