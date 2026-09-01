@@ -3611,13 +3611,30 @@ function ensureSb(){
 function initCloudSession(){
   loadConnCfg();
   if(!ensureSb()) return;
+  const wasRecovery = (()=>{ try{ return /type=recovery/.test(window.location.hash); }catch(e){ return false; } })();
   sbClient.auth.getSession().then(({data})=>{
+    if(wasRecovery){
+      if(data && data.session) cloudSession = data.session;
+      ensureRecoverySession().then(()=> showRecoveryForm());
+      return;
+    }
     if(data && data.session){
       cloudSession = data.session;
-      if(isRecoveryFlow()){ showRecoveryForm(); }
-      else afterCloudLogin();
+      afterCloudLogin();
     }
   }).catch(()=>{});
+}
+async function ensureRecoverySession(){
+  if(cloudSession) return;
+  try{
+    const h = String(window.location.hash || '').replace(/^#/, '');
+    const p = new URLSearchParams(h);
+    const at = p.get('access_token'), rt = p.get('refresh_token');
+    if(at){
+      const {data} = await sbClient.auth.setSession({access_token:at, refresh_token:rt || ''});
+      if(data && data.session) cloudSession = data.session;
+    }
+  }catch(e){}
 }
 function isRecoveryFlow(){
   try{ return /type=recovery/.test(window.location.hash); }catch(e){ return false; }
