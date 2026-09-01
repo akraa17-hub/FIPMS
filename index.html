@@ -179,6 +179,8 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
 /* ===== Modal ===== */
 .modal-overlay{position:fixed;inset:0;background:rgba(2,6,23,.6);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto}
 .modal-overlay.open{display:flex}
+.modal-overlay.gate{z-index:150;background:rgba(2,6,23,.9);align-items:center}
+.modal-overlay.gate .modal{max-width:460px;margin:0}
 .modal{background:#fff;border-radius:18px;box-shadow:var(--shadow-lg);width:100%;max-width:940px;animation:pop .22s ease;margin:auto 0}
 @keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
 .modal-h{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border)}
@@ -1066,6 +1068,12 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
       <a href="#" id="authForgot" style="font-size:.76rem;color:var(--primary);font-weight:700;text-decoration:none">نسيت كلمة المرور؟</a>
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
         <a href="#" id="authOtp" style="font-size:.76rem;color:var(--teal-txt);font-weight:800;text-decoration:none;background:var(--teal-soft);padding:5px 10px;border-radius:8px">دخول برمز مؤقت بدل كلمة المرور</a>
+      </div>
+      <div id="gateLocalOptions" style="display:none;margin-top:12px;border-top:1px dashed var(--border2);padding-top:12px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:600;cursor:pointer">
+          <input type="checkbox" id="gateRememberLocal"> تذكر الوضع المحلي في هذا الجهاز (لا تعرض شاشة الدخول لاحقاً)
+        </label>
+        <button class="btn btn-soft btn-sm" id="btnGateLocal" style="margin-top:9px;width:100%">متابعة محلياً — عرض بيانات هذا الجهاز فقط</button>
       </div>
       <div id="recoveryFields" style="display:none">
         <div class="fld"><label>كلمة المرور الجديدة</label><input type="password" id="recoveryPassword" placeholder="6 أحرف فأكثر"></div>
@@ -3614,6 +3622,55 @@ let reloadTimer = null;
 let realtimeChannel = null;
 let connEditing = false;
 let cloudEmptyDismissed = false;
+let gateActive = false;
+const GATE_SKIP_KEY = 'fipms_gate_skip_v1';
+const LOCAL_ALWAYS_KEY = 'fipms_local_always_v1';
+
+function shouldShowGate(){
+  try{
+    if(cloudReady) return false;
+    if(localStorage.getItem(LOCAL_ALWAYS_KEY) === '1') return false;
+    if(sessionStorage.getItem(GATE_SKIP_KEY) === '1') return false;
+    const host = window.location.hostname || '';
+    if(/localhost|127\.0\.0\.1/.test(host)) return false;
+    return true;
+  }catch(e){ return false; }
+}
+function showLoginGate(){
+  if(!shouldShowGate()) return;
+  gateActive = true;
+  $('#authError').textContent = '';
+  $('#authLoginFields').style.display = '';
+  $('#authPassField').style.display = '';
+  $('#authForgot').style.display = '';
+  $('#btnAuthLogin').style.display = '';
+  $('#recoveryFields').style.display = 'none';
+  $('#btnRecoverySubmit').style.display = 'none';
+  $('#otpFields').style.display = 'none';
+  $('#btnOtpVerify').style.display = 'none';
+  $('#authClose').style.display = 'none';
+  $('#authCancelBtn').style.display = 'none';
+  $('#gateLocalOptions').style.display = '';
+  $('#authOverlay').classList.add('open');
+  $('#authOverlay').classList.add('gate');
+}
+function closeLoginGateLocal(){
+  gateActive = false;
+  try{
+    sessionStorage.setItem(GATE_SKIP_KEY, '1');
+    const cb = $('#gateRememberLocal');
+    if(cb && cb.checked) localStorage.setItem(LOCAL_ALWAYS_KEY, '1');
+  }catch(e){}
+  finishAuthOverlay();
+}
+function finishAuthOverlay(){
+  gateActive = false;
+  $('#authOverlay').classList.remove('open');
+  $('#authOverlay').classList.remove('gate');
+  $('#authClose').style.display = '';
+  $('#authCancelBtn').style.display = '';
+  $('#gateLocalOptions').style.display = 'none';
+}
 
 function can(perm){
   if(!cloudReady) return true;
@@ -3675,6 +3732,7 @@ function showRecoveryForm(){
   $('#btnAuthLogin').style.display = 'none';
   $('#recoveryFields').style.display = 'block';
   $('#btnRecoverySubmit').style.display = '';
+  $('#gateLocalOptions').style.display = 'none';
   $('#authError').textContent = '';
   $('#authOverlay').classList.add('open');
 }
@@ -3687,7 +3745,7 @@ async function submitRecoveryPassword(){
     const {error} = await sbClient.auth.updateUser({password:p1});
     if(error){ toast('فشل تعيين كلمة المرور: ' + error.message, 'err'); return; }
     try{ history.replaceState(null, '', window.location.pathname + window.location.search); }catch(e){}
-    $('#authOverlay').classList.remove('open');
+    finishAuthOverlay();
     toast('تم تعيين كلمة المرور بنجاح');
     await afterCloudLogin();
   }catch(e){
@@ -3720,6 +3778,7 @@ async function afterCloudLogin(){
   }catch(e){}
   cloudUser = {email, role, perms};
   cloudReady = true;
+  finishAuthOverlay();
   try{ localStorage.setItem(CACHED_USER_KEY, JSON.stringify(cloudUser)); }catch(e){}
   await loadAllCloud();
   renderAll();
@@ -3743,7 +3802,7 @@ async function loginCloud(email, password){
     if(error){ $('#authError').textContent = error.message || 'فشل تسجيل الدخول'; return; }
     cloudSession = data.session;
     $('#authError').textContent = '';
-    $('#authOverlay').classList.remove('open');
+    finishAuthOverlay();
     await afterCloudLogin();
   }catch(e){
     $('#authError').textContent = 'تعذر الاتصال بالسحابة — تحقق من الرابط والمفتاح';
@@ -3772,7 +3831,7 @@ async function verifyOtpLogin(){
     if(error){ toast('رمز غير صحيح: ' + error.message, 'err'); return; }
     cloudSession = data.session;
     otpPendingEmail = '';
-    $('#authOverlay').classList.remove('open');
+    finishAuthOverlay();
     await afterCloudLogin();
   }catch(e){
     toast('تعذر الاتصال بالسحابة', 'err');
@@ -3802,6 +3861,7 @@ async function logoutCloud(){
   renderCloudCard();
   renderAll();
   toast('تم تسجيل الخروج — العودة للوضع المحلي');
+  showLoginGate();
 }
 function rowToRecord(row){
   return {id:row.id, block:row.block||'', landNo:row.land_no||'', oldLandNo:row.old_land_no||'', landType:row.land_type||'', clientName:row.client_name||'', clientType:row.client_type||'', via:row.via||'', contractNo:row.contract_no||'', contractType:row.contract_type||'', contractSigned:row.contract_signed||'', addendum:row.addendum||'', addendumSigned:row.addendum_signed||'', firstPayment:row.first_payment||'', transferPayment:row.transfer_payment||'', deedNo:row.deed_no||'', deedDate:row.deed_date||'', deedInKindNo:row.deed_in_kind_no||'', deedInKindDate:row.deed_in_kind_date||'', area:row.area, pricePerMeter:row.price_per_meter, value:row.value, transferDate:row.transfer_date||'', status:row.status||''};
@@ -4223,7 +4283,7 @@ function bindEvents(){
   $('#btnCancel').addEventListener('click', closeModal);
   $('#modalOverlay').addEventListener('click', e=>{ if(e.target === $('#modalOverlay')) closeModal(); });
   $('#btnSave').addEventListener('click', saveModal);
-  document.addEventListener('keydown', e=>{ if(e.key === 'Escape'){ closeModal(); if($('#taxModalOverlay').classList.contains('open')) closeTaxModal(); if($('#regModalOverlay').classList.contains('open')) closeRegModal(); if($('#regTrackOverlay').classList.contains('open')) closeRegTrackModal(); if($('#taxTrackOverlay').classList.contains('open')) closeTaxTrackModal(); if($('#authOverlay').classList.contains('open')) $('#authOverlay').classList.remove('open'); if($('#usersOverlay').classList.contains('open')) $('#usersOverlay').classList.remove('open'); if($('#rolesOverlay').classList.contains('open')) $('#rolesOverlay').classList.remove('open'); if($('#cloudEmptyOverlay').classList.contains('open')){ cloudEmptyDismissed = true; $('#cloudEmptyOverlay').classList.remove('open'); } } });
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape'){ closeModal(); if($('#taxModalOverlay').classList.contains('open')) closeTaxModal(); if($('#regModalOverlay').classList.contains('open')) closeRegModal(); if($('#regTrackOverlay').classList.contains('open')) closeRegTrackModal(); if($('#taxTrackOverlay').classList.contains('open')) closeTaxTrackModal(); if($('#authOverlay').classList.contains('open') && !gateActive) finishAuthOverlay(); if($('#usersOverlay').classList.contains('open')) $('#usersOverlay').classList.remove('open'); if($('#rolesOverlay').classList.contains('open')) $('#rolesOverlay').classList.remove('open'); if($('#cloudEmptyOverlay').classList.contains('open')){ cloudEmptyDismissed = true; $('#cloudEmptyOverlay').classList.remove('open'); } } });
 
   $('#regSearch').addEventListener('input', e=>{ state.search = e.target.value; state.page = 1; renderRegistry(); if(tpl && tpl.scope === 'filtered') renderPreview(); });
   $('#fbar').addEventListener('change', e=>{
@@ -4612,6 +4672,10 @@ function bindEvents(){
       $('#btnRecoverySubmit').style.display = 'none';
       $('#otpFields').style.display = 'none';
       $('#btnOtpVerify').style.display = 'none';
+      $('#authOverlay').classList.remove('gate');
+      $('#authClose').style.display = '';
+      $('#authCancelBtn').style.display = '';
+      $('#gateLocalOptions').style.display = 'none';
       $('#authOverlay').classList.add('open');
     }else if(id === 'btnConnEdit'){
       if(!can('manage_connection')){ toast('إعدادات الاتصال للمالك فقط', 'err'); return; }
@@ -4631,9 +4695,9 @@ function bindEvents(){
       logoutCloud();
     }
   });
-  $('#authClose').addEventListener('click', ()=>$('#authOverlay').classList.remove('open'));
-  $('#authCancelBtn').addEventListener('click', ()=>$('#authOverlay').classList.remove('open'));
-  $('#authOverlay').addEventListener('click', e=>{ if(e.target === $('#authOverlay')) $('#authOverlay').classList.remove('open'); });
+  $('#authClose').addEventListener('click', ()=>{ if(gateActive) return; finishAuthOverlay(); });
+  $('#authCancelBtn').addEventListener('click', ()=>{ if(gateActive) return; finishAuthOverlay(); });
+  $('#authOverlay').addEventListener('click', e=>{ if(e.target === $('#authOverlay')){ if(gateActive) return; finishAuthOverlay(); } });
   $('#btnAuthLogin').addEventListener('click', ()=>{
     loginCloud($('#authEmail').value.trim(), $('#authPassword').value);
   });
@@ -4733,6 +4797,9 @@ function bindEvents(){
     $('#cloudEmptyOverlay').classList.remove('open');
     uploadLocalToCloud();
   });
+
+  /* ===== Login gate events ===== */
+  $('#btnGateLocal').addEventListener('click', closeLoginGateLocal);
 
   /* ===== Registration events ===== */
   $('#regModalClose').addEventListener('click', closeRegModal);
@@ -4904,6 +4971,7 @@ renderAll();
 switchView('dashboard');
 $('#todayChip').textContent = todayAr();
 initCloudSession();
+showLoginGate();
 </script>
 </body>
 </html>
