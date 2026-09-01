@@ -1059,6 +1059,7 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
     <div class="modal-b">
       <div class="fld"><label>البريد الإلكتروني</label><input type="email" id="authEmail" placeholder="name@company.com"></div>
       <div class="fld"><label>كلمة المرور</label><input type="password" id="authPassword" placeholder="••••••••"></div>
+      <a href="#" id="authForgot" style="font-size:.76rem;color:var(--primary);font-weight:700;text-decoration:none">نسيت كلمة المرور؟</a>
       <div class="hint" id="authError" style="color:var(--danger-txt)"></div>
     </div>
     <div class="modal-f">
@@ -4485,6 +4486,19 @@ function bindEvents(){
   $('#authOverlay').addEventListener('click', e=>{ if(e.target === $('#authOverlay')) $('#authOverlay').classList.remove('open'); });
   $('#btnAuthLogin').addEventListener('click', ()=>{
     loginCloud($('#authEmail').value.trim(), $('#authPassword').value);
+  });
+  $('#authForgot').addEventListener('click', async e=>{
+    e.preventDefault();
+    if(!ensureSb()){ toast('أدخل إعدادات الاتصال أولاً', 'warn'); return; }
+    const email = $('#authEmail').value.trim();
+    if(!email){ toast('اكتب بريدك الإلكتروني أولاً', 'err'); return; }
+    try{
+      const {error} = await sbClient.auth.resetPasswordForEmail(email, {redirectTo: window.location.href});
+      if(error) toast('فشل إرسال رابط الاستعادة: ' + error.message, 'err');
+      else toast('تم إرسال رابط الاستعادة لبريدك — افتحه لتعيين كلمة مرور جديدة');
+    }catch(e2){
+      toast('تعذر الاتصال بالسحابة', 'err');
+    }
   });
   $('#authPassword').addEventListener('keydown', e=>{ if(e.key === 'Enter') loginCloud($('#authEmail').value.trim(), $('#authPassword').value); });
 
