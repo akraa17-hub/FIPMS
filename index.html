@@ -227,6 +227,41 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
 .fgrid input.err,.fgrid select.err{border-color:var(--danger);box-shadow:0 0 0 3px rgba(239,68,68,.12)}
 .hint{font-size:.72rem;color:var(--faint)}
 
+/* ===== Filters panel & active chips ===== */
+.fwrap{border-bottom:1px solid var(--border)}
+.fpanel{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding:14px 20px;background:#fbfcfe;border-bottom:1px solid var(--border)}
+.fpanel .field label{display:block}
+.active-chips{display:flex;gap:7px;flex-wrap:wrap;align-items:center;padding:0 20px 12px}
+.f-chip{display:inline-flex;align-items:center;gap:7px;background:var(--primary-soft);color:var(--primary-d);border:1px solid rgba(37,99,235,.25);border-radius:99px;padding:4px 10px;font-size:.74rem;font-weight:700}
+.f-chip button{width:16px;height:16px;border-radius:50%;border:none;background:rgba(37,99,235,.15);color:var(--primary-d);cursor:pointer;font-size:.7rem;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.f-chip button:hover{background:var(--primary);color:#fff}
+.f-count{background:var(--primary);color:#fff;border-radius:99px;font-size:.66rem;font-weight:800;padding:0 6px;margin-inline-start:4px}
+
+/* ===== Accordion (settings) ===== */
+.acc{display:flex;flex-direction:column;gap:14px}
+.acc-item{border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+.acc-head{display:flex;align-items:center;gap:10px;width:100%;padding:15px 20px;background:transparent;border:none;cursor:pointer;font-size:.95rem;font-weight:800;color:var(--text);text-align:start}
+.acc-head:hover{background:#f8faff}
+.acc-head .chev{margin-inline-start:auto;color:var(--muted);transition:transform .2s}
+.acc-item.open .acc-head .chev{transform:rotate(180deg)}
+.acc-body{display:none;padding:0 20px 18px}
+.acc-item.open .acc-body{display:block}
+.acc-badge{font-size:.7rem;font-weight:700;color:var(--primary-d);background:var(--primary-soft);border-radius:99px;padding:2px 9px}
+
+/* ===== Sticky table columns & density ===== */
+table.reg th.s0, table.reg td.s0{position:sticky;inset-inline-start:0;width:40px;min-width:40px;max-width:40px;z-index:4;background:#fff}
+table.reg th.s1, table.reg td.s1{position:sticky;inset-inline-start:40px;width:90px;min-width:90px;max-width:90px;z-index:4;background:#fff}
+table.reg th.s2, table.reg td.s2{position:sticky;inset-inline-start:130px;width:110px;min-width:110px;max-width:110px;z-index:4;background:#fff}
+table.reg th.s0, table.reg th.s1, table.reg th.s2{background:#f8fafc;z-index:6;box-shadow:2px 0 4px rgba(15,23,42,.04)}
+table.reg th.sa, table.reg td.sa{position:sticky;inset-inline-end:0;background:#fff;z-index:5;min-width:150px;box-shadow:-2px 0 4px rgba(15,23,42,.05)}
+table.reg th.sa{background:#f8fafc;z-index:6}
+table.reg tbody tr:nth-child(even) td.s0, table.reg tbody tr:nth-child(even) td.s1, table.reg tbody tr:nth-child(even) td.s2, table.reg tbody tr:nth-child(even) td.sa{background:#f9fafc}
+table.reg tbody tr:hover td.s0, table.reg tbody tr:hover td.s1, table.reg tbody tr:hover td.s2, table.reg tbody tr:hover td.sa{background:#eef4ff}
+table.reg th.sorted{color:var(--primary-d);background:#eef4ff}
+body.dense table.reg td{padding:5px 8px}
+body.dense table.reg th{padding:8px 9px}
+body.dense table.reg{font-size:.76rem}
+
 /* ===== Toast ===== */
 .toast-wrap{position:fixed;bottom:22px;inset-inline-start:22px;z-index:200;display:flex;flex-direction:column;gap:9px}
 .toast{background:#0f172a;color:#fff;padding:11px 18px;border-radius:12px;font-size:.84rem;font-weight:500;display:flex;align-items:center;gap:9px;box-shadow:0 10px 30px rgba(2,6,23,.35);animation:slideUp .25s ease;max-width:380px}
@@ -540,6 +575,10 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
               <span class="sub" id="regCount"></span>
             </h3>
             <div class="report-actions">
+              <button class="btn btn-soft btn-sm" id="btnDensity" title="تبديل كثافة الصفوف">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                الكثافة
+              </button>
               <button class="btn btn-soft btn-sm" id="btnRegXlsx">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>إكسل
               </button>
@@ -551,19 +590,28 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
               </button>
             </div>
           </div>
-          <div class="fbar" id="fbar">
-            <div class="search-box">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-              <input type="search" id="regSearch" placeholder="بحث: عميل، صك، عقد، رقم أرض…">
+          <div class="fwrap" id="fwrap">
+            <div class="fbar" id="fbar">
+              <div class="search-box">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="search" id="regSearch" placeholder="بحث: عميل، صك، عقد، رقم أرض…">
+              </div>
+              <button class="btn btn-soft btn-sm" id="btnOpenFilters">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h7"/><circle cx="16" cy="16" r="3"/></svg>
+                فلترة<span class="f-count" id="fCount"></span>
+              </button>
+              <div class="field"><label>العرض</label><select id="fGroup"></select></div>
+              <button class="btn btn-ghost btn-sm" id="btnClearFilters">مسح الفلاتر</button>
             </div>
-            <div class="field"><label>نوع الأرض</label><select id="fLandType"></select></div>
-            <div class="field"><label>نوع العميل</label><select id="fClientType"></select></div>
-            <div class="field"><label>عن طريق</label><select id="fVia"></select></div>
-            <div class="field"><label>نوع العقد</label><select id="fContractType"></select></div>
-            <div class="field"><label>الحالة</label><select id="fStatus"></select></div>
-            <div class="field"><label>البلك</label><select id="fBlock"></select></div>
-            <div class="field"><label>العرض</label><select id="fGroup"></select></div>
-            <button class="btn btn-ghost btn-sm" id="btnClearFilters" style="align-self:flex-end">مسح الفلاتر</button>
+            <div class="fpanel" id="fpanel" style="display:none">
+              <div class="field"><label>نوع الأرض</label><select id="fLandType"></select></div>
+              <div class="field"><label>نوع العميل</label><select id="fClientType"></select></div>
+              <div class="field"><label>عن طريق</label><select id="fVia"></select></div>
+              <div class="field"><label>نوع العقد</label><select id="fContractType"></select></div>
+              <div class="field"><label>الحالة</label><select id="fStatus"></select></div>
+              <div class="field"><label>البلك</label><select id="fBlock"></select></div>
+            </div>
+            <div class="active-chips" id="activeChips"></div>
           </div>
           <div class="tbl-wrap" id="regTblWrap"></div>
           <div class="pager" id="pager"></div>
@@ -785,6 +833,10 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
       <!-- ===== Backup ===== -->
       <section id="view-backup" class="view" data-title="النسخ الاحتياطي والإعدادات" data-sub="تصدير واستيراد البيانات وإدارة السجل">
         <div class="kpis" id="backupKpis"></div>
+        <div class="acc">
+          <div class="acc-item">
+            <button class="acc-head" data-acc="accBodyData"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>البيانات والنسخ الاحتياطي<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+            <div class="acc-body" id="accBodyData">
         <div class="b-grid">
           <div class="card">
             <div class="card-h"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>نسخة احتياطية كاملة (JSON)</h3></div>
@@ -838,20 +890,7 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
             </div>
           </div>
         </div>
-        <div class="card" style="margin-top:16px" id="cloudCard">
-          <div class="card-h">
-            <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98A6.5 6.5 0 1 0 5.64 16.6"/><path d="M12 13v9"/><path d="m8 17 4-4 4 4"/></svg>الاتصال السحابي — المشاركة متعددة المستخدمين</h3>
-            <span class="badge b-slate" id="cloudModeBadge">محلي</span>
-          </div>
-          <div class="card-b" id="cloudCardBody"></div>
-        </div>
-        <div class="card" style="margin-top:16px">
-          <div class="card-h">
-            <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>سلة المحذوفات <span class="sub" id="recycleCount"></span></h3>
-          </div>
-          <div class="card-b flush" style="overflow:auto"><table class="rpt" id="recycleTbl"></table></div>
-        </div>
-        <div class="card" style="margin-top:16px">
+<div class="card" style="margin-top:16px">
           <div class="card-h"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>إدارة البيانات</h3></div>
             <div class="card-b">
               <div class="b-item">
@@ -868,7 +907,38 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
             </div>
           </div>
         </div>
-        <div class="card" style="margin-top:16px">
+            </div>
+          </div>
+          <div class="acc-item open">
+            <button class="acc-head" data-acc="accBodyCloud"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98A6.5 6.5 0 1 0 5.64 16.6"/><path d="M12 13v9"/><path d="m8 17 4-4 4 4"/></svg>الحساب والاتصال السحابي<span class="acc-badge" id="cloudAccBadge">محلي</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+            <div class="acc-body" id="accBodyCloud">
+        <div class="card" id="cloudCard">
+          <div class="card-h">
+            <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98A6.5 6.5 0 1 0 5.64 16.6"/><path d="M12 13v9"/><path d="m8 17 4-4 4 4"/></svg>الاتصال السحابي — المشاركة متعددة المستخدمين</h3>
+            <span class="badge b-slate" id="cloudModeBadge">محلي</span>
+          </div>
+          <div class="card-b" id="cloudCardBody"></div>
+        </div>
+            </div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-head" data-acc="accBodyUsers"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>المستخدمون والصلاحيات<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+            <div class="acc-body" id="accBodyUsers"></div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-head" data-acc="accBodyRecycle"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>سلة المحذوفات<span class="acc-badge" id="recycleAccCount"></span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+            <div class="acc-body" id="accBodyRecycle">
+        <div class="card">
+          <div class="card-h">
+            <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>سلة المحذوفات <span class="sub" id="recycleCount"></span></h3>
+          </div>
+          <div class="card-b flush" style="overflow:auto"><table class="rpt" id="recycleTbl"></table></div>
+        </div>
+            </div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-head" data-acc="accBodyStatuses"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z"/></svg>الحالات المخصصة<span class="acc-badge" id="statusesCount"></span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+            <div class="acc-body" id="accBodyStatuses">        <div class="card" style="margin-top:16px">
           <div class="card-h">
             <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z"/></svg>إدارة حالات الأراضي</h3>
           </div>
@@ -922,6 +992,9 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
                 إضافة
               </button>
+            </div>
+          </div>
+        </div>
             </div>
           </div>
         </div>
@@ -1498,19 +1571,32 @@ function cellHtml(r, col){
 
 /* ===== Registry table ===== */
 function buildThead(allSel){
-  return '<tr><th style="cursor:default;text-align:center;width:40px"><input type="checkbox" id="thSelAll" ' + (allSel ? 'checked' : '') + ' title="تحديد الكل"></th>' + COLS.map(c=>`<th data-key="${c.k}" title="ترتيب حسب ${esc(c.t)}">${esc(c.t)}${state.sortKey === c.k ? `<span class="srt">${state.sortDir === 1 ? '▲' : '▼'}</span>` : ''}</th>`).join('') + '<th style="cursor:default;text-align:center">إجراءات</th></tr>';
+  return '<tr><th class="s0" style="cursor:default;text-align:center;width:40px"><input type="checkbox" id="thSelAll" ' + (allSel ? 'checked' : '') + ' title="تحديد الكل"></th>' + COLS.map(c=>{
+    const cls = (c.k === 'block' ? 's1' : c.k === 'landNo' ? 's2' : '') + (state.sortKey === c.k ? ' sorted' : '');
+    return `<th class="${cls}" data-key="${c.k}" title="ترتيب حسب ${esc(c.t)}">${esc(c.t)}${state.sortKey === c.k ? `<span class="srt">${state.sortDir === 1 ? '▲' : '▼'}</span>` : ''}</th>`;
+  }).join('') + '<th class="sa" style="cursor:default;text-align:center">إجراءات</th></tr>';
 }
 function rowHtml(r){
-  return `<tr data-id="${r.id}"><td style="text-align:center"><input type="checkbox" class="row-sel" data-sid="${r.id}" ${taxSel.has(r.id) ? 'checked' : ''}></td>` + COLS.map(c=>{
-    const cls = (c.k === 'clientName') ? 'c-client' : (['block','landNo','oldLandNo','deedNo','deedInKindNo','area','pricePerMeter','value','deedDate','deedInKindDate'].includes(c.k) ? 'num' : '');
+  return `<tr data-id="${r.id}"><td class="s0" style="text-align:center"><input type="checkbox" class="row-sel" data-sid="${r.id}" ${taxSel.has(r.id) ? 'checked' : ''}></td>` + COLS.map(c=>{
+    const sticky = c.k === 'block' ? 's1' : c.k === 'landNo' ? 's2' : '';
+    const cls = sticky + (c.k === 'clientName' ? ' c-client' : (['landNo','oldLandNo','deedNo','deedInKindNo','area','pricePerMeter','value','deedDate','deedInKindDate'].includes(c.k) ? ' num' : ''));
     return `<td class="${cls}">${cellHtml(r, c)}</td>`;
-  }).join('') + `<td><div class="row-actions">
+  }).join('') + `<td class="sa"><div class="row-actions">
     ${can('issue_tax') ? `<button class="btn btn-soft btn-xs" data-act="tax" data-id="${r.id}" title="إصدار ضريبة تصرفات"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></svg></button>` : ''}
     ${can('issue_reg') ? `<button class="btn btn-soft btn-xs" data-act="reg" data-id="${r.id}" title="طلب تسجيل عيني"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></svg></button>` : ''}
     ${can('edit_records') ? `<button class="btn btn-soft btn-xs" data-act="edit" data-id="${r.id}" title="تعديل"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>` : ''}
     ${can('archive_records') ? `<button class="btn btn-danger btn-xs" data-act="cancel" data-id="${r.id}" title="إلغاء ونقل للأرشيف — تصبح القطعة متاحة مجدداً"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7 18.3 18.3"/></svg></button>` : ''}
     ${can('delete_records') ? `<button class="btn btn-danger btn-xs" data-act="del" data-id="${r.id}" title="حذف (سلة المحذوفات)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>` : ''}
   </div></td></tr>`;
+}
+function renderActiveChips(){
+  const labels = {landType:'نوع الأرض', clientType:'نوع العميل', via:'عن طريق', contractType:'نوع العقد', status:'الحالة', block:'البلك'};
+  const entries = Object.entries(state.filters).filter(([k,v])=>v);
+  const chips = entries.map(([k,v])=>`<span class="f-chip">${esc(labels[k] || k)}: ${esc(v)}<button data-fclear="${k}" title="إزالة">×</button></span>`).join('');
+  const c = $('#activeChips');
+  if(c) c.innerHTML = chips;
+  const fc = $('#fCount');
+  if(fc) fc.textContent = entries.length ? entries.length : '';
 }
 function renderRegistry(){
   const list = filtered();
@@ -1552,6 +1638,7 @@ function renderRegistry(){
   $('#regCount').textContent = `(${list.length} قطعة)`;
   renderPager(list.length);
   updateTaxSelUI();
+  renderActiveChips();
 }
 function emptyRow(){
   return `<tr><td colspan="${COLS.length + 2}"><div class="empty-state"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><h4>لا توجد نتائج</h4><p>جرّب تعديل البحث أو الفلاتر</p></div></td></tr>`;
@@ -1764,6 +1851,42 @@ function renderReports(){
 }
 
 /* ===== Backup view ===== */
+function renderUsersGroup(){
+  const el = $('#accBodyUsers');
+  if(!el) return;
+  if(cloudReady){
+    el.innerHTML = `<div class="b-item"><div class="bi-ico" style="background:var(--sky-soft);color:var(--sky-txt)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div><h4>إدارة فريق العمل</h4>
+      <p>إضافة مستخدمين وتوزيع الأدوار وتصفير كلمات المرور والإيقاف والتفعيل.</p>
+      <div class="bi-actions">
+        ${can('manage_users') ? `<button class="btn btn-primary btn-sm" id="btnOpenUsersAcc">فتح شاشة المستخدمين</button>` : ''}
+        ${isCloudOwner() ? `<button class="btn btn-soft btn-sm" id="btnOpenRolesAcc">الأدوار والصلاحيات</button>` : ''}
+      </div></div></div>`;
+  }else{
+    el.innerHTML = `<div class="hint" style="padding:6px 0">سجّل دخولك من مجموعة «الحساب والاتصال السحابي» أولاً لإدارة المستخدمين.</div>`;
+  }
+}
+function updateAccBadges(){
+  const cb = $('#cloudAccBadge');
+  if(cb){
+    if(cloudReady){
+      cb.textContent = 'سحابي · ' + (cloudUser ? cloudUser.role : '');
+      cb.style.color = 'var(--ok-txt)';
+      cb.style.background = 'var(--ok-soft)';
+    }else{
+      cb.textContent = 'محلي';
+      cb.style.color = 'var(--muted)';
+      cb.style.background = 'var(--bg)';
+    }
+  }
+  const rc = $('#recycleAccCount');
+  if(rc) rc.textContent = recycleBin.length ? '(' + recycleBin.length + ')' : '';
+  const sc = $('#statusesCount');
+  if(sc){
+    const n = customStatuses.length + taxTrackStatuses.length + regTrackStatuses.length;
+    sc.textContent = n ? n + ' مخصصة' : '';
+  }
+}
 function renderBackup(){
   const a = records.reduce((s,r)=>s+(r.area||0),0);
   const v = records.reduce((s,r)=>s+(r.value||0),0);
@@ -4423,7 +4546,7 @@ function switchView(name){
   $('#side').classList.remove('open');
   $('#sideMask').classList.remove('show');
   if(name === 'archive') renderArchive();
-  if(name === 'backup'){ renderBackup(); renderStatusManager(); renderRegStatusManager(); renderTaxStatusManager(); renderCloudCard(); renderRecycle(); }
+  if(name === 'backup'){ renderBackup(); renderStatusManager(); renderRegStatusManager(); renderTaxStatusManager(); renderCloudCard(); renderRecycle(); renderUsersGroup(); updateAccBadges(); }
 }
 function renderAll(){
   renderDashboard();
@@ -4457,17 +4580,39 @@ function bindEvents(){
   document.addEventListener('keydown', e=>{ if(e.key === 'Escape'){ closeModal(); if($('#taxModalOverlay').classList.contains('open')) closeTaxModal(); if($('#regModalOverlay').classList.contains('open')) closeRegModal(); if($('#regTrackOverlay').classList.contains('open')) closeRegTrackModal(); if($('#taxTrackOverlay').classList.contains('open')) closeTaxTrackModal(); if($('#authOverlay').classList.contains('open') && !gateActive) finishAuthOverlay(); if($('#usersOverlay').classList.contains('open')) $('#usersOverlay').classList.remove('open'); if($('#rolesOverlay').classList.contains('open')) $('#rolesOverlay').classList.remove('open'); if($('#cloudEmptyOverlay').classList.contains('open')){ cloudEmptyDismissed = true; $('#cloudEmptyOverlay').classList.remove('open'); } } });
 
   $('#regSearch').addEventListener('input', e=>{ state.search = e.target.value; state.page = 1; renderRegistry(); if(tpl && tpl.scope === 'filtered') renderPreview(); });
-  $('#fbar').addEventListener('change', e=>{
+  $('#fwrap').addEventListener('change', e=>{
     const id = e.target.id;
     const map = {fLandType:'landType', fClientType:'clientType', fVia:'via', fContractType:'contractType', fStatus:'status', fBlock:'block'};
     if(map[id]){ state.filters[map[id]] = e.target.value; state.page = 1; renderRegistry(); }
     if(id === 'fGroup'){ state.groupBy = e.target.value; state.page = 1; renderRegistry(); }
     if(tpl && tpl.scope === 'filtered') renderPreview();
   });
+  $('#btnOpenFilters').addEventListener('click', e=>{
+    e.stopPropagation();
+    const p = $('#fpanel');
+    p.style.display = p.style.display === 'none' ? 'grid' : 'none';
+  });
+  document.addEventListener('click', e=>{
+    const p = $('#fpanel');
+    if(p && p.style.display !== 'none' && !e.target.closest('#fwrap') && !e.target.closest('#btnOpenFilters')) p.style.display = 'none';
+  });
+  $('#activeChips').addEventListener('click', e=>{
+    const b = e.target.closest('[data-fclear]');
+    if(!b) return;
+    const selIds = {landType:'fLandType', clientType:'fClientType', via:'fVia', contractType:'fContractType', status:'fStatus', block:'fBlock'};
+    state.filters[b.dataset.fclear] = '';
+    const sel = $('#' + selIds[b.dataset.fclear]);
+    if(sel) sel.value = '';
+    state.page = 1;
+    refreshFilterOptions();
+    renderRegistry();
+  });
   $('#btnClearFilters').addEventListener('click', ()=>{
     state.filters = {landType:'',clientType:'',via:'',contractType:'',status:'',block:''};
     state.search = ''; state.page = 1; state.sortKey = ''; state.sortDir = 1; state.groupBy = '';
     $('#regSearch').value = '';
+    $('#fLandType').value = ''; $('#fClientType').value = ''; $('#fVia').value = '';
+    $('#fContractType').value = ''; $('#fStatus').value = ''; $('#fBlock').value = '';
     refreshFilterOptions();
     renderRegistry();
     if(tpl && tpl.scope === 'filtered') renderPreview();
@@ -4530,6 +4675,11 @@ function bindEvents(){
       const r = records.find(x=>x.id === +tr.dataset.id);
       if(r) openModal(r);
     }
+  });
+
+  $('#btnDensity').addEventListener('click', ()=>{
+    const dense = document.body.classList.toggle('dense');
+    try{ localStorage.setItem('fipms_density_v1', dense ? '1' : '0'); }catch(e){}
   });
 
   $('#btnRegXlsx').addEventListener('click', ()=>exportExcelRows(sorted(filtered()), COLS, 'سجل الأراضي', 'سجل-الأراضي-المفلتر', null, ['area','value']));
@@ -4808,6 +4958,14 @@ function bindEvents(){
   });
 
   /* ===== Topbar dropdowns & user chip ===== */
+  $('#view-backup').addEventListener('click', e=>{
+    const h = e.target.closest('.acc-head');
+    if(h && h.parentElement) h.parentElement.classList.toggle('open');
+  });
+  $('#accBodyUsers').addEventListener('click', e=>{
+    if(e.target.closest('#btnOpenUsersAcc')){ openUsersModal(); }
+    else if(e.target.closest('#btnOpenRolesAcc')){ openRolesModal(); }
+  });
   $('#btnUserChip').addEventListener('click', e=>{
     e.stopPropagation();
     const m = $('#userMenu');
@@ -5206,6 +5364,7 @@ refreshFilterOptions();
 renderAll();
 switchView('dashboard');
 $('#todayChip').textContent = todayAr();
+try{ if(localStorage.getItem('fipms_density_v1') === '1') document.body.classList.add('dense'); }catch(e){}
 initCloudSession();
 showLoginGate();
 updateUserChip();
