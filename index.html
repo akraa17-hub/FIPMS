@@ -4176,6 +4176,25 @@ async function uploadLocalToCloud(){
 }
 
 /* ===== Users & roles management ===== */
+async function invokeFn(action, body){
+  try{
+    const {data} = await sbClient.auth.getSession();
+    const token = data && data.session ? data.session.access_token : '';
+    const res = await fetch(`${connCfg.url}/functions/v1/manage-users`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json', 'Authorization':'Bearer ' + token},
+      body: JSON.stringify(Object.assign({action}, body || {}))
+    });
+    let json = null;
+    try{ json = await res.json(); }catch(e){}
+    if(!res.ok){
+      return {ok:false, error: (json && json.error) ? (json.message || json.error) : ('HTTP ' + res.status)};
+    }
+    return json && typeof json === 'object' ? json : {ok:false, error:'استجابة غير متوقعة'};
+  }catch(e){
+    return {ok:false, error: String(e?.message || e)};
+  }
+}
 async function openUsersModal(){
   if(!can('manage_users')){ toast('ليست لديك صلاحية إدارة المستخدمين', 'err'); return; }
   $('#usersOverlay').classList.add('open');
@@ -4201,10 +4220,8 @@ async function openUsersModal(){
   }catch(e){ diag.push({t:'قراءة جدول الأدوار مباشرة', ok:false, detail:String(e?.message||e)}); }
 
   try{
-    const res = await sbClient.functions.invoke('manage-users', {body:{action:'listUsers'}});
-    const dd = res.data;
-    if(res.error) invokeErr = res.error.message || String(res.error);
-    else if(dd && dd.error) invokeErr = dd.error;
+    const dd = await invokeFn('listUsers');
+    if(dd && dd.error) invokeErr = dd.error;
     else if(dd && Array.isArray(dd.users)) list = dd.users;
     diag.push(invokeErr ? {t:'استدعاء دالة manage-users', ok:false, detail:invokeErr} : {t:'استدعاء دالة manage-users', ok:true, detail:list.length + ' مستخدم'});
   }catch(e){
@@ -4243,11 +4260,12 @@ async function openUsersModal(){
     ${diagHtml}`;
 }
 async function userFn(action, body){
-  try{
-    const {data} = await sbClient.functions.invoke('manage-users', {body:Object.assign({action}, body)});
-    if(data && data.error){ toast('فشل: ' + (data.message || data.error) + (data.code ? ' (' + data.code + ')' : ''), 'err'); return false; }
-    return true;
-  }catch(e){ toast('تعذر الوصول لدالة إدارة المستخدمين — تأكد من نشرها', 'err'); return false; }
+  const dd = await invokeFn(action, body);
+  if(!dd || dd.ok !== true){
+    toast('فشل: ' + ((dd && (dd.message || dd.error)) || 'تعذر تنفيذ العملية'), 'err');
+    return false;
+  }
+  return true;
 }
 async function openRolesModal(){
   if(!isCloudOwner()){ toast('تعريفات الأدوار للمالك فقط', 'err'); return; }
