@@ -4194,6 +4194,7 @@ async function openUsersModal(){
         <div class="fld"><label>الدور</label><select id="nuRole">${roleOptions}</select></div>
         <div class="fld"><button class="btn btn-primary" id="btnAddUser" style="margin-top:20px">إضافة مستخدم</button></div>
       </div>
+      <div class="hint" style="margin-top:8px">كلمة المرور 6 أحرف فأكثر، وسيتمكن المستخدم من تسجيل الدخول فوراً بنفس البريد وكلمة المرور من شاشة الدخول.</div>
     </fieldset>
     <div style="overflow:auto;max-height:320px"><table class="rpt"><thead><tr><th>البريد</th><th>الدور</th><th>الحالة</th><th>إجراءات</th></tr></thead>
     <tbody>${list.length ? list.map(u=>`<tr>
@@ -4209,7 +4210,7 @@ async function openUsersModal(){
 async function userFn(action, body){
   try{
     const {data} = await sbClient.functions.invoke('manage-users', {body:Object.assign({action}, body)});
-    if(data && data.error){ toast('فشل: ' + data.error, 'err'); return false; }
+    if(data && data.error){ toast('فشل: ' + (data.message || data.error) + (data.code ? ' (' + data.code + ')' : ''), 'err'); return false; }
     return true;
   }catch(e){ toast('تعذر الوصول لدالة إدارة المستخدمين — تأكد من نشرها', 'err'); return false; }
 }
@@ -4741,7 +4742,13 @@ function bindEvents(){
       const email = $('#nuEmail').value.trim(), pw = $('#nuPassword').value, role = $('#nuRole').value;
       if(!email || pw.length < 6){ toast('أدخل بريداً وكلمة مرور (6+ أحرف)', 'err'); return; }
       if(role === 'مالك' && !isCloudOwner()){ toast('منح المالك حصري للمالك الحالي', 'err'); return; }
-      if(await userFn('createUser', {email, password:pw, role})){ toast('تمت إضافة المستخدم: ' + email); openUsersModal(); }
+      add.disabled = true;
+      const origTxt = add.textContent;
+      add.textContent = 'جارٍ الإضافة…';
+      const ok = await userFn('createUser', {email, password:pw, role});
+      add.disabled = false;
+      add.textContent = origTxt;
+      if(ok){ toast('تمت إضافة المستخدم: ' + email + ' — يمكنه الدخول الآن بنفس البريد وكلمة المرور'); openUsersModal(); }
     }
   });
   $('#usersBody').addEventListener('change', async e=>{
