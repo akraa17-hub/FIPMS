@@ -234,3 +234,123 @@ end $$;
 -- شغّل هذا السطر منفرداً بعد استبدال البريد ببريد المالك:
 insert into public.user_roles (email, role) values ('akr.aa17@gmail.com', 'مالك')
 on conflict (email) do update set role = 'مالك';
+
+-- ============================================================
+-- 7) إدارة المستخدمين عبر RPC (المعمارية الجذرية — لا Edge Functions)
+--    تُستدعى من المتصفح عبر PostgREST (نفس مسار البيانات المثبت)
+-- ============================================================
+create extension if not exists pgcrypto;
+
+create or replace function public.admin_health_check()
+returns jsonb language plpgsql security definer set search_path = public as $$
+begin
+  return jsonb_build_object('ok', true, 'time', now()::text);
+end; $$;
+
+create or replace function public.admin_list_users()
+returns table(email text, created_at timestamptz, banned boolean)
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.has_perm('manage_users') then
+    raise exception 'forbidden';
+  end if;
+  return query
+    select u.email::text, u.created_at::timestamptz,
+           (u.banned_until is not null and u.banned_until > now())::boolean as banned
+    from auth.users u
+    order by u.email::text;
+end; $$;
+
+create or replace function public.admin_create_user(p_email text, p_password text, p_role text)
+returns jsonb language plpgsql security definer set search_path = public, auth, extensions as $$
+declare
+  v_uid uuid;
+begin
+  if not public.has_perm('manage_users') then
+    return jsonb_build_object('ok', false, 'error', 'forbidden');
+  end if;
+  if p_role = 'مالك' and not public.has_perm('manage_connection') then
+    return jsonb_build_object('ok', false, 'error', 'forbidden');
+  end if;
+  p_email := lower(trim(p_email));
+  if p_email = '' or length(p_password) < 6 then
+    return jsonb_build_object('ok', false, 'error', 'invalid_input');
+  end if;
+  if exists (select 1 from auth.users where email = p_email) then
+    return jsonb_build_object('ok', false, 'error', 'email_exists');
+  end if;
+  v_uid := gen_random_uuid();
+  insert into auth.users
+    (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+     raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+     confirmation_token, recovery_token, email_change, email_change_token_new, email_change_token_current, banned_until)
+  values
+    ('00000000-0000-0000-0000-000000000000', v_uid, 'authenticated', 'authenticated', p_email,
+     extensions.crypt(p_password, extensions.gen_salt('bf', 10)), now(),
+     '{\"provider\":\"email\",\"providers\":[\"email\"]}'::jsonb, '{}'::jsonb, now(), now(),
+     '', '', '', '', '', null);
+  insert into auth.identities
+    (id, user_id, identity_data, provider, provider_id, last_sign_in_at, created_at, updated_at)
+  values
+    (v_uid, v_uid, jsonb_build_object('sub', v_uid::text, 'email', p_email), 'email', v_uid::text, now(), now(), now());
+  insert into public.user_roles (email, role) values (p_email, p_role)
+  on conflict (email) do update set role = p_role;
+  return jsonb_build_object('ok', true, 'email', p_email);
+end; $$;
+
+create or replace function public.admin_reset_password(p_email text, p_password text)
+returns jsonb language plpgsql security definer set search_path = public, auth, extensions as $$
+begin
+  if not public.has_perm('manage_users') then
+    return jsonb_build_object('ok', false, 'error', 'forbidden');
+  end if;
+  p_email := lower(trim(p_email));
+  if length(p_password) < 6 then
+    return jsonb_build_object('ok', false, 'error', 'invalid_input');
+  end if;
+  update auth.users
+    set encrypted_password = extensions.crypt(p_password, extensions.gen_salt('bf', 10)), updated_at = now()
+    where email = p_email;
+  if not found then
+    return jsonb_build_object('ok', false, 'error', 'not_found');
+  end if;
+  return jsonb_build_object('ok', true);
+end; $$;
+
+create or replace function public.admin_set_banned(p_email text, p_banned boolean)
+returns jsonb language plpgsql security definer set search_path = public, auth as $$
+begin
+  if not public.has_perm('manage_users') then
+    return jsonb_build_object('ok', false, 'error', 'forbidden');
+  end if;
+  p_email := lower(trim(p_email));
+  update auth.users
+    set banned_until = case when p_banned then now() + interval '100 years' else null end,
+        updated_at = now()
+    where email = p_email;
+  if not found then
+    return jsonb_build_object('ok', false, 'error', 'not_found');
+  end if;
+  return jsonb_build_object('ok', true);
+end; $$;
+
+revoke execute on function public.admin_health_check() from public;
+revoke execute on function public.admin_health_check() from anon;
+grant execute on function public.admin_health_check() to authenticated;
+grant execute on function public.admin_health_check() to service_role;
+revoke execute on function public.admin_list_users() from public;
+revoke execute on function public.admin_list_users() from anon;
+grant execute on function public.admin_list_users() to authenticated;
+grant execute on function public.admin_list_users() to service_role;
+revoke execute on function public.admin_create_user(text, text, text) from public;
+revoke execute on function public.admin_create_user(text, text, text) from anon;
+grant execute on function public.admin_create_user(text, text, text) to authenticated;
+grant execute on function public.admin_create_user(text, text, text) to service_role;
+revoke execute on function public.admin_reset_password(text, text) from public;
+revoke execute on function public.admin_reset_password(text, text) from anon;
+grant execute on function public.admin_reset_password(text, text) to authenticated;
+grant execute on function public.admin_reset_password(text, text) to service_role;
+revoke execute on function public.admin_set_banned(text, boolean) from public;
+revoke execute on function public.admin_set_banned(text, boolean) from anon;
+grant execute on function public.admin_set_banned(text, boolean) to authenticated;
+grant execute on function public.admin_set_banned(text, boolean) to service_role;
