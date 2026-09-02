@@ -3785,6 +3785,7 @@ async function afterCloudLogin(){
   renderCloudCard();
   updateCloudBadge();
   subscribeCloud();
+  checkCloudHealth().then(()=>{ renderCloudCard(); updateCloudBadge(); });
   if(!cloudEmptyDismissed && records.length === 0){
     const snap = readLocalSnapshot();
     if(snap.records.length > 0){
@@ -4122,6 +4123,7 @@ function renderCloudCard(){
       <p>المزامنة لحظية مع الفريق · آخر مزامنة: ${lastSyncAt ? lastSyncAt.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) : '—'}${records.length === 0 ? '<br><span style="color:var(--amber-txt);font-weight:800">تنبيه: السحابة فارغة — ارفع بياناتك المحلية لتعبئتها</span>' : ''}</p>
       <div class="bi-actions">
         <button class="btn btn-soft btn-sm" id="btnSyncNow">مزامنة الآن</button>
+        ${cloudHealth ? `<span class="badge ${cloudHealth.ok ? 'b-ok' : 'b-danger'}"><span class="b-dot"></span>${cloudHealth.ok ? 'الاتصال سليم' : 'تعذر الاتصال'}</span>` : `<button class="btn btn-soft btn-sm" id="btnCheckHealth">فحص الاتصال</button>`}
         <button class="btn btn-soft btn-sm" id="btnChangePw">تعيين كلمة مرور</button>
         ${can('manage_users') ? `<button class="btn btn-soft btn-sm" id="btnOpenUsers">المستخدمون</button>` : ''}
         ${isCloudOwner() ? `<button class="btn btn-soft btn-sm" id="btnOpenRoles">الأدوار</button>` : ''}
@@ -4176,24 +4178,32 @@ async function uploadLocalToCloud(){
 }
 
 /* ===== Users & roles management ===== */
-async function invokeFn(action, body){
+async function rpcCall(fn, params){
   try{
-    const {data} = await sbClient.auth.getSession();
-    const token = data && data.session ? data.session.access_token : '';
-    const res = await fetch(`${connCfg.url}/functions/v1/manage-users`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json', 'Authorization':'Bearer ' + token},
-      body: JSON.stringify(Object.assign({action}, body || {}))
-    });
-    let json = null;
-    try{ json = await res.json(); }catch(e){}
-    if(!res.ok){
-      return {ok:false, error: (json && json.error) ? (json.message || json.error) : ('HTTP ' + res.status)};
+    const {data, error} = await sbClient.rpc(fn, params || {});
+    if(error) return {ok:false, error: error.message || String(error)};
+    if(fn === 'admin_list_users'){
+      return {ok:true, users: Array.isArray(data) ? data : []};
     }
-    return json && typeof json === 'object' ? json : {ok:false, error:'استجابة غير متوقعة'};
+    if(data && typeof data === 'object' && !Array.isArray(data)) return Object.assign({ok: data.ok !== false}, data);
+    return {ok:true};
   }catch(e){
     return {ok:false, error: String(e?.message || e)};
   }
+}
+function rpcErrMsg(r){
+  if(!r || !r.error) return r && r.message ? r.message : 'تعذر تنفيذ العملية';
+  if(r.error === 'forbidden') return 'ليست لديك صلاحية لهذه العملية';
+  if(r.error === 'email_exists') return 'البريد مسجل مسبقاً لدى مستخدم آخر';
+  if(r.error === 'invalid_input') return 'بيانات غير صالحة (بريد صحيح وكلمة مرور 6+ أحرف)';
+  if(r.error === 'not_found') return 'المستخدم غير موجود';
+  return r.message || r.error;
+}
+async function checkCloudHealth(){
+  if(!sbClient || !cloudReady){ cloudHealth = null; return; }
+  const r = await rpcCall('admin_health_check', {});
+  cloudHealth = {ok: !!r.ok, at: new Date()};
+  updateCloudBadge();
 }
 async function openUsersModal(){
   if(!can('manage_users')){ toast('ليست لديك صلاحية إدارة المستخدمين', 'err'); return; }
@@ -4220,13 +4230,16 @@ async function openUsersModal(){
   }catch(e){ diag.push({t:'قراءة جدول الأدوار مباشرة', ok:false, detail:String(e?.message||e)}); }
 
   try{
-    const dd = await invokeFn('listUsers');
-    if(dd && dd.error) invokeErr = dd.error;
-    else if(dd && Array.isArray(dd.users)) list = dd.users;
-    diag.push(invokeErr ? {t:'استدعاء دالة manage-users', ok:false, detail:invokeErr} : {t:'استدعاء دالة manage-users', ok:true, detail:list.length + ' مستخدم'});
+    const r = await rpcCall('admin_list_users', {});
+    if(!r.ok) invokeErr = r.error || r.message;
+    else if(Array.isArray(r.users)){
+      const roleMap = Object.fromEntries(rolesRows.map(x=>[x.email, x.role]));
+      list = r.users.map(u=>({id:'', email:u.email, role:roleMap[u.email] || 'بدون دور', banned:!!u.banned, created_at:u.created_at, fallback:false}));
+    }
+    diag.push(invokeErr ? {t:'استدعاء دالة القائمة (RPC)', ok:false, detail:invokeErr} : {t:'استدعاء دالة القائمة (RPC)', ok:true, detail:list.length + ' مستخدم'});
   }catch(e){
     invokeErr = String(e?.message||e);
-    diag.push({t:'استدعاء دالة manage-users', ok:false, detail:invokeErr});
+    diag.push({t:'استدعاء دالة القائمة (RPC)', ok:false, detail:invokeErr});
   }
 
   if(!list.length && rolesRows.length){
@@ -4246,6 +4259,10 @@ async function openUsersModal(){
       </div>
       <div class="hint" style="margin-top:8px">كلمة المرور 6 أحرف فأكثر، وسيتمكن المستخدم من تسجيل الدخول فوراً بنفس البريد وكلمة المرور من شاشة الدخول.</div>
     </fieldset>
+    ${lastCreatedUser ? `<div style="background:var(--ok-soft);border:1px solid #a7f3d0;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+      <span style="font-size:.82rem;font-weight:700">آخر مستخدم أُضيف: <b style="direction:ltr;display:inline-block">${esc(lastCreatedUser.email)}</b> — كلمة المرور: <b style="direction:ltr;display:inline-block">${esc(lastCreatedUser.pw)}</b></span>
+      <button class="btn btn-soft btn-xs" id="btnCopyCreds">نسخ بيانات الدخول</button>
+    </div>` : ''}
     ${fallbackNote}
     <div style="overflow:auto;max-height:300px"><table class="rpt"><thead><tr><th>البريد</th><th>الدور</th><th>الحالة</th><th>إجراءات</th></tr></thead>
     <tbody>${list.length ? list.map(u=>`<tr>
@@ -4259,13 +4276,12 @@ async function openUsersModal(){
     </tr>`).join('') : `<tr><td colspan="4"><div class="hint">لا يوجد مستخدمون بعد — أضف أول مستخدم من النموذج أعلاه${invokeErr ? '<br><span style="color:var(--danger-txt)">خطأ القائمة: ' + esc(invokeErr) + '</span>' : ''}</div></td></tr>`}</tbody></table></div>
     ${diagHtml}`;
 }
-async function userFn(action, body){
-  const dd = await invokeFn(action, body);
-  if(!dd || dd.ok !== true){
-    toast('فشل: ' + ((dd && (dd.message || dd.error)) || 'تعذر تنفيذ العملية'), 'err');
-    return false;
-  }
-  return true;
+let lastCreatedUser = null;
+let cloudHealth = null;
+async function userRpc(fn, params){
+  const r = await rpcCall(fn, params);
+  if(!r.ok){ toast('فشل: ' + rpcErrMsg(r), 'err'); return null; }
+  return r;
 }
 async function openRolesModal(){
   if(!isCloudOwner()){ toast('تعريفات الأدوار للمالك فقط', 'err'); return; }
@@ -4273,9 +4289,13 @@ async function openRolesModal(){
   $('#rolesBody').innerHTML = '<div class="hint">جارٍ التحميل…</div>';
   let roles = [];
   try{
-    const {data} = await sbClient.from('roles').select('*').order('name');
+    const {data, error} = await sbClient.from('roles').select('*').order('name');
+    if(error) throw new Error(error.message || 'خطأ غير معروف');
     roles = data || [];
-  }catch(e){}
+  }catch(e){
+    $('#rolesBody').innerHTML = `<div class="hint" style="color:var(--danger-txt);padding:12px">تعذر تحميل الأدوار: ${esc(String(e?.message || e))} — أعد المحاولة</div>`;
+    return;
+  }
   $('#rolesBody').innerHTML = roles.map(r=>`
     <fieldset class="fset" style="margin-bottom:10px"><legend>${esc(r.name)} ${r.is_system ? '<span class="hint">(نظامي)</span>' : ''}</legend>
       <div class="picker-tools" data-role="${esc(r.name)}">
@@ -4737,6 +4757,8 @@ function bindEvents(){
       renderCloudCard();
     }else if(id === 'btnSyncNow'){
       loadAllCloud().then(()=>{ renderAll(); toast('تمت المزامنة'); });
+    }else if(id === 'btnCheckHealth'){
+      checkCloudHealth().then(()=>renderCloudCard());
     }else if(id === 'btnChangePw'){
       changeOwnPassword();
     }else if(id === 'btnOpenUsers'){
@@ -4779,14 +4801,31 @@ function bindEvents(){
   $('#usersBody').addEventListener('click', async e=>{
     const b = e.target.closest('button[data-uact]');
     if(b){
-      const act = b.dataset.uact, uid = b.dataset.uid;
+      const act = b.dataset.uact, uid = b.dataset.uid, uemail = b.dataset.uemail;
       if(act === 'reset'){
         const pw = prompt('كلمة المرور الجديدة (6 أحرف فأكثر):');
-        if(pw && pw.length >= 6){ if(await userFn('resetPassword', {id:uid, password:pw})) toast('تم تصفير كلمة المرور'); }
+        if(pw && pw.length >= 6){ await userRpc('admin_reset_password', {p_email:uemail, p_password:pw}); }
       }else if(act === 'disable'){
-        if(confirm('إيقاف هذا المستخدم؟ لن يتمكن من الدخول.')){ await userFn('disableUser', {id:uid}); openUsersModal(); }
+        if(confirm('إيقاف هذا المستخدم؟ لن يتمكن من الدخول.')){ await userRpc('admin_set_banned', {p_email:uemail, p_banned:true}); openUsersModal(); }
       }else if(act === 'enable'){
-        await userFn('enableUser', {id:uid}); openUsersModal();
+        await userRpc('admin_set_banned', {p_email:uemail, p_banned:false}); openUsersModal();
+      }
+      return;
+    }
+    const copy = e.target.closest('#btnCopyCreds');
+    if(copy){
+      if(!lastCreatedUser) return;
+      const txt = 'بيانات الدخول للنظام:\nالبريد: ' + lastCreatedUser.email + '\nكلمة المرور: ' + lastCreatedUser.pw;
+      try{
+        await navigator.clipboard.writeText(txt);
+        toast('نُسخت بيانات الدخول — أرسلها للموظف');
+      }catch(e2){
+        const ta = document.createElement('textarea');
+        ta.value = txt;
+        document.body.appendChild(ta);
+        ta.select();
+        try{ document.execCommand('copy'); toast('نُسخت بيانات الدخول — أرسلها للموظف'); }catch(e3){ toast(txt); }
+        ta.remove();
       }
       return;
     }
@@ -4798,10 +4837,13 @@ function bindEvents(){
       add.disabled = true;
       const origTxt = add.textContent;
       add.textContent = 'جارٍ الإضافة…';
-      const ok = await userFn('createUser', {email, password:pw, role});
+      const r = await rpcCall('admin_create_user', {p_email:email, p_password:pw, p_role:role});
       add.disabled = false;
       add.textContent = origTxt;
-      if(ok){ toast('تمت إضافة المستخدم: ' + email + ' — يمكنه الدخول الآن بنفس البريد وكلمة المرور'); openUsersModal(); }
+      if(!r.ok){ toast('فشل: ' + rpcErrMsg(r), 'err'); return; }
+      lastCreatedUser = {email, pw};
+      toast('تمت إضافة المستخدم: ' + email + ' — يمكنه الدخول الآن بنفس البريد وكلمة المرور');
+      openUsersModal();
     }
   });
   $('#usersBody').addEventListener('change', async e=>{

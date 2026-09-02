@@ -14,18 +14,11 @@
 1. **Authentication ← Providers ← Email**: تأكد أنه Enabled
 2. **Authentication ← Sign In / Providers**: عطّل خيار *Confirm email* (ليتمكن المستخدم من الدخول فوراً بعد إضافة حسابه)
 
-## الخطوة 3: نشر دالة إدارة المستخدمين
-1. ثبّت Supabase CLI (مرة واحدة):
-   ```
-   npm i -g supabase
-   supabase login
-   supabase link --project-ref wlhmoxxbxhunnlqugkzv
-   ```
-2. من مجلد المشروع:
-   ```
-   supabase functions deploy manage-users
-   ```
-3. أو بدلاً من CLI: **Edge Functions ← Create** باسم `manage-users` والصق محتوى ملف `supabase/manage-users/index.ts`
+## الخطوة 3: إدارة المستخدمين (مدمجة في السكربت — لا خطوة إضافية)
+إدارة المستخدمين تعمل عبر دوال قاعدة البيانات (RPC) المضمّنة في نهاية `schema.sql`:
+- `admin_create_user` / `admin_list_users` / `admin_reset_password` / `admin_set_banned`
+- تُستدعى من التطبيق عبر REST مباشرة — **لا حاجة لأي Edge Functions**
+- إن كنت أعدت تشغيل السكربت يدوياً لاحقاً، تأكد من تنفيذ القسم 7 كاملاً (دوال RPC ومنح الأذونات)
 
 ## الخطوة 4: تفعيل النظام داخل التطبيق
 1. افتح التطبيق ← **النسخ الاحتياطي والإعدادات** ← بطاقة «الاتصال السحابي»
