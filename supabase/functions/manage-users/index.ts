@@ -65,19 +65,23 @@ Deno.serve(async (req) => {
       const password = String(body.password || "");
       const newRole = ALLOWED_ROLES.includes(body.role) ? body.role : "مطالع";
       if (!email || password.length < 6) {
-        return new Response(JSON.stringify({ ok: false, error: "invalid" }), { headers });
+        return new Response(JSON.stringify({ ok: false, error: "invalid_input", message: "بريد غير صالح أو كلمة مرور أقل من 6 أحرف" }), { headers });
       }
-      // لا يمنح دور المالك إلا المالك
       if (newRole === "مالك" && !isOwner) {
-        return new Response(JSON.stringify({ ok: false, error: "forbidden" }), { status: 403, headers });
+        return new Response(JSON.stringify({ ok: false, error: "forbidden", message: "منح دور المالك حصري للمالك الحالي" }), { status: 403, headers });
       }
       const { data, error } = await serviceClient.auth.admin.createUser({
         email,
         password,
         email_confirm: true,
       });
-      if (error) return new Response(JSON.stringify({ ok: false, error: error.message }), { headers });
-      await serviceClient.from("user_roles").upsert({ email, role: newRole });
+      if (error) {
+        return new Response(JSON.stringify({ ok: false, error: error.name || "create_failed", code: error.status, message: error.message }), { headers });
+      }
+      const { error: rErr } = await serviceClient.from("user_roles").upsert({ email, role: newRole });
+      if (rErr) {
+        return new Response(JSON.stringify({ ok: false, error: "role_failed", message: "أُنشئ الحساب لكن تعذر ربط الدور: " + rErr.message }), { headers });
+      }
       return new Response(JSON.stringify({ ok: true, id: data.user.id }), { headers });
     }
 
