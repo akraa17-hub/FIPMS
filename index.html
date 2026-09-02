@@ -4181,11 +4181,44 @@ async function openUsersModal(){
   $('#usersOverlay').classList.add('open');
   $('#usersBody').innerHTML = '<div class="hint">جارٍ التحميل…</div>';
   let list = [];
+  let invokeErr = null;
+  let rolesRows = [];
+  const diag = [];
+
   try{
-    const {data} = await sbClient.functions.invoke('manage-users', {body:{action:'listUsers'}});
-    list = data && Array.isArray(data.users) ? data.users : [];
-  }catch(e){}
+    const {data} = await sbClient.auth.getSession();
+    if(data && data.session){
+      diag.push({t:'الجلسة الحالية', ok:true, detail:(data.session.user && data.session.user.email) || ''});
+    }else{
+      diag.push({t:'الجلسة الحالية', ok:false, detail:'لا توجد جلسة — سجّل دخولك أولاً'});
+    }
+  }catch(e){ diag.push({t:'الجلسة الحالية', ok:false, detail:String(e?.message||e)}); }
+
+  try{
+    const {data, error} = await sbClient.from('user_roles').select('email, role').order('email');
+    if(error) diag.push({t:'قراءة جدول الأدوار مباشرة', ok:false, detail:error.message});
+    else{ rolesRows = data || []; diag.push({t:'قراءة جدول الأدوار مباشرة', ok:true, detail:rolesRows.length + ' صف'}); }
+  }catch(e){ diag.push({t:'قراءة جدول الأدوار مباشرة', ok:false, detail:String(e?.message||e)}); }
+
+  try{
+    const res = await sbClient.functions.invoke('manage-users', {body:{action:'listUsers'}});
+    const dd = res.data;
+    if(res.error) invokeErr = res.error.message || String(res.error);
+    else if(dd && dd.error) invokeErr = dd.error;
+    else if(dd && Array.isArray(dd.users)) list = dd.users;
+    diag.push(invokeErr ? {t:'استدعاء دالة manage-users', ok:false, detail:invokeErr} : {t:'استدعاء دالة manage-users', ok:true, detail:list.length + ' مستخدم'});
+  }catch(e){
+    invokeErr = String(e?.message||e);
+    diag.push({t:'استدعاء دالة manage-users', ok:false, detail:invokeErr});
+  }
+
+  if(!list.length && rolesRows.length){
+    list = rolesRows.map(r=>({id:'', email:r.email, role:r.role, banned:false, created_at:'', fallback:true}));
+  }
+
   const roleOptions = ['مالك','مشرف','محرر','مطالع'].map(r=>`<option value="${r}">${r}</option>`).join('');
+  const fallbackNote = list.length && list[0].fallback ? `<div class="hint" style="color:var(--amber-txt);font-weight:800;margin-bottom:8px">عرض احتياطي من جدول الأدوار (تعذر الوصول لدالة القائمة${invokeErr ? ': ' + esc(invokeErr) : ''}) — بعض الإجراءات (تصفير كلمة المرور/الإيقاف) غير متاحة في هذا العرض.</div>` : '';
+  const diagHtml = `<div style="margin-top:10px;border-top:1px dashed var(--border2);padding-top:8px">` + diag.map(d=>`<div class="hint" style="color:${d.ok ? 'var(--ok-txt)' : 'var(--danger-txt)'};margin-bottom:3px">• ${esc(d.t)}: ${d.ok ? 'ناجح' : 'فشل'} — ${esc(d.detail || '')}</div>`).join('') + `</div>`;
   $('#usersBody').innerHTML = `
     <fieldset class="fset"><legend>إضافة مستخدم جديد</legend>
       <div class="fgrid" style="grid-template-columns:repeat(4,1fr)">
@@ -4196,16 +4229,18 @@ async function openUsersModal(){
       </div>
       <div class="hint" style="margin-top:8px">كلمة المرور 6 أحرف فأكثر، وسيتمكن المستخدم من تسجيل الدخول فوراً بنفس البريد وكلمة المرور من شاشة الدخول.</div>
     </fieldset>
-    <div style="overflow:auto;max-height:320px"><table class="rpt"><thead><tr><th>البريد</th><th>الدور</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+    ${fallbackNote}
+    <div style="overflow:auto;max-height:300px"><table class="rpt"><thead><tr><th>البريد</th><th>الدور</th><th>الحالة</th><th>إجراءات</th></tr></thead>
     <tbody>${list.length ? list.map(u=>`<tr>
       <td>${esc(u.email || '')}</td>
       <td><select class="b-filter-sel" data-uemail="${esc(u.email||'')}">${['مالك','مشرف','محرر','مطالع','بدون دور'].map(r=>`<option value="${r}" ${r === u.role ? 'selected' : ''}>${r}</option>`).join('')}</select></td>
-      <td>${u.banned ? '<span class="badge b-danger">موقوف</span>' : '<span class="badge b-ok">نشط</span>'}</td>
+      <td>${u.fallback ? '<span class="badge b-slate">غير معروف</span>' : (u.banned ? '<span class="badge b-danger">موقوف</span>' : '<span class="badge b-ok">نشط</span>')}</td>
       <td><div class="tax-log-actions">
-        <button class="btn btn-soft btn-xs" data-uact="reset" data-uid="${esc(u.id||'')}" data-uemail="${esc(u.email||'')}" title="تصفير كلمة المرور">تصفير كلمة المرور</button>
-        ${u.banned ? `<button class="btn btn-ok btn-xs" data-uact="enable" data-uid="${esc(u.id||'')}" title="تفعيل">تفعيل</button>` : `<button class="btn btn-danger btn-xs" data-uact="disable" data-uid="${esc(u.id||'')}" title="إيقاف">إيقاف</button>`}
+        ${u.fallback ? '' : `<button class="btn btn-soft btn-xs" data-uact="reset" data-uid="${esc(u.id||'')}" data-uemail="${esc(u.email||'')}" title="تصفير كلمة المرور">تصفير كلمة المرور</button>`}
+        ${u.fallback ? '' : (u.banned ? `<button class="btn btn-ok btn-xs" data-uact="enable" data-uid="${esc(u.id||'')}" title="تفعيل">تفعيل</button>` : `<button class="btn btn-danger btn-xs" data-uact="disable" data-uid="${esc(u.id||'')}" title="إيقاف">إيقاف</button>`)}
       </div></td>
-    </tr>`).join('') : '<tr><td colspan="4"><div class="hint">لا يوجد مستخدمون بعد — أضف أول مستخدم، أو تأكد من نشر دالة manage-users</div></td></tr>'}</tbody></table></div>`;
+    </tr>`).join('') : `<tr><td colspan="4"><div class="hint">لا يوجد مستخدمون بعد — أضف أول مستخدم من النموذج أعلاه${invokeErr ? '<br><span style="color:var(--danger-txt)">خطأ القائمة: ' + esc(invokeErr) + '</span>' : ''}</div></td></tr>`}</tbody></table></div>
+    ${diagHtml}`;
 }
 async function userFn(action, body){
   try{
