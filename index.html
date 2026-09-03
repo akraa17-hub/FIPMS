@@ -336,6 +336,10 @@ body.dense table.reg{font-size:.76rem}
 .pd-tax .pd-notes b{color:#1e40af}
 .pd-tax .pd-note{color:#1e3a8a;border-bottom-color:#bfdbfe}
 .pd-tax .pd-note-at{color:#3b82f6}
+.pd-navy .pd-band{background:linear-gradient(135deg,#0f172a,#1e3a5f)}
+.pd-navy .pd-table th{background:#1e3a5f;border-color:#0f172a}
+.pd-navy .pd-table tbody tr:nth-child(even) td{background:#f1f5f9}
+.pd-navy .pd-table tfoot td{background:#e2e8f0;color:#0f172a;border-color:#cbd5e1}
 
 /* ===== Report Builder ===== */
 .builder-grid{display:grid;grid-template-columns:400px minmax(0,1fr);gap:16px;align-items:start}
@@ -699,6 +703,22 @@ body.dense table.reg{font-size:.76rem}
           <div class="kpis" id="regLogKpis" style="margin:16px 20px 0"></div>
           <div class="card-b flush" style="overflow:auto"><table class="rpt" id="regLogTbl"></table></div>
         </div>
+        <div class="card" style="margin-top:16px" id="opsCard">
+          <div class="card-h">
+            <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-8"/></svg>تقرير العمليات اليومي للإدارة
+              <span class="sub" id="opsCount"></span>
+            </h3>
+            <div class="report-actions">
+              <div class="field" style="flex-direction:row;align-items:center;gap:6px"><label>من</label><input type="date" id="opsFrom" style="border:1px solid var(--border2);border-radius:9px;padding:6px 9px;font-size:.8rem;background:#fff"></div>
+              <div class="field" style="flex-direction:row;align-items:center;gap:6px"><label>إلى</label><input type="date" id="opsTo" style="border:1px solid var(--border2);border-radius:9px;padding:6px 9px;font-size:.8rem;background:#fff"></div>
+              <button class="btn btn-primary btn-sm" id="btnOpsGen">إنشاء التقرير</button>
+              <button class="btn btn-soft btn-sm" id="btnOpsExcel">إكسل</button>
+              <button class="btn btn-soft btn-sm" id="btnOpsPdf">PDF</button>
+              <button class="btn btn-soft btn-sm" id="btnOpsPng">صورة</button>
+            </div>
+          </div>
+          <div class="card-b flush" style="overflow:auto" id="opsWrap"></div>
+        </div>
       </section>
 
       <!-- ===== Report Builder ===== -->
@@ -981,7 +1001,7 @@ body.dense table.reg{font-size:.76rem}
             <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></svg>حالات متابعة ضريبة التصرفات</h3>
           </div>
           <div class="card-b">
-            <div class="hint" style="margin-bottom:10px">الحالات النظامية لمسار طلب الضريبة: تم الطلب من بلوم ← تم اصدار الضريبة. يمكن إضافة حالات مخصصة بألوانها.</div>
+            <div class="hint" style="margin-bottom:10px">الحالات النظامية لمسار طلب الضريبة: تم الطلب من بلوم ← تم اصدار الضريبة ← تم سداد الضريبة. يمكن إضافة حالات مخصصة بألوانها.</div>
             <div class="st-chips" id="taxSysStatuses"></div>
             <div class="hint" style="margin-bottom:8px">حالات مخصصة:</div>
             <div class="st-chips" id="taxCustomStatuses"></div>
@@ -1848,6 +1868,7 @@ function renderReports(){
   }
   renderTaxLog();
   renderRegLog();
+  renderOpsReport();
 }
 
 /* ===== Backup view ===== */
@@ -2842,7 +2863,8 @@ const TAX_PREFS_KEY = 'lands_tax_prefs_v1';
 const TAX_TRACK_STATUSES_KEY = 'lands_tax_statuses_v1';
 const TAX_SYSTEM_TRACK = [
   {name:'تم الطلب من بلوم', color:'#f59e0b'},
-  {name:'تم اصدار الضريبة', color:'#10b981'}
+  {name:'تم اصدار الضريبة', color:'#3b82f6'},
+  {name:'تم سداد الضريبة', color:'#10b981'}
 ];
 const TAX_EXTRA_POOL = ['block','landType','oldLandNo','clientName','clientType','via','contractNo','contractType','contractSigned','addendum','addendumSigned','firstPayment','transferPayment','transferDate','status'];
 let taxLog = [];
@@ -2888,7 +2910,7 @@ function taxEntryStatusCounts(e){
 function taxLogEntryBadge(e){
   const m = taxEntryStatusCounts(e);
   const total = (e.plots || []).length;
-  const done = m.get('تم اصدار الضريبة') || 0;
+  const done = m.get('تم سداد الضريبة') || 0;
   const chips = [...m.entries()].map(([s,n])=>`<span class="badge" style="background:${rgba(taxTrackColor(s),.13)};color:${taxTrackColor(s)}">${esc(s)} ×${n}</span>`).join(' ');
   const doneChip = total && done === total ? `<span class="badge b-ok"><span class="b-dot"></span>مكتمل</span>` : '';
   return `<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">${chips}${doneChip}</div>`;
@@ -2896,7 +2918,7 @@ function taxLogEntryBadge(e){
 function taxTrackSummaryHtml(e){
   const m = taxEntryStatusCounts(e);
   const total = (e.plots || []).length;
-  const done = m.get('تم اصدار الضريبة') || 0;
+  const done = m.get('تم سداد الضريبة') || 0;
   const chips = [...m.entries()].map(([s,n])=>`<span class="badge" style="background:${rgba(taxTrackColor(s),.13)};color:${taxTrackColor(s)}"><span class="b-dot" style="background:${taxTrackColor(s)}"></span>${esc(s)} ×${n}</span>`).join(' ');
   const doneChip = total && done === total ? `<span class="badge b-ok"><span class="b-dot"></span>مكتمل ${done}/${total}</span>` : '';
   return `<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:#f1f5f9;border:1px solid var(--border);border-radius:11px;padding:10px 14px;font-weight:700;font-size:.84rem"><span>إجمالي القطع: ${total}</span>${chips}${doneChip}</div>`;
@@ -2988,7 +3010,7 @@ function buildTaxPrintDoc(meta, plots, extraCols){
   const tArea = rows.reduce((s,r)=>s+(r.area||0),0);
   const tVal = rows.reduce((s,r)=>s+(r.value||0),0);
   const tTax = rows.reduce((s,r)=>s+(r.tax||0),0);
-  const allDone = plots.length > 0 && plots.every(p=>(p.trackStatus || 'تم الطلب من بلوم') === 'تم اصدار الضريبة');
+  const allDone = plots.length > 0 && plots.every(p=>(p.trackStatus || 'تم الطلب من بلوم') === 'تم سداد الضريبة');
   const tfoot = `<tr><td colspan="4" style="text-align:end;font-weight:800">الإجمالي — ${rows.length} قطعة · المساحة ${fmtMoney.format(tArea)} م²</td><td class="num">${fmtMoney.format(tArea)}</td><td></td><td class="num">${fmtMoney.format(tVal)}</td><td class="num">${fmtMoney.format(tTax)}</td>${cols.slice(9, -1).map(()=>'<td></td>').join('')}<td style="text-align:center;font-weight:800">${allDone ? '<span style="color:#065f46">مكتمل</span>' : ''}</td></tr>`;
   const general = Array.isArray(meta.notes) && meta.notes.length ? meta.notes.map(n=>`<div class="pd-note">• ${esc(n.text || '')} <span class="pd-note-at">(${esc(n.at || '')})</span></div>`).join('') : '';
   const plotNotes = plots.filter(p=>(p.notes||[]).length).map(p=>`<div class="pd-note"><b>قطعة ${esc(p.landNo || '—')}:</b> ${(p.notes||[]).map(n=>esc(n.text || '') + ' <span class="pd-note-at">(' + esc(n.at || '') + ')</span>').join(' · ')}</div>`).join('');
@@ -4535,6 +4557,117 @@ async function saveRolePermissions(name){
   openRolesModal();
 }
 
+/* ===== Ops report (تقرير العمليات اليومي للإدارة) ===== */
+let opsRows = [];
+function opsData(){
+  const taxMap = new Map();
+  const regMap = new Map();
+  for(const e of taxLog){
+    for(const pl of (e.plots || [])){
+      const key = pl.rec && pl.rec.id != null ? String(pl.rec.id) : String(pl.block) + '|' + String(pl.landNo);
+      const cur = taxMap.get(key);
+      if(!cur || (e.issueNo || 0) > (cur.issueNo || 0)) taxMap.set(key, {status: pl.trackStatus || 'تم الطلب من بلوم', date: e.date || '', issueNo: e.issueNo || 0});
+    }
+  }
+  for(const e of regLog){
+    for(const pl of (e.plots || [])){
+      const key = pl.rec && pl.rec.id != null ? String(pl.rec.id) : String(pl.block) + '|' + String(pl.landNo);
+      const cur = regMap.get(key);
+      if(!cur || (e.issueNo || 0) > (cur.issueNo || 0)) regMap.set(key, {status: pl.trackStatus || 'تم الطلب', date: e.date || '', issueNo: e.issueNo || 0});
+    }
+  }
+  return {taxMap, regMap};
+}
+function buildOpsReport(from, to){
+  const {taxMap, regMap} = opsData();
+  const rows = [];
+  for(const r of records){
+    const key = String(r.id);
+    const tax = taxMap.get(key);
+    const reg = regMap.get(key);
+    const transfer = r.transferDate;
+    let inPeriod = false;
+    if(tax && tax.date >= from && tax.date <= to) inPeriod = true;
+    if(reg && reg.date >= from && reg.date <= to) inPeriod = true;
+    if(transfer && transfer >= from && transfer <= to) inPeriod = true;
+    if(!inPeriod) continue;
+    const dates = [tax && tax.date, reg && reg.date, transfer].filter(Boolean);
+    let lastOpDate = '';
+    if(dates.length) lastOpDate = dates.slice().sort().pop();
+    rows.push({
+      id: r.id, block: r.block, landNo: r.landNo, buyer: r.clientName || '',
+      regStatus: reg ? reg.status : '', taxStatus: tax ? tax.status : '',
+      transfer: transfer || '', value: r.value, lastOpDate
+    });
+  }
+  rows.sort((a,b)=> compareLand(a.landNo, b.landNo) || ((parseFloat(a.block)||0) - (parseFloat(b.block)||0)));
+  return rows;
+}
+function renderOpsReport(){
+  const from = $('#opsFrom').value || todayStr();
+  const to = $('#opsTo').value || todayStr();
+  opsRows = buildOpsReport(from, to);
+  $('#opsCount').textContent = opsRows.length ? `(${opsRows.length} قطعة)` : '';
+  const tVal = opsRows.reduce((s,r)=>s+(r.value||0),0);
+  const wrap = $('#opsWrap');
+  if(!wrap) return;
+  if(!opsRows.length){
+    wrap.innerHTML = `<div class="empty-state"><h4>لا توجد عمليات في الفترة المحددة</h4><p>جرّب توسيع النطاق الزمني (من ← إلى)</p></div>`;
+    return;
+  }
+  wrap.innerHTML = `<table class="preview-tbl"><thead><tr><th>#</th><th>البلك</th><th>رقم القطعة</th><th>المشتري</th><th>آخر حالة تسجيل عيني</th><th>آخر حالة ضريبة تصرفات</th><th>الإفراغ</th><th>القيمة (ر.س)</th><th>تاريخ آخر عملية</th></tr></thead>
+  <tbody>${opsRows.map((r,i)=>`<tr>
+    <td class="num">${i+1}</td>
+    <td class="num">${esc(r.block || '—')}</td>
+    <td class="num">${esc(r.landNo || '—')}</td>
+    <td>${r.buyer ? esc(r.buyer) : `<div style="display:flex;gap:6px;align-items:center"><input type="text" class="ops-buyer-input" data-oid="${r.id}" placeholder="سجّل المشتري…" style="border:1px solid var(--border2);border-radius:7px;padding:4px 8px;font-size:.76rem;width:140px;background:#fff"><button class="btn btn-ok btn-xs ops-buyer-save" data-oid="${r.id}">حفظ</button></div>`}</td>
+    <td>${r.regStatus ? regTrackBadge(r.regStatus) : '<span class="badge b-slate">—</span>'}</td>
+    <td>${r.taxStatus ? taxTrackBadge(r.taxStatus) : '<span class="badge b-slate">—</span>'}</td>
+    <td>${r.transfer ? `<span class="badge b-ok"><span class="b-dot"></span>${esc(r.transfer)}</span>` : '<span class="badge b-slate">—</span>'}</td>
+    <td class="num">${money2(r.value)}</td>
+    <td class="num">${esc(r.lastOpDate || '—')}</td>
+  </tr>`).join('')}</tbody>
+  <tfoot><tr><td colspan="7">الإجمالي — ${opsRows.length} قطعة</td><td class="num">${fmtMoney.format(tVal)}</td><td></td></tr></tfoot></table>`;
+}
+function buildOpsPrintDoc(){
+  const from = $('#opsFrom').value || todayStr();
+  const to = $('#opsTo').value || todayStr();
+  const tVal = opsRows.reduce((s,r)=>s+(r.value||0),0);
+  const div = document.createElement('div');
+  div.className = 'print-doc pd-navy';
+  div.innerHTML = `
+    <div class="pd-band"><h2>تقرير العمليات اليومي للإدارة</h2><span class="pd-no">الفترة: ${esc(from)} ← ${esc(to)}</span></div>
+    <div class="pd-meta">
+      <span class="pd-item">تاريخ الإصدار: ${esc(todayStr())}</span>
+      <span class="pd-item">عدد القطع: ${opsRows.length}</span>
+      <span class="pd-item">إجمالي القيمة: ${fmtMoney.format(tVal)} ر.س</span>
+    </div>
+    <table class="pd-table"><thead><tr><th>#</th><th>البلك</th><th>رقم القطعة</th><th>المشتري</th><th>آخر حالة تسجيل عيني</th><th>آخر حالة ضريبة تصرفات</th><th>الإفراغ</th><th>القيمة (ر.س)</th><th>تاريخ آخر عملية</th></tr></thead>
+    <tbody>${opsRows.map((r,i)=>`<tr><td class="num">${i+1}</td><td class="num">${esc(r.block||'—')}</td><td class="num">${esc(r.landNo||'—')}</td><td>${esc(r.buyer||'—')}</td><td>${esc(r.regStatus||'—')}</td><td>${esc(r.taxStatus||'—')}</td><td class="num">${esc(r.transfer||'—')}</td><td class="num">${fmtMoney.format(r.value||0)}</td><td class="num">${esc(r.lastOpDate||'—')}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="7">الإجمالي — ${opsRows.length} قطعة</td><td class="num">${fmtMoney.format(tVal)}</td><td></td></tr></tfoot></table>
+    <div class="pd-credit">أُصدر بواسطة نظام متابعة الأراضي — ${todayAr()}</div>`;
+  document.body.appendChild(div);
+  return div;
+}
+function exportOpsExcel(){
+  if(!opsRows.length){ toast('لا توجد نتائج في الفترة المحددة', 'warn'); return; }
+  exportExcelRows(opsRows.map(r=>({block:r.block, landNo:r.landNo, buyer:r.buyer||'—', regStatus:r.regStatus||'—', taxStatus:r.taxStatus||'—', transfer:r.transfer||'—', value:r.value, lastOpDate:r.lastOpDate||'—'})), [
+    {k:'block',t:'البلك'},{k:'landNo',t:'رقم القطعة'},{k:'buyer',t:'المشتري'},{k:'regStatus',t:'آخر حالة تسجيل عيني'},{k:'taxStatus',t:'آخر حالة ضريبة تصرفات'},{k:'transfer',t:'الإفراغ'},{k:'value',t:'القيمة (ر.س)'},{k:'lastOpDate',t:'تاريخ آخر عملية'}
+  ], 'تقرير العمليات', 'تقرير-العمليات-اليومي', null, ['value']);
+}
+function exportOpsPdf(){
+  if(!opsRows.length){ toast('لا توجد نتائج في الفترة المحددة', 'warn'); return; }
+  if(!checkLib('jspdf') || !checkLib('html2canvas')) return;
+  const doc = buildOpsPrintDoc();
+  doExportPdf(doc, 'تقرير-العمليات-اليومي').then(()=>doc.remove());
+}
+function exportOpsPng(){
+  if(!opsRows.length){ toast('لا توجد نتائج في الفترة المحددة', 'warn'); return; }
+  if(!checkLib('html2canvas')) return;
+  const doc = buildOpsPrintDoc();
+  doExportPng(doc, 'تقرير-العمليات-اليومي').then(()=>doc.remove());
+}
+
 /* ===== Navigation / init ===== */
 function switchView(name){
   state.view = name;
@@ -5004,6 +5137,24 @@ function bindEvents(){
     $('#authOverlay').classList.add('open');
   });
 
+  /* ===== Ops report events ===== */
+  $('#btnOpsGen').addEventListener('click', renderOpsReport);
+  $('#opsFrom').addEventListener('change', renderOpsReport);
+  $('#opsTo').addEventListener('change', renderOpsReport);
+  $('#btnOpsExcel').addEventListener('click', exportOpsExcel);
+  $('#btnOpsPdf').addEventListener('click', exportOpsPdf);
+  $('#btnOpsPng').addEventListener('click', exportOpsPng);
+  $('#opsWrap').addEventListener('click', e=>{
+    const b = e.target.closest('.ops-buyer-save');
+    if(!b) return;
+    const id = +b.dataset.oid;
+    const inp = b.parentElement.querySelector('input');
+    const name = inp.value.trim();
+    if(!name){ toast('اكتب اسم المشتري أولاً', 'err'); return; }
+    const r = records.find(x=>x.id === id);
+    if(r){ r.clientName = name; save(); renderAll(); renderOpsReport(); toast('تم تسجيل المشتري: ' + name); }
+  });
+
   /* ===== Cloud events ===== */
   $('#cloudCardBody').addEventListener('click', e=>{
     const b = e.target.closest('button');
@@ -5364,6 +5515,8 @@ refreshFilterOptions();
 renderAll();
 switchView('dashboard');
 $('#todayChip').textContent = todayAr();
+$('#opsFrom').value = todayStr();
+$('#opsTo').value = todayStr();
 try{ if(localStorage.getItem('fipms_density_v1') === '1') document.body.classList.add('dense'); }catch(e){}
 initCloudSession();
 showLoginGate();
