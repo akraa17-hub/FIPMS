@@ -371,6 +371,8 @@ body.dense table.reg{font-size:.76rem}
 .preview-tbl .p-group td{background:#eef4ff;font-weight:800;color:#1e40af;padding:8px 12px;font-size:.8rem;border-top:2px solid #bfdbfe}
 .preview-tbl .p-group .g-meta{font-weight:500;color:#475569;font-size:.74rem;margin-inline-start:12px}
 .preview-tbl tfoot td{position:sticky;bottom:0;background:#eef4ff;font-weight:800;color:#1e40af;padding:10px 11px;border-top:2px solid #bfdbfe}
+.ops-tbl tfoot td{position:static}
+.ops-tbl tfoot tr.tr-row td{background:#d1fae5;color:#065f46;border-top:1px solid #a7f3d0}
 
 /* ===== Status manager ===== */
 .st-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
@@ -4615,13 +4617,15 @@ function renderOpsReport(){
   opsRows = buildOpsReport(from, to);
   $('#opsCount').textContent = opsRows.length ? `(${opsRows.length} قطعة)` : '';
   const tVal = opsRows.reduce((s,r)=>s+(r.value||0),0);
+  const tTr = opsRows.filter(r=>r.transfer);
+  const tTrVal = tTr.reduce((s,r)=>s+(r.value||0),0);
   const wrap = $('#opsWrap');
   if(!wrap) return;
   if(!opsRows.length){
     wrap.innerHTML = `<div class="empty-state"><h4>لا توجد عمليات في الفترة المحددة</h4><p>جرّب توسيع النطاق الزمني (من ← إلى)</p></div>`;
     return;
   }
-  wrap.innerHTML = `<table class="preview-tbl"><thead><tr><th>#</th><th>البلك</th><th>رقم القطعة</th><th>المشتري</th><th>آخر حالة تسجيل عيني</th><th>آخر حالة ضريبة تصرفات</th><th>الإفراغ</th><th>القيمة (ر.س)</th><th>تاريخ آخر عملية</th></tr></thead>
+  wrap.innerHTML = `<table class="preview-tbl ops-tbl"><thead><tr><th>#</th><th>البلك</th><th>رقم القطعة</th><th>المشتري</th><th>آخر حالة تسجيل عيني</th><th>آخر حالة ضريبة تصرفات</th><th>الإفراغ</th><th>القيمة (ر.س)</th><th>تاريخ آخر عملية</th></tr></thead>
   <tbody>${opsRows.map((r,i)=>`<tr>
     <td class="num">${i+1}</td>
     <td class="num">${esc(r.block || '—')}</td>
@@ -4633,12 +4637,15 @@ function renderOpsReport(){
     <td class="num">${money2(r.value)}</td>
     <td class="num">${esc(r.lastOpDate || '—')}</td>
   </tr>`).join('')}</tbody>
-  <tfoot><tr><td colspan="7">الإجمالي — ${opsRows.length} قطعة</td><td class="num">${fmtMoney.format(tVal)}</td><td></td></tr></tfoot></table>`;
+  <tfoot><tr><td colspan="7">الإجمالي — ${opsRows.length} قطعة</td><td class="num">${fmtMoney.format(tVal)}</td><td></td></tr>
+  <tr class="tr-row"><td colspan="7">إجمالي الإفراغات — ${tTr.length} قطعة مفرغة</td><td class="num">${fmtMoney.format(tTrVal)}</td><td></td></tr></tfoot></table>`;
 }
 function buildOpsPrintDoc(){
   const from = $('#opsFrom').value || todayStr();
   const to = $('#opsTo').value || todayStr();
   const tVal = opsRows.reduce((s,r)=>s+(r.value||0),0);
+  const tTr = opsRows.filter(r=>r.transfer);
+  const tTrVal = tTr.reduce((s,r)=>s+(r.value||0),0);
   const div = document.createElement('div');
   div.className = 'print-doc pd-navy';
   div.innerHTML = `
@@ -4647,17 +4654,25 @@ function buildOpsPrintDoc(){
       <span class="pd-item">تاريخ الإصدار: ${esc(todayStr())}</span>
       <span class="pd-item">عدد القطع: ${opsRows.length}</span>
       <span class="pd-item">إجمالي القيمة: ${fmtMoney.format(tVal)} ر.س</span>
+      <span class="pd-item" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0">إجمالي الإفراغات: ${fmtMoney.format(tTrVal)} ر.س (${tTr.length} قطعة)</span>
     </div>
     <table class="pd-table"><thead><tr><th>#</th><th>البلك</th><th>رقم القطعة</th><th>المشتري</th><th>آخر حالة تسجيل عيني</th><th>آخر حالة ضريبة تصرفات</th><th>الإفراغ</th><th>القيمة (ر.س)</th><th>تاريخ آخر عملية</th></tr></thead>
     <tbody>${opsRows.map((r,i)=>`<tr><td class="num">${i+1}</td><td class="num">${esc(r.block||'—')}</td><td class="num">${esc(r.landNo||'—')}</td><td>${esc(r.buyer||'—')}</td><td>${esc(r.regStatus||'—')}</td><td>${esc(r.taxStatus||'—')}</td><td class="num">${esc(r.transfer||'—')}</td><td class="num">${fmtMoney.format(r.value||0)}</td><td class="num">${esc(r.lastOpDate||'—')}</td></tr>`).join('')}</tbody>
-    <tfoot><tr><td colspan="7">الإجمالي — ${opsRows.length} قطعة</td><td class="num">${fmtMoney.format(tVal)}</td><td></td></tr></tfoot></table>
+    <tfoot><tr><td colspan="7">الإجمالي — ${opsRows.length} قطعة</td><td class="num">${fmtMoney.format(tVal)}</td><td></td></tr>
+    <tr style="background:#d1fae5"><td colspan="7" style="color:#065f46;font-weight:800">إجمالي الإفراغات — ${tTr.length} قطعة مفرغة</td><td class="num" style="color:#065f46;font-weight:800">${fmtMoney.format(tTrVal)}</td><td></td></tr></tfoot></table>
     <div class="pd-credit">أُصدر بواسطة نظام متابعة الأراضي — ${todayAr()}</div>`;
   document.body.appendChild(div);
   return div;
 }
 function exportOpsExcel(){
   if(!opsRows.length){ toast('لا توجد نتائج في الفترة المحددة', 'warn'); return; }
-  exportExcelRows(opsRows.map(r=>({block:r.block, landNo:r.landNo, buyer:r.buyer||'—', regStatus:r.regStatus||'—', taxStatus:r.taxStatus||'—', transfer:r.transfer||'—', value:r.value, lastOpDate:r.lastOpDate||'—'})), [
+  const tVal = opsRows.reduce((s,r)=>s+(r.value||0),0);
+  const tTr = opsRows.filter(r=>r.transfer);
+  const tTrVal = tTr.reduce((s,r)=>s+(r.value||0),0);
+  const rows = opsRows.map(r=>({block:r.block, landNo:r.landNo, buyer:r.buyer||'—', regStatus:r.regStatus||'—', taxStatus:r.taxStatus||'—', transfer:r.transfer||'—', value:r.value, lastOpDate:r.lastOpDate||'—'}));
+  rows.push({block:'الإجمالي الكلي', landNo:'', buyer:'', regStatus:'', taxStatus:'', transfer:opsRows.length + ' قطعة', value:tVal, lastOpDate:''});
+  rows.push({block:'إجمالي الإفراغات', landNo:'', buyer:'', regStatus:'', taxStatus:'', transfer:tTr.length + ' قطعة مفرغة', value:tTrVal, lastOpDate:''});
+  exportExcelRows(rows, [
     {k:'block',t:'البلك'},{k:'landNo',t:'رقم القطعة'},{k:'buyer',t:'المشتري'},{k:'regStatus',t:'آخر حالة تسجيل عيني'},{k:'taxStatus',t:'آخر حالة ضريبة تصرفات'},{k:'transfer',t:'الإفراغ'},{k:'value',t:'القيمة (ر.س)'},{k:'lastOpDate',t:'تاريخ آخر عملية'}
   ], 'تقرير العمليات', 'تقرير-العمليات-اليومي', null, ['value']);
 }
