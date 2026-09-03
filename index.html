@@ -236,6 +236,12 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
 .f-chip button{width:16px;height:16px;border-radius:50%;border:none;background:rgba(37,99,235,.15);color:var(--primary-d);cursor:pointer;font-size:.7rem;line-height:1;display:inline-flex;align-items:center;justify-content:center}
 .f-chip button:hover{background:var(--primary);color:#fff}
 .f-count{background:var(--primary);color:#fff;border-radius:99px;font-size:.66rem;font-weight:800;padding:0 6px;margin-inline-start:4px}
+.switch-lbl{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;font-weight:700;color:var(--text);cursor:pointer;user-select:none}
+.switch-track{width:36px;height:20px;border-radius:99px;background:#cbd5e1;position:relative;transition:background .18s;flex:none}
+.switch-thumb{position:absolute;top:2px;inset-inline-start:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .18s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.switch-lbl input{display:none}
+.switch-lbl input:checked + .switch-track{background:var(--ok)}
+.switch-lbl input:checked + .switch-track .switch-thumb{transform:translateX(-16px)}
 
 /* ===== Accordion (settings) ===== */
 .acc{display:flex;flex-direction:column;gap:14px}
@@ -711,6 +717,11 @@ body.dense table.reg{font-size:.76rem}
               <span class="sub" id="opsCount"></span>
             </h3>
             <div class="report-actions">
+              <label class="switch-lbl" title="عرض القطع المفرغة فقط بثلاثة أعمدة">
+                <input type="checkbox" id="opsOnlyTr">
+                <span class="switch-track"><span class="switch-thumb"></span></span>
+                عرض المفرغة فقط
+              </label>
               <div class="field" style="flex-direction:row;align-items:center;gap:6px"><label>من</label><input type="date" id="opsFrom" style="border:1px solid var(--border2);border-radius:9px;padding:6px 9px;font-size:.8rem;background:#fff"></div>
               <div class="field" style="flex-direction:row;align-items:center;gap:6px"><label>إلى</label><input type="date" id="opsTo" style="border:1px solid var(--border2);border-radius:9px;padding:6px 9px;font-size:.8rem;background:#fff"></div>
               <button class="btn btn-primary btn-sm" id="btnOpsGen">إنشاء التقرير</button>
@@ -2162,7 +2173,7 @@ function exportReportPNG(elId){
   if(!el) return;
   doExportPng(el, 'تقرير-الأراضي');
 }
-async function doExportPdf(el, name){
+async function doExportPdf(el, name, scale){
   if(!can('export')){ toast('ليست لديك صلاحية التصدير', 'err'); return; }
   busy(true, 'جارٍ إنشاء ملف PDF…');
   try{
@@ -2177,7 +2188,7 @@ async function doExportPdf(el, name){
     clone.style.padding = '22px';
     document.body.appendChild(clone);
     const trs = Array.from(clone.querySelectorAll('tr'));
-    const canvas = await html2canvas(clone, {scale:2, backgroundColor:'#ffffff', useCORS:true});
+    const canvas = await html2canvas(clone, {scale: scale || 2, backgroundColor:'#ffffff', useCORS:true});
     clone.remove();
     const {jsPDF} = window.jspdf;
     const pdf = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
@@ -2213,12 +2224,12 @@ async function doExportPdf(el, name){
   }
   busy(false);
 }
-async function doExportPng(el, name){
+async function doExportPng(el, name, scale){
   if(!can('export')){ toast('ليست لديك صلاحية التصدير', 'err'); return; }
   busy(true, 'جارٍ إنشاء الصورة…');
   try{
     if(document.fonts && document.fonts.load){ try{ await Promise.all([document.fonts.load('800 16px Cairo'), document.fonts.load('700 16px Cairo'), document.fonts.load('400 16px Cairo')]); }catch(e){} }
-    const canvas = await html2canvas(el, {scale:2, backgroundColor:'#ffffff', useCORS:true});
+    const canvas = await html2canvas(el, {scale: scale || 2, backgroundColor:'#ffffff', useCORS:true});
     const a = document.createElement('a');
     a.download = `${name}-${todayStr()}.png`;
     a.href = canvas.toDataURL('image/png');
@@ -4557,6 +4568,10 @@ async function saveRolePermissions(name){
 
 /* ===== Ops report (تقرير العمليات اليومي للإدارة) ===== */
 let opsRows = [];
+let opsOnlyTr = false;
+function opsActiveRows(){
+  return opsOnlyTr ? opsRows.filter(r=>r.transfer) : opsRows;
+}
 function opsData(){
   const taxMap = new Map();
   const regMap = new Map();
@@ -4611,12 +4626,25 @@ function renderOpsReport(){
   const from = $('#opsFrom').value || todayStr();
   const to = $('#opsTo').value || todayStr();
   opsRows = buildOpsReport(from, to);
+  const wrap = $('#opsWrap');
+  if(!wrap) return;
+  if(opsOnlyTr){
+    const rows = opsActiveRows();
+    const tVal = rows.reduce((s,r)=>s+(r.value||0),0);
+    $('#opsCount').textContent = rows.length ? `(${rows.length} قطعة مفرغة)` : '';
+    if(!rows.length){
+      wrap.innerHTML = `<div class="empty-state"><h4>لا توجد إفراغات في الفترة المحددة</h4><p>جرّب توسيع النطاق الزمني (من ← إلى)</p></div>`;
+      return;
+    }
+    wrap.innerHTML = `<table class="preview-tbl ops-tbl"><thead><tr><th>رقم القطعة</th><th>القيمة (ر.س)</th><th>تاريخ الإفراغ</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td class="num">${esc(r.landNo || '—')}</td><td class="num">${money2(r.value)}</td><td class="num">${esc(r.transfer || '—')}</td></tr>`).join('')}</tbody>
+    <tfoot><tr class="tr-row"><td>الإجمالي — ${rows.length} قطعة مفرغة</td><td class="num">${fmtMoney.format(tVal)}</td><td></td></tr></tfoot></table>`;
+    return;
+  }
   $('#opsCount').textContent = opsRows.length ? `(${opsRows.length} قطعة)` : '';
   const tVal = opsRows.reduce((s,r)=>s+(r.value||0),0);
   const tTr = opsRows.filter(r=>r.transfer);
   const tTrVal = tTr.reduce((s,r)=>s+(r.value||0),0);
-  const wrap = $('#opsWrap');
-  if(!wrap) return;
   if(!opsRows.length){
     wrap.innerHTML = `<div class="empty-state"><h4>لا توجد عمليات في الفترة المحددة</h4><p>جرّب توسيع النطاق الزمني (من ← إلى)</p></div>`;
     return;
@@ -4639,11 +4667,27 @@ function renderOpsReport(){
 function buildOpsPrintDoc(){
   const from = $('#opsFrom').value || todayStr();
   const to = $('#opsTo').value || todayStr();
-  const tVal = opsRows.reduce((s,r)=>s+(r.value||0),0);
-  const tTr = opsRows.filter(r=>r.transfer);
+  const rows = opsActiveRows();
+  const tVal = rows.reduce((s,r)=>s+(r.value||0),0);
+  const tTr = rows.filter(r=>r.transfer);
   const tTrVal = tTr.reduce((s,r)=>s+(r.value||0),0);
   const div = document.createElement('div');
   div.className = 'print-doc pd-navy';
+  if(opsOnlyTr){
+    div.innerHTML = `
+      <div class="pd-band"><h2>تقرير الإفراغات للإدارة</h2><span class="pd-no">الفترة: ${esc(from)} ← ${esc(to)}</span></div>
+      <div class="pd-meta">
+        <span class="pd-item">تاريخ الإصدار: ${esc(todayStr())}</span>
+        <span class="pd-item">الوضع: القطع المفرغة فقط</span>
+        <span class="pd-item" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0">إجمالي قيمة الإفراغات: ${fmtMoney.format(tTrVal)} ر.س (${tTr.length} قطعة)</span>
+      </div>
+      <table class="pd-table"><thead><tr><th>رقم القطعة</th><th>القيمة (ر.س)</th><th>تاريخ الإفراغ</th></tr></thead>
+      <tbody>${rows.map(r=>`<tr><td class="num">${esc(r.landNo||'—')}</td><td class="num">${fmtMoney.format(r.value||0)}</td><td class="num">${esc(r.transfer||'—')}</td></tr>`).join('')}</tbody>
+      <tfoot><tr style="background:#d1fae5"><td style="color:#065f46;font-weight:800">الإجمالي — ${rows.length} قطعة مفرغة</td><td class="num" style="color:#065f46;font-weight:800">${fmtMoney.format(tVal)}</td><td></td></tr></tfoot></table>
+      <div class="pd-credit">أُصدر بواسطة نظام متابعة الأراضي — ${todayAr()}</div>`;
+    document.body.appendChild(div);
+    return div;
+  }
   div.innerHTML = `
     <div class="pd-band"><h2>تقرير العمليات اليومي للإدارة</h2><span class="pd-no">الفترة: ${esc(from)} ← ${esc(to)}</span></div>
     <div class="pd-meta">
@@ -4662,6 +4706,17 @@ function buildOpsPrintDoc(){
 }
 function exportOpsExcel(){
   if(!opsRows.length){ toast('لا توجد نتائج في الفترة المحددة', 'warn'); return; }
+  if(opsOnlyTr){
+    const rows = opsActiveRows();
+    if(!rows.length){ toast('لا توجد إفراغات في الفترة المحددة', 'warn'); return; }
+    const tVal = rows.reduce((s,r)=>s+(r.value||0),0);
+    const out = rows.map(r=>({landNo:r.landNo, value:r.value, transfer:r.transfer||'—'}));
+    out.push({landNo:'الإجمالي — ' + rows.length + ' قطعة مفرغة', value:tVal, transfer:''});
+    exportExcelRows(out, [
+      {k:'landNo',t:'رقم القطعة'},{k:'value',t:'القيمة (ر.س)'},{k:'transfer',t:'تاريخ الإفراغ'}
+    ], 'الإفراغات', 'تقرير-الإفراغات', null, ['value']);
+    return;
+  }
   const tVal = opsRows.reduce((s,r)=>s+(r.value||0),0);
   const tTr = opsRows.filter(r=>r.transfer);
   const tTrVal = tTr.reduce((s,r)=>s+(r.value||0),0);
@@ -4673,16 +4728,16 @@ function exportOpsExcel(){
   ], 'تقرير العمليات', 'تقرير-العمليات-اليومي', null, ['value']);
 }
 function exportOpsPdf(){
-  if(!opsRows.length){ toast('لا توجد نتائج في الفترة المحددة', 'warn'); return; }
+  if(!opsActiveRows().length){ toast('لا توجد نتائج في الفترة المحددة', 'warn'); return; }
   if(!checkLib('jspdf') || !checkLib('html2canvas')) return;
   const doc = buildOpsPrintDoc();
-  doExportPdf(doc, 'تقرير-العمليات-اليومي').then(()=>doc.remove());
+  doExportPdf(doc, opsOnlyTr ? 'تقرير-الإفراغات' : 'تقرير-العمليات-اليومي', 3).then(()=>doc.remove());
 }
 function exportOpsPng(){
-  if(!opsRows.length){ toast('لا توجد نتائج في الفترة المحددة', 'warn'); return; }
+  if(!opsActiveRows().length){ toast('لا توجد نتائج في الفترة المحددة', 'warn'); return; }
   if(!checkLib('html2canvas')) return;
   const doc = buildOpsPrintDoc();
-  doExportPng(doc, 'تقرير-العمليات-اليومي').then(()=>doc.remove());
+  doExportPng(doc, opsOnlyTr ? 'تقرير-الإفراغات' : 'تقرير-العمليات-اليومي', 3).then(()=>doc.remove());
 }
 
 /* ===== Navigation / init ===== */
@@ -5158,6 +5213,11 @@ function bindEvents(){
   $('#btnOpsGen').addEventListener('click', renderOpsReport);
   $('#opsFrom').addEventListener('change', renderOpsReport);
   $('#opsTo').addEventListener('change', renderOpsReport);
+  $('#opsOnlyTr').addEventListener('change', e=>{
+    opsOnlyTr = e.target.checked;
+    try{ sessionStorage.setItem('fipms_ops_only_tr', opsOnlyTr ? '1' : '0'); }catch(err){}
+    renderOpsReport();
+  });
   $('#btnOpsExcel').addEventListener('click', exportOpsExcel);
   $('#btnOpsPdf').addEventListener('click', exportOpsPdf);
   $('#btnOpsPng').addEventListener('click', exportOpsPng);
@@ -5534,6 +5594,7 @@ switchView('dashboard');
 $('#todayChip').textContent = todayAr();
 $('#opsFrom').value = todayStr();
 $('#opsTo').value = todayStr();
+try{ if(sessionStorage.getItem('fipms_ops_only_tr') === '1'){ opsOnlyTr = true; $('#opsOnlyTr').checked = true; } }catch(e){}
 try{ if(localStorage.getItem('fipms_density_v1') === '1') document.body.classList.add('dense'); }catch(e){}
 initCloudSession();
 showLoginGate();
