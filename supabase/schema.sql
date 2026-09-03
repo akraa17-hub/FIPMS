@@ -80,11 +80,17 @@ create table if not exists public.user_roles (
 
 -- ---------- 2) الأدوار الافتراضية ----------
 insert into public.roles (name, permissions, is_system) values
-('مالك',  array['view','export','edit_records','delete_records','archive_records','recycle','issue_tax','issue_reg','follow_tax','follow_reg','manage_statuses','manage_templates','manage_settings','manage_users','reset_data','manage_connection'], true),
-('مشرف',  array['view','export','edit_records','delete_records','archive_records','recycle','issue_tax','issue_reg','follow_tax','follow_reg','manage_statuses','manage_templates','manage_settings','manage_users'], true),
+('مالك',  array['view','export','edit_records','delete_records','archive_records','recycle','issue_tax','issue_reg','follow_tax','follow_reg','manage_statuses','manage_templates','manage_scenarios','manage_settings','manage_users','reset_data','manage_connection'], true),
+('مشرف',  array['view','export','edit_records','delete_records','archive_records','recycle','issue_tax','issue_reg','follow_tax','follow_reg','manage_statuses','manage_templates','manage_scenarios','manage_settings','manage_users'], true),
 ('محرر',  array['view','export','edit_records','issue_tax','issue_reg','follow_tax','follow_reg'], true),
 ('مطالع', array['view','export'], true)
 on conflict (name) do nothing;
+
+-- ترحيل: منح صلاحية السيناريوهات للأدوار القائمة (مالك/مشرف)
+update public.roles
+   set permissions = array(select distinct unnest(permissions || array['manage_scenarios']))
+ where 'manage_templates' = any(permissions)
+   and not 'manage_scenarios' = any(permissions);
 
 -- ---------- 3) دوال الصلاحيات ----------
 create or replace function public.current_role()
