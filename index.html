@@ -518,6 +518,8 @@ body.dense table.reg{font-size:.76rem}
 @media(max-width:1024px){ .scen-grid{grid-template-columns:1fr} .scen-side{position:static} .scen-charts{grid-template-columns:1fr} .scen-plan-metrics{grid-template-columns:repeat(2,1fr)} .spb-row{flex-wrap:wrap} .spb-val{width:100%} }
 
 /* ===== Unified mobile layer (applies to every current & future screen) ===== */
+.report-grid > *,.builder-grid > *,.charts > *,.b-grid > *,.scen-charts > *{min-width:0}
+.tbl-wrap,.card-b.flush{-webkit-overflow-scrolling:touch}
 @media(max-width:640px){
   .topbar{gap:10px}
   .top-title{flex:1 1 100%;min-width:0;order:1}
@@ -564,6 +566,11 @@ body.dense table.reg{font-size:.76rem}
   .scen-live{font-size:.78rem}
   .sc-lib .sc-card{padding-inline-start:30px}
   .report-actions{width:100%;flex-wrap:wrap}
+  .report-actions .field{flex:1;min-width:120px}
+  .report-actions .field input{width:100%;min-width:0}
+  .rpt{font-size:.74rem}
+  .rpt th{padding:8px 9px}
+  .rpt td{padding:7px 9px}
   .fgrid .fld input,.fgrid .fld select{font-size:1rem}
   .fld input,.fld select{font-size:1rem}
 }
@@ -4377,6 +4384,8 @@ function applySettingsBlobs(map){
   if(map.regTrackStatuses && Array.isArray(map.regTrackStatuses)) regTrackStatuses = map.regTrackStatuses;
   if(map.taxPrefs && typeof map.taxPrefs === 'object') taxPrefs = Object.assign(taxPrefs, map.taxPrefs);
   if(map.regPrefs && typeof map.regPrefs === 'object') regPrefs = Object.assign(regPrefs, map.regPrefs);
+  if(map.scen_lib && Array.isArray(map.scen_lib.items)) scenMergeFromCloud(map.scen_lib.items);
+  if(Object.prototype.hasOwnProperty.call(map, 'scen_default')) scenApplyDefault(map.scen_default);
   const ver = map.dataVersion;
   if(typeof ver === 'number' && ver < DATA_VERSION) runCloudMigrations(ver, map);
   else if(typeof ver === 'number') localStorage.setItem('fipms_data_version_v1', String(ver));
@@ -5023,6 +5032,8 @@ function exportOpsPng(){
 
 /* ===== Scenarios engine ===== */
 const SCEN_KEY = 'fipms_scenarios_v1';
+const SCEN_TOMB_KEY = 'fipms_scen_tomb_v1';
+const SCEN_DEFAULT_KEY = 'fipms_scen_default_v1';
 let scenarios = [];
 let scenSel = new Set();
 let scenType = '';
@@ -5030,11 +5041,82 @@ let scenBlock = '';
 let scenPpm = null;
 let scenCompare = new Set();
 let scenCharts = {};
+let scenTombstones = [];
+let scenDefaultId = null;
 function loadScenarios(){
   try{ const s = localStorage.getItem(SCEN_KEY); if(s){ const p = JSON.parse(s); if(Array.isArray(p)) return p; } }catch(e){}
   return [];
 }
 function saveScenarios(){ try{ localStorage.setItem(SCEN_KEY, JSON.stringify(scenarios)); }catch(e){} }
+function loadScenDefaultLocal(){
+  try{ const s = localStorage.getItem(SCEN_DEFAULT_KEY); if(s) return isNaN(+s) ? s : +s; }catch(e){}
+  return null;
+}
+function saveScenDefaultLocal(){ try{ localStorage.setItem(SCEN_DEFAULT_KEY, scenDefaultId == null ? '' : String(scenDefaultId)); }catch(e){} }
+function loadScenTombstones(){
+  try{ const s = localStorage.getItem(SCEN_TOMB_KEY); if(s){ const p = JSON.parse(s); if(Array.isArray(p)) return p; } }catch(e){}
+  return [];
+}
+function scenMergeFromCloud(cloudItems){
+  const merged = new Map();
+  for(const it of cloudItems){ if(it && it.id != null) merged.set(it.id, it); }
+  for(const s of scenarios){
+    const ex = merged.get(s.id);
+    if(!ex || String(s.updatedAt || s.createdAt || '') > String(ex.updatedAt || ex.createdAt || '')) merged.set(s.id, s);
+  }
+  for(const id of scenTombstones) merged.delete(id);
+  scenarios = [...merged.values()].sort((a,b)=>String(b.updatedAt || b.createdAt || '').localeCompare(String(a.updatedAt || a.createdAt || '')));
+  saveScenarios();
+  renderScenLib();
+}
+function scenApplyDefault(def){
+  if(def !== scenDefaultId){
+    scenDefaultId = def;
+    saveScenDefaultLocal();
+    if(def != null && !scenSel.size && scenPpm == null){
+      const sc = scenarios.find(x=>x.id === def);
+      if(sc) openScenario(sc.id);
+    }
+  }
+}
+function scenAutoOpenDefault(){
+  if(scenSel.size || scenPpm != null) return false;
+  const sc = scenarios.find(x=>x.id === scenDefaultId);
+  if(!sc) return false;
+  openScenario(sc.id);
+  return true;
+}
+async function scenCloudSave(){
+  if(!sbClient || !cloudReady) return;
+  try{
+    const {data} = await sbClient.from('app_settings').select('value').eq('key','scen_lib').maybeSingle();
+    let items = [];
+    if(data && data.value && Array.isArray(data.value.items)) items = data.value.items;
+    const merged = new Map();
+    for(const it of items){ if(it && it.id != null) merged.set(it.id, it); }
+    for(const s of scenarios){
+      const ex = merged.get(s.id);
+      if(!ex || String(s.updatedAt || s.createdAt || '') > String(ex.updatedAt || ex.createdAt || '')) merged.set(s.id, s);
+    }
+    for(const id of scenTombstones) merged.delete(id);
+    await sbClient.from('app_settings').upsert({key:'scen_lib', value:{items:[...merged.values()].slice(-300), updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''});
+    scenTombstones = [];
+    try{ localStorage.setItem(SCEN_TOMB_KEY, '[]'); }catch(e){}
+  }catch(e){ toast('تعذر مزامنة السيناريوهات سحابياً', 'warn'); }
+}
+async function scenSetDefaultCloud(id){
+  if(!sbClient || !cloudReady) return;
+  try{ await sbClient.from('app_settings').upsert({key:'scen_default', value:id, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}); }catch(e){}
+}
+async function scenCloudRefresh(){
+  if(!sbClient || !cloudReady) return;
+  try{
+    const {data} = await sbClient.from('app_settings').select('value').eq('key','scen_lib').maybeSingle();
+    if(data && data.value && Array.isArray(data.value.items)) scenMergeFromCloud(data.value.items);
+    const {data:dd} = await sbClient.from('app_settings').select('value').eq('key','scen_default').maybeSingle();
+    if(dd && dd.value !== undefined) scenApplyDefault(dd.value);
+  }catch(e){}
+}
 function scenStatusesAll(){
   const names = SYSTEM_STATUSES.map(s=>s.name);
   for(const c of customStatuses) if(!names.includes(c.name)) names.push(c.name);
@@ -5251,8 +5333,10 @@ function renderScenarios(){
   blockSel.innerHTML = '<option value="">الكل</option>' + blocks.map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join('');
   typeSel.value = scenType; blockSel.value = scenBlock;
   renderScenChips();
+  scenAutoOpenDefault();
   renderScenLib();
   renderScenarioResults();
+  scenCloudRefresh();
 }
 function scenSnapshot(){
   const c = scenCompute();
@@ -5267,10 +5351,16 @@ function saveScenario(){
   if(!name){ toast('اكتب اسم السيناريو أولاً', 'warn'); return; }
   const c = scenCompute();
   if(!c.count){ toast('النطاق المحدد لا يشمل أي قطعة', 'warn'); return; }
-  scenarios.unshift({id:Date.now(), name:name.slice(0,60), statuses:[...scenSel], type:scenType, block:scenBlock, ppm:scenPpm, createdAt:new Date().toISOString(), snap:scenSnapshot()});
+  const nowIso = new Date().toISOString();
+  const scObj = {id:Date.now(), name:name.slice(0,60), statuses:[...scenSel], type:scenType, block:scenBlock, ppm:scenPpm, createdAt:nowIso, updatedAt:nowIso, snap:scenSnapshot()};
+  scenarios.unshift(scObj);
   saveScenarios();
+  scenDefaultId = scObj.id;
+  saveScenDefaultLocal();
+  scenSetDefaultCloud(scObj.id);
+  scenCloudSave();
   renderScenLib();
-  toast('حُفظ السيناريو في المكتبة بنجاح');
+  toast('حُفظ السيناريو وأصبح الافتراضي المشترك للفريق');
 }
 function openScenario(id){
   const sc = scenarios.find(x=>x.id === id);
@@ -5294,6 +5384,14 @@ function deleteScenario(id){
     scenarios = scenarios.filter(x=>x.id !== id);
     scenCompare.delete(id);
     saveScenarios();
+    if(scenDefaultId === id){
+      scenDefaultId = null;
+      saveScenDefaultLocal();
+      scenSetDefaultCloud(null);
+    }
+    scenTombstones.push(id);
+    try{ localStorage.setItem(SCEN_TOMB_KEY, JSON.stringify(scenTombstones)); }catch(e){}
+    scenCloudSave();
     renderScenLib();
     toast('حُذف السيناريو');
   }
@@ -5303,9 +5401,10 @@ function duplicateScenario(id){
   const sc = scenarios.find(x=>x.id === id);
   if(!sc) return;
   const cp = JSON.parse(JSON.stringify(sc));
-  cp.id = Date.now(); cp.name = (sc.name + ' (نسخة)').slice(0,60); cp.createdAt = new Date().toISOString();
+  cp.id = Date.now(); cp.name = (sc.name + ' (نسخة)').slice(0,60); cp.createdAt = new Date().toISOString(); cp.updatedAt = new Date().toISOString();
   scenarios.unshift(cp);
   saveScenarios();
+  scenCloudSave();
   renderScenLib();
   toast('تم تكرار السيناريو');
 }
@@ -5314,7 +5413,7 @@ function renameScenario(id){
   const sc = scenarios.find(x=>x.id === id);
   if(!sc) return;
   const nm = prompt('اسم جديد للسيناريو:', sc.name);
-  if(nm && nm.trim()){ sc.name = nm.trim().slice(0,60); saveScenarios(); renderScenLib(); toast('تمت إعادة التسمية'); }
+  if(nm && nm.trim()){ sc.name = nm.trim().slice(0,60); sc.updatedAt = new Date().toISOString(); saveScenarios(); scenCloudSave(); renderScenLib(); toast('تمت إعادة التسمية'); }
 }
 function renderScenLib(){
   const cntEl = $('#scenLibCount');
@@ -5485,6 +5584,7 @@ function switchView(name){
   $('#btnAddTop').style.display = name === 'registry' ? '' : 'none';
   if(name === 'archive') renderArchive();
   if(name === 'scenarios') renderScenarios();
+  if(name === 'reports') renderReports();
   if(name === 'backup'){ renderBackup(); renderStatusManager(); renderRegStatusManager(); renderTaxStatusManager(); renderCloudCard(); renderRecycle(); renderUsersGroup(); updateAccBadges(); }
 }
 function renderAll(){
@@ -6359,6 +6459,8 @@ regTrackStatuses = loadRegTrackStatuses();
 recycleBin = loadRecycle();
 loadTemplates();
 scenarios = loadScenarios();
+scenDefaultId = loadScenDefaultLocal();
+scenTombstones = loadScenTombstones();
 bindEvents();
 refreshFilterOptions();
 renderAll();
