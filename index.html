@@ -552,7 +552,7 @@ body.dense table.reg{font-size:.76rem}
             <div class="card-b"><div class="chart-box"><canvas id="chTypeValue"></canvas></div></div>
           </div>
           <div class="card">
-            <div class="card-h"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m5 16 4-6 4 3 5-8"/></svg>قيمة الصفقات شهرياً<span class="sub">ر.س</span></h3></div>
+            <div class="card-h"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m5 16 4-6 4 3 5-8"/></svg>قيمة الإفراغات شهرياً<span class="sub">ر.س</span></h3></div>
             <div class="card-b"><div class="chart-box"><canvas id="chMonthly"></canvas></div></div>
           </div>
           <div class="card">
@@ -1752,8 +1752,8 @@ function monthlyAgg(list){
   const m = new Map();
   const order = [];
   for(const r of list){
-    const d = r.transferDate || r.deedInKindDate || r.deedDate;
-    if(!d){ if(!m.has('بدون تاريخ')) { m.set('بدون تاريخ',{label:'بدون تاريخ',sort:-1,count:0,value:0}); order.push('بدون تاريخ'); } const o=m.get('بدون تاريخ'); o.count++; o.value += r.value||0; continue; }
+    const d = r.transferDate;
+    if(!d) continue;
     const mm = /^(\d{4})-(\d{2})/.exec(d);
     if(!mm){ continue; }
     const key = `${mm[2]}-${mm[1]}`;
@@ -1764,11 +1764,7 @@ function monthlyAgg(list){
     }
     const o = m.get(key); o.count++; o.value += r.value||0;
   }
-  const sortedKeys = order.slice().sort((a,b)=>{
-    if(m.get(a).sort === -1) return 1;
-    if(m.get(b).sort === -1) return -1;
-    return m.get(a).sort - m.get(b).sort || a.localeCompare(b);
-  });
+  const sortedKeys = order.slice().sort((a,b)=> m.get(a).sort - m.get(b).sort || a.localeCompare(b));
   return sortedKeys.map(k=>m.get(k));
 }
 
@@ -1824,8 +1820,8 @@ function drawCharts(){
   const mon = monthlyAgg(records);
   charts.mo = new Chart($('#chMonthly'), {
     type:'bar',
-    data:{labels:mon.map(o=>o.label), datasets:[{label:'قيمة الصفقات', data:mon.map(o=>o.value), backgroundColor:'#2563eb', borderRadius:8, maxBarThickness:34}]},
-    options:{maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{rtl:true, callbacks:{label:c=>' ' + fmtNum.format(c.raw) + ' ر.س'}}}, scales:{y:{ticks:{callback:v=>fmtCompact.format(v)}}, x:{grid:{display:false}}}}
+    data:{labels:mon.map(o=>o.label), datasets:[{label:'قيمة الإفراغات', data:mon.map(o=>o.value), backgroundColor:'#10b981', borderRadius:8, maxBarThickness:34}]},
+    options:{maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{rtl:true, callbacks:{label:c=>' ' + fmtMoney.format(c.raw) + ' ر.س'}}}, scales:{y:{ticks:{callback:v=>fmtCompact.format(v)}}, x:{grid:{display:false}}}}
   });
   const stMap = new Map();
   for(const r of records){ const s = getStatus(r); stMap.set(s, (stMap.get(s)||0) + 1); }
