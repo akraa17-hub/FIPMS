@@ -9,6 +9,13 @@
    insert into public.user_roles (email, role) values ('akram@arshglobal.com.sa', 'مالك')
    on conflict (email) do update set role = 'مالك';
    ```
+> **ترقية من نسخة سابقة:** شغّل هذا الاستعلام وحده لمنح صلاحية «إدارة السيناريوهات» للأدوار القائمة (مالك/مشرف):
+> ```sql
+> update public.roles
+>    set permissions = array(select distinct unnest(permissions || array['manage_scenarios']))
+>  where 'manage_templates' = any(permissions)
+>    and not 'manage_scenarios' = any(permissions);
+> ```
 
 ## الخطوة 2: إعداد المصادقة
 1. **Authentication ← Providers ← Email**: تأكد أنه Enabled

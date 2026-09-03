@@ -22,6 +22,7 @@
   --primary:#2563eb; --primary-d:#1d4ed8; --primary-soft:#dbeafe;
   --sky:#0ea5e9; --sky-soft:#e0f2fe; --sky-txt:#075985;
   --amber:#f59e0b; --amber-soft:#fef3c7; --amber-txt:#92400e;
+  --gold:#d97706; --gold-soft:#fffbeb; --gold-txt:#92400e;
   --violet:#8b5cf6; --violet-soft:#ede9fe; --violet-txt:#5b21b6;
   --teal:#0d9488; --teal-soft:#ccfbf1; --teal-txt:#115e59;
   --ok:#10b981; --ok-soft:#d1fae5; --ok-txt:#065f46;
@@ -439,6 +440,52 @@ body.dense table.reg{font-size:.76rem}
 .track-note-input-row{display:flex;gap:7px}
 .track-note-input-row input{flex:1;border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-size:.8rem;outline:none;background:#fff}
 
+/* ===== Scenarios (gold) ===== */
+.scen-banner{background:linear-gradient(135deg,#b45309,#d97706,#f59e0b);color:#fff;border-radius:14px;padding:13px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;box-shadow:0 6px 18px rgba(180,83,9,.25)}
+.scen-banner .scen-banner-txt{font-size:1.02rem;font-weight:900;display:flex;align-items:center;gap:9px}
+.scen-banner span{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);padding:4px 13px;border-radius:99px;font-size:.76rem;font-weight:800}
+.scen-grid{display:grid;grid-template-columns:330px 1fr;gap:14px;align-items:start}
+.scen-side{display:flex;flex-direction:column;gap:14px;position:sticky;top:76px}
+.scen-chips{display:flex;flex-wrap:wrap;gap:7px}
+.scen-chip{border:1.5px solid var(--border2);background:#fff;border-radius:99px;padding:6px 13px;font-size:.8rem;font-weight:800;color:var(--txt2);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .18s}
+.scen-chip:hover{border-color:var(--gold);color:var(--gold-txt)}
+.scen-chip.on{background:linear-gradient(135deg,#b45309,#d97706);border-color:#b45309;color:#fff;box-shadow:0 3px 10px rgba(180,83,9,.3)}
+.scen-chip .cnt{background:rgba(0,0,0,.07);border-radius:99px;padding:0 7px;font-size:.68rem;font-weight:900}
+.scen-chip.on .cnt{background:rgba(255,255,255,.25)}
+.scen-live{margin:12px 0;background:var(--gold-soft);border:1.5px dashed var(--gold);border-radius:12px;padding:11px 14px;font-size:.82rem;font-weight:800;color:var(--gold-txt);display:flex;flex-direction:column;gap:5px;line-height:1.7}
+.scen-live b{font-size:.95rem}
+.scen-actions{display:flex;gap:7px;flex-wrap:wrap}
+.btn-gold{background:linear-gradient(135deg,#b45309,#d97706);color:#fff;border-color:#b45309}
+.btn-gold:hover{filter:brightness(1.1)}
+.gold-kpi .kpi-ico{background:linear-gradient(135deg,#b45309,#d97706);color:#fff}
+.kpi .kpi-delta{margin-top:4px;font-size:.72rem;font-weight:900;display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px}
+.kpi .kpi-delta.up{background:#d1fae5;color:#065f46}
+.kpi .kpi-delta.down{background:#fee2e2;color:#991b1b}
+.scen-charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.chart-box{height:280px;position:relative}
+.sc-lib{display:flex;flex-direction:column;gap:9px}
+.sc-card{border:1.5px solid var(--border2);border-radius:12px;padding:11px 13px;background:#fff;cursor:pointer;transition:all .18s;position:relative}
+.sc-card:hover{border-color:var(--gold);box-shadow:0 4px 12px rgba(180,83,9,.12)}
+.sc-card.on{border-color:var(--gold);background:var(--gold-soft)}
+.sc-card .sc-name{font-weight:900;font-size:.9rem;color:var(--txt);display:flex;align-items:center;gap:8px}
+.sc-card .sc-meta{font-size:.72rem;color:var(--txt3);margin-top:5px;display:flex;flex-wrap:wrap;gap:4px 10px;line-height:1.6}
+.sc-card .sc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.sc-tag{background:#f1f5f9;border-radius:6px;padding:1px 8px;font-size:.66rem;font-weight:800;color:var(--txt2)}
+.sc-tag.gold{background:linear-gradient(135deg,#b45309,#d97706);color:#fff}
+.sc-card .sc-acts{display:flex;gap:4px;margin-top:8px}
+.sc-card .sc-acts button{font-size:.68rem;padding:3px 9px}
+.sc-cmp-chk{position:absolute;top:10px;inset-inline-start:10px;width:17px;height:17px;accent-color:var(--gold)}
+.sc-card{padding-inline-start:34px}
+.sc-empty{color:var(--txt3);font-size:.8rem;text-align:center;padding:18px 10px;border:1.5px dashed var(--border2);border-radius:12px}
+.sc-compare{margin-top:12px;border-top:1.5px dashed var(--border2);padding-top:12px}
+.sc-compare h4{font-size:.82rem;font-weight:900;color:var(--gold-txt);margin-bottom:8px}
+.scen-tbl-scope{font-size:.78rem;color:var(--txt3);margin-bottom:8px;line-height:1.7}
+.pd-gold .pd-band{background:linear-gradient(135deg,#b45309,#d97706)}
+.pd-gold .pd-table th{background:#f59e0b;border-color:#b45309;color:#fff}
+.pd-gold .pd-table tbody tr:nth-child(even) td{background:#fffbeb}
+.pd-gold .pd-table tfoot td{background:#fde68a;color:#78350f;border-color:#f59e0b}
+@media(max-width:1024px){ .scen-grid{grid-template-columns:1fr} .scen-side{position:static} .scen-charts{grid-template-columns:1fr} }
+
 /* ===== Responsive ===== */
 @media(max-width:1024px){
   .side{transform:translateX(110%)}
@@ -480,6 +527,10 @@ body.dense table.reg{font-size:.76rem}
       <button class="nav-item" data-view="builder">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
         التقارير المخصصة
+      </button>
+      <button class="nav-item" data-view="scenarios">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6.292a7 7 0 1 0 4 0V2"/><path d="M8.5 2h7"/><path d="M7 16h8"/></svg>
+        السيناريوهات
       </button>
       <button class="nav-item" data-view="archive">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>
@@ -875,6 +926,79 @@ body.dense table.reg{font-size:.76rem}
               </div>
             </div>
             <div class="card-b flush" style="overflow:auto;max-height:70vh" id="bPreviewWrap"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Scenarios ===== -->
+      <section id="view-scenarios" class="view" data-title="السيناريوهات" data-sub="محاكاة تسعير افتراضية — لا تؤثر على الأسعار الأساسية">
+        <div class="scen-banner">
+          <div class="scen-banner-txt"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6.292a7 7 0 1 0 4 0V2"/><path d="M8.5 2h7"/><path d="M7 16h8"/></svg>وضع السيناريو الذهبي — تحليل «ماذا لو»</div>
+          <span>الأسعار الأساسية تبقى دون أي تغيير</span>
+        </div>
+        <div class="scen-grid">
+          <div class="scen-side">
+            <div class="card">
+              <div class="card-h">
+                <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h7"/><circle cx="16" cy="16" r="3"/></svg>بناء السيناريو</h3>
+              </div>
+              <div class="card-b" style="display:flex;flex-direction:column;gap:11px">
+                <div class="fld">
+                  <label>نطاق الحالات (اختيار متعدد)</label>
+                  <div class="scen-chips" id="scenStatusChips"></div>
+                </div>
+                <div class="fgrid" style="grid-template-columns:1fr 1fr;padding:0">
+                  <div class="fld"><label>نوع الأرض (اختياري)</label><select id="scenType"></select></div>
+                  <div class="fld"><label>البلك (اختياري)</label><select id="scenBlock"></select></div>
+                </div>
+                <div class="fld"><label>سعر المتر الجديد (ر.س / م²)</label><input type="number" id="scenPpm" min="0" step="any" placeholder="مثال: 650"></div>
+                <div class="scen-live" id="scenLive"></div>
+                <div class="fld"><label>اسم السيناريو</label><input type="text" id="scenName" placeholder="مثال: بيع بقية المخطط بسعر 650" maxlength="60"></div>
+                <div class="scen-actions">
+                  <button class="btn btn-gold btn-sm" id="btnScenSave"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/></svg>حفظ السيناريو</button>
+                  <button class="btn btn-soft btn-sm" id="btnScenReset"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>تصفير</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h">
+                <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><path d="M6 18h.01M10 18h.01M14 18h.01M18 18h.01"/></svg>مكتبة السيناريوهات <span class="sub" id="scenLibCount"></span></h3>
+              </div>
+              <div class="card-b">
+                <div class="hint" style="margin-bottom:9px">علّم حتى 3 سيناريوهات بعلامة ✓ لمقارنتها جنباً إلى جنب</div>
+                <div class="sc-lib" id="scenLib"></div>
+                <div class="sc-compare" id="scenCompareWrap" style="display:none">
+                  <h4>المقارنة</h4>
+                  <div id="scenCompare"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="scen-results">
+            <div class="kpis" id="scenKpis"></div>
+            <div class="scen-charts">
+              <div class="card">
+                <div class="card-h"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>توزيع قيمة السيناريو حسب نوع الأرض</h3></div>
+                <div class="card-b"><div class="chart-box"><canvas id="scChType"></canvas></div></div>
+              </div>
+              <div class="card">
+                <div class="card-h"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-8"/></svg>المقارنة حسب البلك (أساسي × سيناريو)</h3></div>
+                <div class="card-b"><div class="chart-box"><canvas id="scChBlock"></canvas></div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-h">
+                <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>تفاصيل السيناريو <span class="sub" id="scenDetailCount"></span></h3>
+                <div class="report-actions">
+                  <button class="btn btn-soft btn-sm" id="btnScenXlsx"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>إكسل</button>
+                  <button class="btn btn-soft btn-sm" id="btnScenPdf"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>PDF</button>
+                  <button class="btn btn-soft btn-sm" id="btnScenPng"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L9 20"/></svg>صورة</button>
+                </div>
+              </div>
+              <div class="card-b flush" style="overflow:auto;max-height:52vh"><div class="tbl-wrap" id="scenTblWrap"></div></div>
+            </div>
           </div>
         </div>
       </section>
@@ -3847,6 +3971,7 @@ const PERMS = [
   {k:'follow_reg', t:'متابعة طلبات التسجيل العيني'},
   {k:'manage_statuses', t:'إدارة الحالات المخصصة'},
   {k:'manage_templates', t:'إدارة قوالب التقارير'},
+  {k:'manage_scenarios', t:'إدارة السيناريوهات (حفظ وتعديل وحذف)'},
   {k:'manage_settings', t:'الإعدادات والاستيراد'},
   {k:'manage_users', t:'إدارة المستخدمين وتوزيع الأدوار'},
   {k:'reset_data', t:'إعادة تعيين ومسح الكل'},
@@ -4803,6 +4928,317 @@ function exportOpsPng(){
   doExportPng(doc, opsOnlyTr ? 'تقرير-الإفراغات' : 'تقرير-العمليات-اليومي', 3).then(()=>doc.remove());
 }
 
+/* ===== Scenarios engine ===== */
+const SCEN_KEY = 'fipms_scenarios_v1';
+let scenarios = [];
+let scenSel = new Set();
+let scenType = '';
+let scenBlock = '';
+let scenPpm = null;
+let scenCompare = new Set();
+let scenCharts = {};
+function loadScenarios(){
+  try{ const s = localStorage.getItem(SCEN_KEY); if(s){ const p = JSON.parse(s); if(Array.isArray(p)) return p; } }catch(e){}
+  return [];
+}
+function saveScenarios(){ try{ localStorage.setItem(SCEN_KEY, JSON.stringify(scenarios)); }catch(e){} }
+function scenStatusesAll(){
+  const names = SYSTEM_STATUSES.map(s=>s.name);
+  for(const c of customStatuses) if(!names.includes(c.name)) names.push(c.name);
+  return names;
+}
+function scenScope(){
+  const sts = [...scenSel];
+  let list = sts.length ? records.filter(r=>sts.includes(getStatus(r))) : [];
+  if(scenType) list = list.filter(r=>r.landType === scenType);
+  if(scenBlock) list = list.filter(r=>String(r.block) === scenBlock);
+  return list;
+}
+function scenCompute(){
+  const rows = scenScope();
+  const area = rows.reduce((s,r)=>s+(r.area||0),0);
+  const cur = rows.reduce((s,r)=>s+(r.value||0),0);
+  const curAvg = area ? cur/area : 0;
+  const newVal = scenPpm != null ? area * scenPpm : 0;
+  const delta = scenPpm != null ? newVal - cur : 0;
+  const deltaPct = cur ? delta/cur*100 : 0;
+  const tMap = new Map(), bMap = new Map(), sMap = new Map();
+  for(const r of rows){
+    const t = r.landType || '—';
+    if(!tMap.has(t)) tMap.set(t, {type:t, count:0, area:0, cur:0});
+    const to = tMap.get(t); to.count++; to.area += r.area||0; to.cur += r.value||0;
+    const b = String(r.block || '—');
+    if(!bMap.has(b)) bMap.set(b, {block:b, count:0, area:0, cur:0});
+    const bo = bMap.get(b); bo.count++; bo.area += r.area||0; bo.cur += r.value||0;
+    const st = getStatus(r);
+    if(!sMap.has(st)) sMap.set(st, {status:st, count:0, area:0, cur:0});
+    const so = sMap.get(st); so.count++; so.area += r.area||0; so.cur += r.value||0;
+  }
+  const byType = [], byBlock = [], byStatus = [];
+  for(const o of tMap.values()){ o.newV = o.area * (scenPpm||0); byType.push(o); }
+  for(const o of bMap.values()){ o.newV = o.area * (scenPpm||0); byBlock.push(o); }
+  for(const o of sMap.values()){ o.newV = o.area * (scenPpm||0); byStatus.push(o); }
+  byType.sort((a,b)=>b.area-a.area);
+  byBlock.sort((a,b)=>b.area-a.area);
+  byStatus.sort((a,b)=>b.area-a.area);
+  return {rows, count:rows.length, area, cur, curAvg, newVal, newAvg:scenPpm != null ? scenPpm : 0, delta, deltaPct, byType, byBlock, byStatus};
+}
+function renderScenChips(){
+  const wrap = $('#scenStatusChips');
+  if(!wrap) return;
+  wrap.innerHTML = scenStatusesAll().map(n=>{
+    const cnt = records.filter(r=>getStatus(r) === n).length;
+    return `<span class="scen-chip${scenSel.has(n) ? ' on' : ''}" data-scst="${esc(n)}">${esc(n)}<span class="cnt">${fmtInt.format(cnt)}</span></span>`;
+  }).join('');
+}
+function renderScenLive(){
+  const el = $('#scenLive');
+  if(!el) return;
+  if(!scenSel.size){ el.innerHTML = '<b>ابدأ باختيار نطاق الحالات</b><span>مثال: اختر «متاحة» ثم أدخل سعر المتر الجديد 650 لترى إجمالي البيع المتوقع لباقي المخطط.</span>'; return; }
+  const c = scenCompute();
+  let html = `<b>النطاق المحدد: ${fmtInt.format(c.count)} قطعة · ${fmtMoney.format(c.area)} م²</b>`;
+  html += `<span>القيمة الأساسية: ${fmtMoney.format(c.cur)} ر.س · متوسط المتر الأساسي: ${fmtNum.format(c.curAvg)} ر.س/م²</span>`;
+  if(scenPpm != null){
+    html += `<span style="color:#b45309">القيمة الجديدة: <b>${fmtMoney.format(c.newVal)} ر.س</b> · متوسط المتر الجديد: <b>${fmtNum.format(scenPpm)} ر.س/م²</b></span>`;
+    html += `<span style="color:${c.delta >= 0 ? '#065f46' : '#991b1b'}">الفرق المتوقع: ${c.delta >= 0 ? '+' : ''}${fmtMoney.format(c.delta)} ر.س (${c.deltaPct >= 0 ? '+' : ''}${c.deltaPct.toFixed(1)}%)</span>`;
+  } else {
+    html += '<span>أدخل سعر المتر الجديد لاحتساب قيمة السيناريو.</span>';
+  }
+  el.innerHTML = html;
+}
+function scenKpiHtml(ico, cls, lbl, val, sub, deltaHtml){
+  return `<div class="kpi ${cls}"><div class="kpi-ico">${ico}</div><div><div class="kpi-lbl">${lbl}</div><div class="kpi-val">${val}</div><div class="kpi-sub">${sub}</div>${deltaHtml||''}</div></div>`;
+}
+function renderScenKpis(){
+  const c = scenCompute();
+  const up = c.delta >= 0;
+  const deltaHtml = scenPpm != null ? `<span class="kpi-delta ${up?'up':'down'}">${up?'▲':'▼'} ${fmtMoney.format(Math.abs(c.delta))} ر.س (${up?'+':''}${c.deltaPct.toFixed(1)}%)</span>` : '';
+  const icReg = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>';
+  const icArea = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 3 21"/><path d="M21 3h-6M21 3v6"/><path d="M3 21h6M3 21v-6"/></svg>';
+  const icMoney = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>';
+  const icFlask = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6.292a7 7 0 1 0 4 0V2"/><path d="M8.5 2h7"/><path d="M7 16h8"/></svg>';
+  const icAvg = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m5 16 4-6 4 3 5-8"/></svg>';
+  const icDelta = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>';
+  $('#scenKpis').innerHTML = [
+    scenKpiHtml(icReg, '', 'القطع المشمولة', fmtInt.format(c.count), 'قطعة أرض', ''),
+    scenKpiHtml(icArea, '', 'المساحة المشمولة', fmtMoney.format(c.area), 'متر مربع', ''),
+    scenKpiHtml(icMoney, '', 'القيمة الأساسية', fmtMoney.format(c.cur), 'ريال سعودي', ''),
+    scenKpiHtml(icFlask, 'gold-kpi', 'قيمة السيناريو', scenPpm != null ? fmtMoney.format(c.newVal) : '—', scenPpm != null ? `بسعر ${fmtNum.format(scenPpm)} ر.س/م²` : 'لم يُحدد السعر بعد', deltaHtml),
+    scenKpiHtml(icAvg, '', 'متوسط سعر المتر', fmtNum.format(c.curAvg) + (scenPpm != null ? `<span style="color:#b45309"> ← ${fmtNum.format(scenPpm)}</span>` : ''), 'ر.س / م²', ''),
+    scenKpiHtml(icDelta, '', 'الفرق المتوقع', scenPpm != null ? (up?'+':'') + fmtMoney.format(c.delta) : '—', scenPpm != null ? (up?'+':'') + c.deltaPct.toFixed(1) + '%' : 'ريال سعودي', '')
+  ].join('');
+}
+function drawScenCharts(){
+  for(const k in scenCharts){ if(scenCharts[k]){ try{ scenCharts[k].destroy(); }catch(e){} } }
+  scenCharts = {};
+  const c = scenCompute();
+  if(!c.count || typeof Chart === 'undefined') return;
+  try{ Chart.defaults.font.family = "'Tajawal','Segoe UI',sans-serif"; }catch(e){}
+  const golds = ['#b45309','#d97706','#f59e0b','#fbbf24','#fcd34d','#92400e','#fde68a'];
+  const byT = c.byType.map((o,i)=>({type:o.type, val:Math.round(o.newV||o.cur), col: TYPE_COLORS[o.type] || golds[i % golds.length]}));
+  if(byT.length){
+    scenCharts.ty = new Chart($('#scChType'), {
+      type:'doughnut',
+      data:{labels:byT.map(o=>o.type), datasets:[{data:byT.map(o=>o.val), backgroundColor:byT.map(o=>o.col), borderWidth:2, borderColor:'#fff'}]},
+      options:{maintainAspectRatio:false, cutout:'60%', plugins:{legend:{position:'bottom', rtl:true, labels:{padding:12, usePointStyle:true, pointStyle:'circle'}}, tooltip:{rtl:true, callbacks:{label:ctx=>` ${ctx.label}: ${fmtMoney.format(ctx.raw)} ر.س`}}}}
+    });
+  }
+  const bl = c.byBlock.slice(0, 10);
+  if(bl.length){
+    scenCharts.bl = new Chart($('#scChBlock'), {
+      type:'bar',
+      data:{labels:bl.map(o=>o.block), datasets:[
+        {label:'القيمة الأساسية', data:bl.map(o=>Math.round(o.cur)), backgroundColor:'#e2e8f0', borderRadius:6, maxBarThickness:26},
+        {label:'قيمة السيناريو', data:bl.map(o=>Math.round(o.newV)), backgroundColor:'#d97706', borderRadius:6, maxBarThickness:26}
+      ]},
+      options:{maintainAspectRatio:false, plugins:{legend:{position:'bottom', rtl:true, labels:{padding:10, usePointStyle:true}}, tooltip:{rtl:true, callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmtMoney.format(ctx.raw)} ر.س`}}}, scales:{y:{ticks:{callback:v=>fmtCompact.format(v)}}, x:{grid:{display:false}}}}
+    });
+  }
+}
+function renderScenTable(){
+  const c = scenCompute();
+  const wrap = $('#scenTblWrap');
+  if(!wrap) return;
+  const cnt = $('#scenDetailCount');
+  if(cnt) cnt.textContent = c.count ? `(${fmtInt.format(c.count)} قطعة)` : '';
+  if(!c.count){ wrap.innerHTML = `<div class="empty"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6.292a7 7 0 1 0 4 0V2"/><path d="M8.5 2h7"/><path d="M7 16h8"/></svg><div class="t">لا توجد نتائج بعد</div><div class="s">اختر نطاق الحالات من لوحة البناء لترى التفاصيل هنا</div></div>`; return; }
+  const scopeTxt = `النطاق: ${scenSel.size ? [...scenSel].map(esc).join(' + ') : '—'}${scenType ? ' · نوع: ' + esc(scenType) : ''}${scenBlock ? ' · بلك: ' + esc(scenBlock) : ''} · السعر الجديد: ${scenPpm != null ? fmtNum.format(scenPpm) + ' ر.س/م²' : '—'}`;
+  wrap.innerHTML = `<div class="scen-tbl-scope">${scopeTxt}</div>
+  <table class="tbl"><thead><tr><th>البلك</th><th>القطع</th><th>المساحة (م²)</th><th>القيمة الأساسية (ر.س)</th><th>قيمة السيناريو (ر.س)</th><th>الفرق (ر.س)</th><th>نسبة الفرق</th></tr></thead>
+  <tbody>${c.byBlock.map(o=>{
+    const d = o.newV - o.cur, p = o.cur ? d/o.cur*100 : 0;
+    return `<tr><td class="num">${esc(o.block)}</td><td class="num">${fmtInt.format(o.count)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtMoney.format(o.cur)}</td><td class="num">${fmtMoney.format(o.newV)}</td><td class="num" style="color:${d>=0?'#065f46':'#991b1b'};font-weight:800">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td></tr>`;
+  }).join('')}</tbody>
+  <tfoot><tr><td>الإجمالي</td><td class="num">${fmtInt.format(c.count)}</td><td class="num">${fmtMoney.format(c.area)}</td><td class="num">${fmtMoney.format(c.cur)}</td><td class="num">${fmtMoney.format(c.newVal)}</td><td class="num" style="color:${c.delta>=0?'#065f46':'#991b1b'};font-weight:800">${c.delta>=0?'+':''}${fmtMoney.format(c.delta)}</td><td class="num">${c.deltaPct>=0?'+':''}${c.deltaPct.toFixed(1)}%</td></tr></tfoot></table>`;
+}
+function renderScenarioResults(){
+  renderScenLive();
+  renderScenKpis();
+  drawScenCharts();
+  renderScenTable();
+}
+function renderScenarios(){
+  const typeSel = $('#scenType'), blockSel = $('#scenBlock');
+  if(!typeSel) return;
+  const types = [...new Set(records.map(r=>r.landType).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ar'));
+  const blocks = [...new Set(records.map(r=>String(r.block||'').trim()).filter(Boolean))].sort((a,b)=>((+a||0)- (+b||0)) || a.localeCompare(b,'ar'));
+  typeSel.innerHTML = '<option value="">الكل</option>' + types.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
+  blockSel.innerHTML = '<option value="">الكل</option>' + blocks.map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join('');
+  typeSel.value = scenType; blockSel.value = scenBlock;
+  renderScenChips();
+  renderScenLib();
+  renderScenarioResults();
+}
+function scenSnapshot(){
+  const c = scenCompute();
+  return {count:c.count, area:Math.round(c.area*100)/100, cur:Math.round(c.cur*100)/100, newVal:Math.round(c.newVal*100)/100, delta:Math.round(c.delta*100)/100, deltaPct:Math.round(c.deltaPct*100)/100};
+}
+function saveScenario(){
+  if(!can('manage_scenarios')){ toast('ليست لديك صلاحية إدارة السيناريوهات', 'err'); return; }
+  if(!scenSel.size){ toast('اختر نطاق الحالات أولاً', 'warn'); return; }
+  if(scenPpm == null || isNaN(scenPpm)){ toast('أدخل سعر المتر الجديد', 'warn'); return; }
+  const name = $('#scenName').value.trim();
+  if(!name){ toast('اكتب اسم السيناريو أولاً', 'warn'); return; }
+  const c = scenCompute();
+  if(!c.count){ toast('النطاق المحدد لا يشمل أي قطعة', 'warn'); return; }
+  scenarios.unshift({id:Date.now(), name:name.slice(0,60), statuses:[...scenSel], type:scenType, block:scenBlock, ppm:scenPpm, createdAt:new Date().toISOString(), snap:scenSnapshot()});
+  saveScenarios();
+  renderScenLib();
+  toast('حُفظ السيناريو في المكتبة بنجاح');
+}
+function openScenario(id){
+  const sc = scenarios.find(x=>x.id === id);
+  if(!sc) return;
+  scenSel = new Set(sc.statuses);
+  scenType = sc.type || '';
+  scenBlock = sc.block || '';
+  scenPpm = sc.ppm;
+  $('#scenType').value = scenType;
+  $('#scenBlock').value = scenBlock;
+  $('#scenPpm').value = scenPpm;
+  $('#scenName').value = sc.name;
+  renderScenChips();
+  renderScenarioResults();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function deleteScenario(id){
+  if(!can('manage_scenarios')){ toast('ليست لديك صلاحية إدارة السيناريوهات', 'err'); return; }
+  const sc = scenarios.find(x=>x.id === id);
+  if(sc && confirm(`حذف السيناريو «${sc.name}» نهائياً؟`)){
+    scenarios = scenarios.filter(x=>x.id !== id);
+    scenCompare.delete(id);
+    saveScenarios();
+    renderScenLib();
+    toast('حُذف السيناريو');
+  }
+}
+function duplicateScenario(id){
+  if(!can('manage_scenarios')){ toast('ليست لديك صلاحية إدارة السيناريوهات', 'err'); return; }
+  const sc = scenarios.find(x=>x.id === id);
+  if(!sc) return;
+  const cp = JSON.parse(JSON.stringify(sc));
+  cp.id = Date.now(); cp.name = (sc.name + ' (نسخة)').slice(0,60); cp.createdAt = new Date().toISOString();
+  scenarios.unshift(cp);
+  saveScenarios();
+  renderScenLib();
+  toast('تم تكرار السيناريو');
+}
+function renameScenario(id){
+  if(!can('manage_scenarios')){ toast('ليست لديك صلاحية إدارة السيناريوهات', 'err'); return; }
+  const sc = scenarios.find(x=>x.id === id);
+  if(!sc) return;
+  const nm = prompt('اسم جديد للسيناريو:', sc.name);
+  if(nm && nm.trim()){ sc.name = nm.trim().slice(0,60); saveScenarios(); renderScenLib(); toast('تمت إعادة التسمية'); }
+}
+function renderScenLib(){
+  const cntEl = $('#scenLibCount');
+  if(cntEl) cntEl.textContent = scenarios.length ? `(${fmtInt.format(scenarios.length)})` : '';
+  const el = $('#scenLib');
+  if(!el) return;
+  if(!scenarios.length){ el.innerHTML = '<div class="sc-empty">لا توجد سيناريوهات محفوظة بعد — ابنِ سيناريو واحفظه ليظهر هنا</div>'; $('#scenCompareWrap').style.display = 'none'; return; }
+  el.innerHTML = scenarios.map(sc=>`
+    <div class="sc-card${scenCompare.has(sc.id) ? ' on' : ''}" data-scid="${sc.id}">
+      <input type="checkbox" class="sc-cmp-chk" data-scchk="${sc.id}" title="أضف للمقارنة" ${scenCompare.has(sc.id)?'checked':''}>
+      <div class="sc-name"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6.292a7 7 0 1 0 4 0V2"/><path d="M8.5 2h7"/><path d="M7 16h8"/></svg>${esc(sc.name)}</div>
+      <div class="sc-meta"><span>سعر المتر: ${fmtNum.format(sc.ppm)} ر.س</span><span>القطع: ${fmtInt.format(sc.snap.count)}</span><span>القيمة: ${fmtMoney.format(sc.snap.newVal)} ر.س</span><span>${new Date(sc.createdAt).toLocaleDateString('ar-EG')}</span></div>
+      <div class="sc-tags">${sc.statuses.map(s=>`<span class="sc-tag gold">${esc(s)}</span>`).join('')}${sc.type?`<span class="sc-tag">${esc(sc.type)}</span>`:''}${sc.block?`<span class="sc-tag">بلك ${esc(sc.block)}</span>`:''}</div>
+      <div class="sc-acts">
+        <button class="btn btn-soft btn-xs" data-scact="open" data-scid="${sc.id}">فتح</button>
+        <button class="btn btn-soft btn-xs" data-scact="dup" data-scid="${sc.id}">تكرار</button>
+        <button class="btn btn-soft btn-xs" data-scact="ren" data-scid="${sc.id}">تسمية</button>
+        <button class="btn btn-danger btn-xs" data-scact="del" data-scid="${sc.id}">حذف</button>
+      </div>
+    </div>`).join('');
+  renderScenCompare();
+}
+function renderScenCompare(){
+  const wrap = $('#scenCompareWrap');
+  if(!wrap) return;
+  const sel = scenarios.filter(sc=>scenCompare.has(sc.id)).slice(0,3);
+  if(!sel.length){ wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  const rows = sel.map(sc=>{
+    const d = sc.snap.delta, p = sc.snap.deltaPct;
+    return `<tr><td>${esc(sc.name)}</td><td class="num">${fmtInt.format(sc.snap.count)}</td><td class="num">${fmtMoney.format(sc.snap.area)}</td><td class="num">${fmtMoney.format(sc.snap.cur)}</td><td class="num">${fmtMoney.format(sc.snap.newVal)}</td><td class="num" style="color:${d>=0?'#065f46':'#991b1b'};font-weight:800">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td></tr>`;
+  }).join('');
+  $('#scenCompare').innerHTML = `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>السيناريو</th><th>القطع</th><th>المساحة (م²)</th><th>الأساسية (ر.س)</th><th>السيناريو (ر.س)</th><th>الفرق (ر.س)</th><th>نسبة الفرق</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function exportScenExcel(){
+  const c = scenCompute();
+  if(!c.count){ toast('اختر نطاقاً يشمل قطعاً أولاً', 'warn'); return; }
+  const name = ($('#scenName').value.trim() || 'سيناريو تسعير').slice(0,31);
+  const rows = c.byBlock.map(o=>{
+    const d = o.newV - o.cur, p = o.cur ? d/o.cur*100 : 0;
+    return {block:o.block, count:o.count, area:Math.round(o.area*100)/100, cur:Math.round(o.cur*100)/100, newV:Math.round(o.newV*100)/100, delta:Math.round(d*100)/100, pct:Math.round(p*100)/100};
+  });
+  rows.push({block:'النطاق المطبق', count:[...scenSel].join(' + ') + (scenType ? ' · ' + scenType : '') + (scenBlock ? ' · بلك ' + scenBlock : ''), area:'', cur:'', newV:'', delta:'', pct:''});
+  rows.push({block:'سعر المتر الجديد', count:fmtNum.format(scenPpm||0) + ' ر.س/م²', area:'', cur:'', newV:'', delta:'', pct:''});
+  rows.push({block:'الإجمالي', count:fmtInt.format(c.count) + ' قطعة', area:Math.round(c.area*100)/100, cur:Math.round(c.cur*100)/100, newV:Math.round(c.newVal*100)/100, delta:Math.round(c.delta*100)/100, pct:Math.round(c.deltaPct*100)/100});
+  exportExcelRows(rows, [
+    {k:'block',t:'البلك / البيان'},{k:'count',t:'القطع'},{k:'area',t:'المساحة (م²)'},{k:'cur',t:'القيمة الأساسية (ر.س)'},{k:'newV',t:'قيمة السيناريو (ر.س)'},{k:'delta',t:'الفرق (ر.س)'},{k:'pct',t:'نسبة الفرق %'}
+  ], name, 'تقرير-سيناريو-' + name.slice(0,16), null, ['area','cur','newV','delta']);
+}
+function buildScenPrintDoc(){
+  const c = scenCompute();
+  const name = ($('#scenName').value.trim() || 'سيناريو تسعير');
+  const div = document.createElement('div');
+  div.className = 'print-doc pd-gold';
+  div.innerHTML = `
+    <div class="pd-band"><h2>${esc(name)}</h2><span class="pd-no">تقرير سيناريو تسعير</span></div>
+    <div class="pd-meta">
+      <span class="pd-item">تاريخ الإصدار: ${esc(todayStr())}</span>
+      <span class="pd-item">النطاق: ${scenSel.size ? [...scenSel].map(esc).join(' + ') : '—'}${scenType ? ' · ' + esc(scenType) : ''}${scenBlock ? ' · بلك ' + esc(scenBlock) : ''}</span>
+      <span class="pd-item">سعر المتر المطبق: ${fmtNum.format(scenPpm||0)} ر.س/م²</span>
+      <span class="pd-item" style="background:#fde68a;color:#78350f;border-color:#f59e0b">قيمة السيناريو: ${fmtMoney.format(c.newVal)} ر.س (${fmtInt.format(c.count)} قطعة)</span>
+      <span class="pd-item" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0">الفرق عن الأساسي: ${c.delta>=0?'+':''}${fmtMoney.format(c.delta)} ر.س (${c.deltaPct>=0?'+':''}${c.deltaPct.toFixed(1)}%)</span>
+    </div>
+    <table class="pd-table"><thead><tr><th>البلك</th><th>القطع</th><th>المساحة (م²)</th><th>القيمة الأساسية (ر.س)</th><th>قيمة السيناريو (ر.س)</th><th>الفرق (ر.س)</th><th>نسبة الفرق</th></tr></thead>
+    <tbody>${c.byBlock.map(o=>{
+      const d = o.newV - o.cur, p = o.cur ? d/o.cur*100 : 0;
+      return `<tr><td class="num">${esc(o.block)}</td><td class="num">${fmtInt.format(o.count)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtMoney.format(o.cur)}</td><td class="num">${fmtMoney.format(o.newV)}</td><td class="num">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td></tr>`;
+    }).join('')}</tbody>
+    <tfoot><tr><td>الإجمالي</td><td class="num">${fmtInt.format(c.count)}</td><td class="num">${fmtMoney.format(c.area)}</td><td class="num">${fmtMoney.format(c.cur)}</td><td class="num">${fmtMoney.format(c.newVal)}</td><td class="num">${c.delta>=0?'+':''}${fmtMoney.format(c.delta)}</td><td class="num">${c.deltaPct>=0?'+':''}${c.deltaPct.toFixed(1)}%</td></tr></tfoot></table>
+    <div class="pd-credit">أُصدر بواسطة نظام متابعة الأراضي — ${todayAr()} · هذا السيناريو افتراضي ولا يغيّر الأسعار الأساسية</div>`;
+  document.body.appendChild(div);
+  return div;
+}
+function exportScenPdf(){
+  const c = scenCompute();
+  if(!c.count){ toast('اختر نطاقاً يشمل قطعاً أولاً', 'warn'); return; }
+  if(!checkLib('jspdf') || !checkLib('html2canvas')) return;
+  const doc = buildScenPrintDoc();
+  const name = ($('#scenName').value.trim() || 'سيناريو').slice(0,24);
+  doExportPdf(doc, 'تقرير-سيناريو-' + name, 3).then(()=>doc.remove());
+}
+function exportScenPng(){
+  const c = scenCompute();
+  if(!c.count){ toast('اختر نطاقاً يشمل قطعاً أولاً', 'warn'); return; }
+  if(!checkLib('html2canvas')) return;
+  const doc = buildScenPrintDoc();
+  const name = ($('#scenName').value.trim() || 'سيناريو').slice(0,24);
+  doExportPng(doc, 'تقرير-سيناريو-' + name, 3).then(()=>doc.remove());
+}
+
 /* ===== Tabs engine (global component) ===== */
 function initTabGroup(opts){
   const bar = $('#' + opts.barId);
@@ -4868,6 +5304,7 @@ function switchView(name){
   $('#side').classList.remove('open');
   $('#sideMask').classList.remove('show');
   if(name === 'archive') renderArchive();
+  if(name === 'scenarios') renderScenarios();
   if(name === 'backup'){ renderBackup(); renderStatusManager(); renderRegStatusManager(); renderTaxStatusManager(); renderCloudCard(); renderRecycle(); renderUsersGroup(); updateAccBadges(); }
 }
 function renderAll(){
@@ -4875,6 +5312,8 @@ function renderAll(){
   renderRegistry();
   renderReports();
   renderBuilder();
+  renderScenChips();
+  renderScenLib();
   refreshFilterOptions();
   updateStorageChip();
   updateArchBadge();
@@ -5690,6 +6129,52 @@ function bindEvents(){
     else importXlsxFile(f);
     e.target.value = '';
   });
+
+  /* ===== Scenarios events ===== */
+  $('#scenStatusChips').addEventListener('click', e=>{
+    const ch = e.target.closest('[data-scst]');
+    if(!ch) return;
+    const n = ch.dataset.scst;
+    if(scenSel.has(n)) scenSel.delete(n); else scenSel.add(n);
+    renderScenChips();
+    renderScenarioResults();
+  });
+  $('#scenType').addEventListener('change', e=>{ scenType = e.target.value; renderScenarioResults(); });
+  $('#scenBlock').addEventListener('change', e=>{ scenBlock = e.target.value; renderScenarioResults(); });
+  $('#scenPpm').addEventListener('input', e=>{ const v = parseFloat(e.target.value); scenPpm = isNaN(v) ? null : v; renderScenarioResults(); });
+  $('#btnScenSave').addEventListener('click', saveScenario);
+  $('#btnScenReset').addEventListener('click', ()=>{
+    scenSel = new Set(); scenType = ''; scenBlock = ''; scenPpm = null;
+    $('#scenType').value = ''; $('#scenBlock').value = ''; $('#scenPpm').value = ''; $('#scenName').value = '';
+    renderScenChips();
+    renderScenarioResults();
+  });
+  $('#scenLib').addEventListener('click', e=>{
+    const b = e.target.closest('button[data-scact]');
+    if(b){
+      const id = +b.dataset.scid;
+      if(b.dataset.scact === 'open') openScenario(id);
+      else if(b.dataset.scact === 'del') deleteScenario(id);
+      else if(b.dataset.scact === 'dup') duplicateScenario(id);
+      else if(b.dataset.scact === 'ren') renameScenario(id);
+      return;
+    }
+    const card = e.target.closest('.sc-card');
+    if(card && !e.target.closest('.sc-cmp-chk') && !e.target.closest('.sc-acts')) openScenario(+card.dataset.scid);
+  });
+  $('#scenLib').addEventListener('change', e=>{
+    const chk = e.target.closest('input[data-scchk]');
+    if(!chk) return;
+    const id = +chk.dataset.scchk;
+    if(chk.checked){
+      if(scenCompare.size >= 3){ chk.checked = false; toast('يمكن مقارنة 3 سيناريوهات كحد أقصى', 'warn'); return; }
+      scenCompare.add(id);
+    } else scenCompare.delete(id);
+    renderScenLib();
+  });
+  $('#btnScenXlsx').addEventListener('click', exportScenExcel);
+  $('#btnScenPdf').addEventListener('click', exportScenPdf);
+  $('#btnScenPng').addEventListener('click', exportScenPng);
 }
 let fileMode = 'json';
 
@@ -5704,6 +6189,7 @@ regPrefs = loadRegPrefs();
 regTrackStatuses = loadRegTrackStatuses();
 recycleBin = loadRecycle();
 loadTemplates();
+scenarios = loadScenarios();
 bindEvents();
 refreshFilterOptions();
 renderAll();
