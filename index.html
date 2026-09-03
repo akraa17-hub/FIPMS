@@ -4594,9 +4594,15 @@ function buildOpsReport(from, to){
     const dates = [tax && tax.date, reg && reg.date, transfer].filter(Boolean);
     let lastOpDate = '';
     if(dates.length) lastOpDate = dates.slice().sort().pop();
+    let taxStatus = tax ? tax.status : '';
+    let regStatus = reg ? reg.status : '';
+    if(transfer){
+      taxStatus = 'تم سداد الضريبة';
+      if(reg) regStatus = 'تم صدور الصك العيني';
+    }
     rows.push({
       id: r.id, block: r.block, landNo: r.landNo, buyer: r.clientName || '',
-      regStatus: reg ? reg.status : '', taxStatus: tax ? tax.status : '',
+      regStatus, taxStatus,
       transfer: transfer || '', value: r.value, lastOpDate
     });
   }
