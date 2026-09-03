@@ -379,6 +379,8 @@ body.dense table.reg{font-size:.76rem}
 .preview-tbl tfoot td{position:sticky;bottom:0;background:#eef4ff;font-weight:800;color:#1e40af;padding:10px 11px;border-top:2px solid #bfdbfe}
 .ops-tbl tfoot td{position:static}
 .ops-tbl tfoot tr.tr-row td{background:#d1fae5;color:#065f46;border-top:1px solid #a7f3d0}
+.ops-summary{margin:14px 18px 16px;background:#d1fae5;border:1px solid #a7f3d0;border-radius:12px;padding:12px 16px;display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;font-weight:800;color:#065f46}
+.ops-summary .num{direction:ltr;display:inline-block;font-variant-numeric:tabular-nums}
 
 /* ===== Status manager ===== */
 .st-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
@@ -4572,6 +4574,33 @@ let opsOnlyTr = false;
 function opsActiveRows(){
   return opsOnlyTr ? opsRows.filter(r=>r.transfer) : opsRows;
 }
+function opsSummary(){
+  const trRows = opsRows.filter(r=>r.transfer);
+  const count = trRows.length;
+  const area = Math.round(trRows.reduce((s,r)=>s+(r.area||0),0)*100)/100;
+  const value = Math.round(trRows.reduce((s,r)=>s+(r.value||0),0)*100)/100;
+  const totalArea = records.reduce((s,r)=>s+(r.area||0),0);
+  const ratio = totalArea > 0 ? (area / totalArea) * 100 : 0;
+  return {count, area, value, ratio};
+}
+function opsSummaryHtml(){
+  const s = opsSummary();
+  return `<div class="ops-summary">
+    <span>عدد القطع المفرغة: <b class="num">${s.count}</b></span>
+    <span>إجمالي المساحة: <b class="num">${fmtMoney.format(s.area)}</b> م²</span>
+    <span>إجمالي قيمة الإفراغات: <b class="num">${fmtMoney.format(s.value)}</b> ر.س</span>
+    <span>نسبة المساحة المفرغة إلى الكلية: <b class="num">${s.ratio.toFixed(2)}%</b></span>
+  </div>`;
+}
+function opsSummaryPrintHtml(){
+  const s = opsSummary();
+  return `<div style="margin-top:12px;background:#d1fae5;border:1px solid #a7f3d0;border-radius:11px;padding:11px 14px;display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;font-weight:800;color:#065f46">
+    <span>عدد القطع المفرغة: ${s.count}</span>
+    <span>إجمالي المساحة: ${fmtMoney.format(s.area)} م²</span>
+    <span>إجمالي قيمة الإفراغات: ${fmtMoney.format(s.value)} ر.س</span>
+    <span>نسبة المساحة المفرغة إلى الكلية: ${s.ratio.toFixed(2)}%</span>
+  </div>`;
+}
 function opsData(){
   const taxMap = new Map();
   const regMap = new Map();
@@ -4615,7 +4644,7 @@ function buildOpsReport(from, to){
     }
     rows.push({
       id: r.id, block: r.block, landNo: r.landNo, buyer: r.clientName || '',
-      regStatus, taxStatus,
+      regStatus, taxStatus, area: r.area,
       transfer: transfer || '', value: r.value, lastOpDate
     });
   }
@@ -4637,8 +4666,7 @@ function renderOpsReport(){
       return;
     }
     wrap.innerHTML = `<table class="preview-tbl ops-tbl"><thead><tr><th>رقم القطعة</th><th>القيمة (ر.س)</th><th>تاريخ الإفراغ</th></tr></thead>
-    <tbody>${rows.map(r=>`<tr><td class="num">${esc(r.landNo || '—')}</td><td class="num">${money2(r.value)}</td><td class="num">${esc(r.transfer || '—')}</td></tr>`).join('')}</tbody>
-    <tfoot><tr class="tr-row"><td>الإجمالي — ${rows.length} قطعة مفرغة</td><td class="num">${fmtMoney.format(tVal)}</td><td></td></tr></tfoot></table>`;
+    <tbody>${rows.map(r=>`<tr><td class="num">${esc(r.landNo || '—')}</td><td class="num">${money2(r.value)}</td><td class="num">${esc(r.transfer || '—')}</td></tr>`).join('')}</tbody></table>` + opsSummaryHtml();
     return;
   }
   $('#opsCount').textContent = opsRows.length ? `(${opsRows.length} قطعة)` : '';
@@ -4662,7 +4690,7 @@ function renderOpsReport(){
     <td class="num">${esc(r.lastOpDate || '—')}</td>
   </tr>`).join('')}</tbody>
   <tfoot><tr><td colspan="7">الإجمالي — ${opsRows.length} قطعة</td><td class="num">${fmtMoney.format(tVal)}</td><td></td></tr>
-  <tr class="tr-row"><td colspan="7">إجمالي الإفراغات — ${tTr.length} قطعة مفرغة</td><td class="num">${fmtMoney.format(tTrVal)}</td><td></td></tr></tfoot></table>`;
+  <tr class="tr-row"><td colspan="7">إجمالي الإفراغات — ${tTr.length} قطعة مفرغة</td><td class="num">${fmtMoney.format(tTrVal)}</td><td></td></tr></tfoot></table>` + opsSummaryHtml();
 }
 function buildOpsPrintDoc(){
   const from = $('#opsFrom').value || todayStr();
@@ -4682,8 +4710,8 @@ function buildOpsPrintDoc(){
         <span class="pd-item" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0">إجمالي قيمة الإفراغات: ${fmtMoney.format(tTrVal)} ر.س (${tTr.length} قطعة)</span>
       </div>
       <table class="pd-table"><thead><tr><th>رقم القطعة</th><th>القيمة (ر.س)</th><th>تاريخ الإفراغ</th></tr></thead>
-      <tbody>${rows.map(r=>`<tr><td class="num">${esc(r.landNo||'—')}</td><td class="num">${fmtMoney.format(r.value||0)}</td><td class="num">${esc(r.transfer||'—')}</td></tr>`).join('')}</tbody>
-      <tfoot><tr style="background:#d1fae5"><td style="color:#065f46;font-weight:800">الإجمالي — ${rows.length} قطعة مفرغة</td><td class="num" style="color:#065f46;font-weight:800">${fmtMoney.format(tVal)}</td><td></td></tr></tfoot></table>
+      <tbody>${rows.map(r=>`<tr><td class="num">${esc(r.landNo||'—')}</td><td class="num">${fmtMoney.format(r.value||0)}</td><td class="num">${esc(r.transfer||'—')}</td></tr>`).join('')}</tbody></table>
+      ${opsSummaryPrintHtml()}
       <div class="pd-credit">أُصدر بواسطة نظام متابعة الأراضي — ${todayAr()}</div>`;
     document.body.appendChild(div);
     return div;
@@ -4700,6 +4728,7 @@ function buildOpsPrintDoc(){
     <tbody>${opsRows.map((r,i)=>`<tr><td class="num">${i+1}</td><td class="num">${esc(r.block||'—')}</td><td class="num">${esc(r.landNo||'—')}</td><td>${esc(r.buyer||'—')}</td><td>${esc(r.regStatus||'—')}</td><td>${esc(r.taxStatus||'—')}</td><td class="num">${esc(r.transfer||'—')}</td><td class="num">${fmtMoney.format(r.value||0)}</td><td class="num">${esc(r.lastOpDate||'—')}</td></tr>`).join('')}</tbody>
     <tfoot><tr><td colspan="7">الإجمالي — ${opsRows.length} قطعة</td><td class="num">${fmtMoney.format(tVal)}</td><td></td></tr>
     <tr style="background:#d1fae5"><td colspan="7" style="color:#065f46;font-weight:800">إجمالي الإفراغات — ${tTr.length} قطعة مفرغة</td><td class="num" style="color:#065f46;font-weight:800">${fmtMoney.format(tTrVal)}</td><td></td></tr></tfoot></table>
+    ${opsSummaryPrintHtml()}
     <div class="pd-credit">أُصدر بواسطة نظام متابعة الأراضي — ${todayAr()}</div>`;
   document.body.appendChild(div);
   return div;
@@ -4709,20 +4738,25 @@ function exportOpsExcel(){
   if(opsOnlyTr){
     const rows = opsActiveRows();
     if(!rows.length){ toast('لا توجد إفراغات في الفترة المحددة', 'warn'); return; }
-    const tVal = rows.reduce((s,r)=>s+(r.value||0),0);
+    const s = opsSummary();
     const out = rows.map(r=>({landNo:r.landNo, value:r.value, transfer:r.transfer||'—'}));
-    out.push({landNo:'الإجمالي — ' + rows.length + ' قطعة مفرغة', value:tVal, transfer:''});
+    out.push({landNo:'إجمالي — ' + rows.length + ' قطعة مفرغة', value:s.value, transfer:''});
+    out.push({landNo:'إجمالي المساحة (م²)', value:s.area, transfer:''});
+    out.push({landNo:'نسبة المساحة المفرغة إلى الكلية', value:Math.round(s.ratio*100)/100, transfer:'%'});
     exportExcelRows(out, [
       {k:'landNo',t:'رقم القطعة'},{k:'value',t:'القيمة (ر.س)'},{k:'transfer',t:'تاريخ الإفراغ'}
     ], 'الإفراغات', 'تقرير-الإفراغات', null, ['value']);
     return;
   }
-  const tVal = opsRows.reduce((s,r)=>s+(r.value||0),0);
+  const s = opsSummary();
+  const tVal = opsRows.reduce((s2,r)=>s2+(r.value||0),0);
   const tTr = opsRows.filter(r=>r.transfer);
   const tTrVal = tTr.reduce((s,r)=>s+(r.value||0),0);
   const rows = opsRows.map(r=>({block:r.block, landNo:r.landNo, buyer:r.buyer||'—', regStatus:r.regStatus||'—', taxStatus:r.taxStatus||'—', transfer:r.transfer||'—', value:r.value, lastOpDate:r.lastOpDate||'—'}));
   rows.push({block:'الإجمالي الكلي', landNo:'', buyer:'', regStatus:'', taxStatus:'', transfer:opsRows.length + ' قطعة', value:tVal, lastOpDate:''});
   rows.push({block:'إجمالي الإفراغات', landNo:'', buyer:'', regStatus:'', taxStatus:'', transfer:tTr.length + ' قطعة مفرغة', value:tTrVal, lastOpDate:''});
+  rows.push({block:'إجمالي المساحة المفرغة (م²)', landNo:'', buyer:'', regStatus:'', taxStatus:'', transfer:'', value:s.area, lastOpDate:''});
+  rows.push({block:'نسبة المساحة المفرغة إلى الكلية', landNo:'', buyer:'', regStatus:'', taxStatus:'', transfer:'', value:Math.round(s.ratio*100)/100, lastOpDate:'%'});
   exportExcelRows(rows, [
     {k:'block',t:'البلك'},{k:'landNo',t:'رقم القطعة'},{k:'buyer',t:'المشتري'},{k:'regStatus',t:'آخر حالة تسجيل عيني'},{k:'taxStatus',t:'آخر حالة ضريبة تصرفات'},{k:'transfer',t:'الإفراغ'},{k:'value',t:'القيمة (ر.س)'},{k:'lastOpDate',t:'تاريخ آخر عملية'}
   ], 'تقرير العمليات', 'تقرير-العمليات-اليومي', null, ['value']);
