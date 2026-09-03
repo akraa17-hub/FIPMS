@@ -268,6 +268,27 @@ body.dense table.reg td{padding:5px 8px}
 body.dense table.reg th{padding:8px 9px}
 body.dense table.reg{font-size:.76rem}
 
+/* ===== Tabs (global component) ===== */
+.tabbar{position:sticky;top:66px;z-index:30;display:flex;gap:6px;align-items:center;overflow-x:auto;scrollbar-width:none;background:var(--bg);padding:10px 0 12px;margin-bottom:16px;border-radius:0}
+.tabbar::-webkit-scrollbar{display:none}
+.tab-pill{position:relative;flex:none;display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:99px;border:1px solid var(--border2);background:#fff;color:var(--muted);font-size:.84rem;font-weight:700;cursor:pointer;transition:color .16s,background .16s,border-color .16s;white-space:nowrap}
+.tab-pill:hover{color:var(--primary-d);border-color:var(--primary)}
+.tab-pill.active{background:var(--navy);color:#fff;border-color:var(--navy);box-shadow:0 4px 14px rgba(11,18,32,.25)}
+.tab-pill:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.tab-badge{background:var(--primary);color:#fff;border-radius:99px;font-size:.66rem;font-weight:800;padding:1px 8px;direction:ltr;display:inline-block}
+.tab-pill.active .tab-badge{background:#fff;color:var(--navy)}
+.tab-panel{display:none}
+.tab-panel.active{display:block;animation:panelFade .18s ease}
+@keyframes panelFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+  .tab-panel.active{animation:none}
+  .tab-pill{transition:none}
+}
+@media(max-width:640px){
+  .tabbar{top:60px}
+  .tab-pill{padding:8px 14px;font-size:.78rem}
+}
+
 /* ===== Toast ===== */
 .toast-wrap{position:fixed;bottom:22px;inset-inline-start:22px;z-index:200;display:flex;flex-direction:column;gap:9px}
 .toast{background:#0f172a;color:#fff;padding:11px 18px;border-radius:12px;font-size:.84rem;font-weight:500;display:flex;align-items:center;gap:9px;box-shadow:0 10px 30px rgba(2,6,23,.35);animation:slideUp .25s ease;max-width:380px}
@@ -641,6 +662,13 @@ body.dense table.reg{font-size:.76rem}
 
       <!-- ===== Reports ===== -->
       <section id="view-reports" class="view" data-title="التقارير" data-sub="تقارير تحليلية جاهزة للتصدير">
+        <div class="tabbar" id="reportsTabbar" role="tablist" aria-label="تبويبات التقارير">
+          <button class="tab-pill active" role="tab" id="rtab-summ" aria-selected="true" aria-controls="panel-summ">الملخصات</button>
+          <button class="tab-pill" role="tab" id="rtab-tax" aria-selected="false" aria-controls="panel-tax">طلبات الضريبة <span class="tab-badge" id="taxTabBadge" style="display:none"></span></button>
+          <button class="tab-pill" role="tab" id="rtab-reg" aria-selected="false" aria-controls="panel-reg">التسجيل العيني <span class="tab-badge" id="regTabBadge" style="display:none"></span></button>
+          <button class="tab-pill" role="tab" id="rtab-ops" aria-selected="false" aria-controls="panel-ops">تقرير العمليات <span class="tab-badge" id="opsTabBadge" style="display:none"></span></button>
+        </div>
+        <div class="tab-panel active" id="panel-summ" role="tabpanel" aria-labelledby="rtab-summ">
         <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#eef4ff,#f5f3ff)">
           <div class="card-b" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 20px">
             <div>
@@ -689,6 +717,8 @@ body.dense table.reg{font-size:.76rem}
           </div>
           <div class="card-b flush" style="overflow:auto"><table class="rpt" id="rptClientTable"></table></div>
         </div>
+        </div>
+        <div class="tab-panel" id="panel-tax" role="tabpanel" aria-labelledby="rtab-tax">
         <div class="card" style="margin-top:16px">
           <div class="card-h">
             <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></svg>سجل طلبات ضريبة التصرفات
@@ -701,6 +731,8 @@ body.dense table.reg{font-size:.76rem}
           <div class="kpis" id="taxLogKpis" style="margin:16px 20px 0"></div>
           <div class="card-b flush" style="overflow:auto"><table class="rpt" id="taxLogTbl"></table></div>
         </div>
+        </div>
+        <div class="tab-panel" id="panel-reg" role="tabpanel" aria-labelledby="rtab-reg">
         <div class="card" style="margin-top:16px">
           <div class="card-h">
             <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></svg>سجل طلبات التسجيل العيني
@@ -713,6 +745,8 @@ body.dense table.reg{font-size:.76rem}
           <div class="kpis" id="regLogKpis" style="margin:16px 20px 0"></div>
           <div class="card-b flush" style="overflow:auto"><table class="rpt" id="regLogTbl"></table></div>
         </div>
+        </div>
+        <div class="tab-panel" id="panel-ops" role="tabpanel" aria-labelledby="rtab-ops">
         <div class="card" style="margin-top:16px" id="opsCard">
           <div class="card-h">
             <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-8"/></svg>تقرير العمليات اليومي للإدارة
@@ -733,6 +767,7 @@ body.dense table.reg{font-size:.76rem}
             </div>
           </div>
           <div class="card-b flush" style="overflow:auto" id="opsWrap"></div>
+        </div>
         </div>
       </section>
 
@@ -866,12 +901,27 @@ body.dense table.reg{font-size:.76rem}
       </section>
 
       <!-- ===== Backup ===== -->
+      
       <section id="view-backup" class="view" data-title="النسخ الاحتياطي والإعدادات" data-sub="تصدير واستيراد البيانات وإدارة السجل">
         <div class="kpis" id="backupKpis"></div>
-        <div class="acc">
-          <div class="acc-item">
-            <button class="acc-head" data-acc="accBodyData"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>البيانات والنسخ الاحتياطي<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
-            <div class="acc-body" id="accBodyData">
+        <div class="tabbar" id="settingsTabbar" role="tablist" aria-label="تبويبات الإعدادات">
+          <button class="tab-pill active" role="tab" id="stab-cloud" aria-selected="true" aria-controls="panel-set-cloud"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98A6.5 6.5 0 1 0 5.64 16.6"/><path d="M12 13v9"/><path d="m8 17 4-4 4 4"/></svg>الحساب والاتصال <span class="tab-badge" id="cloudAccBadge">محلي</span></button>
+          <button class="tab-pill" role="tab" id="stab-users" aria-selected="false" aria-controls="panel-set-users"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>المستخدمون والصلاحيات</button>
+          <button class="tab-pill" role="tab" id="stab-data" aria-selected="false" aria-controls="panel-set-data"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>البيانات والنسخ الاحتياطي</button>
+          <button class="tab-pill" role="tab" id="stab-recycle" aria-selected="false" aria-controls="panel-set-recycle"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>سلة المحذوفات <span class="tab-badge" id="recycleAccCount"></span></button>
+          <button class="tab-pill" role="tab" id="stab-statuses" aria-selected="false" aria-controls="panel-set-statuses"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z"/></svg>الحالات المخصصة <span class="tab-badge" id="statusesCount"></span></button>
+        </div>
+        <div class="tab-panel active" id="panel-set-cloud" role="tabpanel" aria-labelledby="stab-cloud">
+        <div class="card" id="cloudCard">
+          <div class="card-h">
+            <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98A6.5 6.5 0 1 0 5.64 16.6"/><path d="M12 13v9"/><path d="m8 17 4-4 4 4"/></svg>الاتصال السحابي — المشاركة متعددة المستخدمين</h3>
+            <span class="badge b-slate" id="cloudModeBadge">محلي</span>
+          </div>
+          <div class="card-b" id="cloudCardBody"></div>
+        </div>
+        </div>
+        <div class="tab-panel" id="panel-set-users" role="tabpanel" aria-labelledby="stab-users"></div>
+        <div class="tab-panel" id="panel-set-data" role="tabpanel" aria-labelledby="stab-data">
         <div class="b-grid">
           <div class="card">
             <div class="card-h"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>نسخة احتياطية كاملة (JSON)</h3></div>
@@ -925,7 +975,7 @@ body.dense table.reg{font-size:.76rem}
             </div>
           </div>
         </div>
-<div class="card" style="margin-top:16px">
+        <div class="card" style="margin-top:16px">
           <div class="card-h"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>إدارة البيانات</h3></div>
             <div class="card-b">
               <div class="b-item">
@@ -942,38 +992,16 @@ body.dense table.reg{font-size:.76rem}
             </div>
           </div>
         </div>
-            </div>
-          </div>
-          <div class="acc-item open">
-            <button class="acc-head" data-acc="accBodyCloud"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98A6.5 6.5 0 1 0 5.64 16.6"/><path d="M12 13v9"/><path d="m8 17 4-4 4 4"/></svg>الحساب والاتصال السحابي<span class="acc-badge" id="cloudAccBadge">محلي</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
-            <div class="acc-body" id="accBodyCloud">
-        <div class="card" id="cloudCard">
-          <div class="card-h">
-            <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98A6.5 6.5 0 1 0 5.64 16.6"/><path d="M12 13v9"/><path d="m8 17 4-4 4 4"/></svg>الاتصال السحابي — المشاركة متعددة المستخدمين</h3>
-            <span class="badge b-slate" id="cloudModeBadge">محلي</span>
-          </div>
-          <div class="card-b" id="cloudCardBody"></div>
-        </div>
-            </div>
-          </div>
-          <div class="acc-item">
-            <button class="acc-head" data-acc="accBodyUsers"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>المستخدمون والصلاحيات<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
-            <div class="acc-body" id="accBodyUsers"></div>
-          </div>
-          <div class="acc-item">
-            <button class="acc-head" data-acc="accBodyRecycle"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>سلة المحذوفات<span class="acc-badge" id="recycleAccCount"></span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
-            <div class="acc-body" id="accBodyRecycle">
+        <div class="tab-panel" id="panel-set-recycle" role="tabpanel" aria-labelledby="stab-recycle">
         <div class="card">
           <div class="card-h">
             <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>سلة المحذوفات <span class="sub" id="recycleCount"></span></h3>
           </div>
           <div class="card-b flush" style="overflow:auto"><table class="rpt" id="recycleTbl"></table></div>
         </div>
-            </div>
-          </div>
-          <div class="acc-item">
-            <button class="acc-head" data-acc="accBodyStatuses"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z"/></svg>الحالات المخصصة<span class="acc-badge" id="statusesCount"></span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
-            <div class="acc-body" id="accBodyStatuses">        <div class="card" style="margin-top:16px">
+        </div>
+        <div class="tab-panel" id="panel-set-statuses" role="tabpanel" aria-labelledby="stab-statuses">
+        <div class="card" style="margin-top:16px">
           <div class="card-h">
             <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z"/></svg>إدارة حالات الأراضي</h3>
           </div>
@@ -1030,8 +1058,6 @@ body.dense table.reg{font-size:.76rem}
             </div>
           </div>
         </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -1884,7 +1910,7 @@ function renderReports(){
 
 /* ===== Backup view ===== */
 function renderUsersGroup(){
-  const el = $('#accBodyUsers');
+  const el = $('#panel-set-users');
   if(!el) return;
   if(cloudReady){
     el.innerHTML = `<div class="b-item"><div class="bi-ico" style="background:var(--sky-soft);color:var(--sky-txt)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
@@ -3151,6 +3177,7 @@ function renderTaxLog(){
   const sortedL = taxLog.slice().sort((a,b)=> (b.issueNo||0) - (a.issueNo||0));
   const tVal = taxLog.reduce((s,x)=>s+(x.totalValue||0),0);
   const tTax = taxLog.reduce((s,x)=>s+(x.totalTax||0),0);
+  setTabBadge('taxTabBadge', taxLog.length);
   $('#taxLogCount').textContent = taxLog.length ? `(${taxLog.length} طلب)` : '';
   $('#taxLogKpis').innerHTML = [
     {lbl:'طلبات صادرة', val:fmtInt.format(taxLog.length), sub:'طلب ضريبة تصرفات', ico:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></svg>', cls:'c-blue'},
@@ -3575,6 +3602,7 @@ function issueRegRequest(){
 function renderRegLog(){
   const sortedL = regLog.slice().sort((a,b)=> (b.issueNo||0) - (a.issueNo||0));
   const tPlots = regLog.reduce((s,x)=>s+(x.count||0),0);
+  setTabBadge('regTabBadge', regLog.length);
   $('#regLogCount').textContent = regLog.length ? `(${regLog.length} طلب)` : '';
   $('#regLogKpis').innerHTML = [
     {lbl:'طلبات صادرة', val:fmtInt.format(regLog.length), sub:'طلب تسجيل عيني', ico:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></svg>', cls:'c-teal'},
@@ -4655,6 +4683,7 @@ function renderOpsReport(){
   const from = $('#opsFrom').value || todayStr();
   const to = $('#opsTo').value || todayStr();
   opsRows = buildOpsReport(from, to);
+  setTabBadge('opsTabBadge', opsActiveRows().length);
   const wrap = $('#opsWrap');
   if(!wrap) return;
   if(opsOnlyTr){
@@ -4772,6 +4801,60 @@ function exportOpsPng(){
   if(!checkLib('html2canvas')) return;
   const doc = buildOpsPrintDoc();
   doExportPng(doc, opsOnlyTr ? 'تقرير-الإفراغات' : 'تقرير-العمليات-اليومي', 3).then(()=>doc.remove());
+}
+
+/* ===== Tabs engine (global component) ===== */
+function initTabGroup(opts){
+  const bar = $('#' + opts.barId);
+  if(!bar) return null;
+  const keys = [];
+  const apply = (key, setHash)=>{
+    bar.querySelectorAll('.tab-pill').forEach(b=>{
+      const on = b.id === opts.prefix + key;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    bar.closest('.view').querySelectorAll('.tab-panel').forEach(p=>{
+      p.classList.toggle('active', p.id === 'panel-' + opts.panelPrefix + key);
+    });
+    try{ sessionStorage.setItem(opts.storageKey, key); }catch(e){}
+    if(setHash && opts.hashNs){ try{ history.replaceState(null, '', '#' + opts.hashNs + '=' + key); }catch(e){} }
+    if(opts.onChange) opts.onChange(key);
+  };
+  bar.querySelectorAll('.tab-pill').forEach(b=>{
+    const k = b.id.replace(opts.prefix, '');
+    keys.push(k);
+    b.addEventListener('click', ()=> apply(k, true));
+    b.addEventListener('keydown', e=>{
+      let nk = null;
+      const i = keys.indexOf(k);
+      if(e.key === 'ArrowLeft' || e.key === 'ArrowRight'){
+        e.preventDefault();
+        const dir = document.dir === 'rtl' ? (e.key === 'ArrowLeft' ? 1 : -1) : (e.key === 'ArrowRight' ? 1 : -1);
+        nk = keys[(i + dir + keys.length) % keys.length];
+      }else if(e.key === 'Home'){ e.preventDefault(); nk = keys[0]; }
+      else if(e.key === 'End'){ e.preventDefault(); nk = keys[keys.length - 1]; }
+      if(nk){ apply(nk, true); const el = bar.querySelector('#' + opts.prefix + nk); if(el) el.focus(); }
+    });
+  });
+  let initial = '';
+  try{ initial = sessionStorage.getItem(opts.storageKey) || ''; }catch(e){}
+  try{
+    if(opts.hashNs){
+      const h = /#([\w-]+)=([\w-]+)/.exec(location.hash);
+      if(h && h[1] === opts.hashNs) initial = h[2];
+    }
+  }catch(e){}
+  if(!keys.includes(initial)) initial = opts.defaultKey;
+  apply(initial, false);
+  return {apply, keys};
+}
+function setTabBadge(id, n){
+  const el = $('#' + id);
+  if(!el) return;
+  if(!n){ el.style.display = 'none'; el.textContent = ''; return; }
+  el.style.display = '';
+  el.textContent = n > 99 ? '99+' : String(n);
 }
 
 /* ===== Navigation / init ===== */
@@ -5196,12 +5279,12 @@ function bindEvents(){
     if(s){ $$('#taxStatusSwatches .swatch').forEach(x=>x.classList.remove('sel')); s.classList.add('sel'); }
   });
 
+  /* ===== Tab groups ===== */
+  initTabGroup({barId:'reportsTabbar', prefix:'rtab-', panelPrefix:'', storageKey:'fipms_report_tab', defaultKey:'summ', hashNs:'reports'});
+  initTabGroup({barId:'settingsTabbar', prefix:'stab-', panelPrefix:'set-', storageKey:'fipms_settings_tab', defaultKey:'cloud', hashNs:'settings'});
+
   /* ===== Topbar dropdowns & user chip ===== */
-  $('#view-backup').addEventListener('click', e=>{
-    const h = e.target.closest('.acc-head');
-    if(h && h.parentElement) h.parentElement.classList.toggle('open');
-  });
-  $('#accBodyUsers').addEventListener('click', e=>{
+  $('#panel-set-users').addEventListener('click', e=>{
     if(e.target.closest('#btnOpenUsersAcc')){ openUsersModal(); }
     else if(e.target.closest('#btnOpenRolesAcc')){ openRolesModal(); }
   });
