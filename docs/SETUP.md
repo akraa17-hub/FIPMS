@@ -9,7 +9,7 @@
    insert into public.user_roles (email, role) values ('akram@arshglobal.com.sa', 'مالك')
    on conflict (email) do update set role = 'مالك';
    ```
-> **ترقية من نسخة سابقة:** شغّل هذا الاستعلام وحده لمنح صلاحية «إدارة السيناريوهات» للأدوار القائمة (مالك/مشرف):
+> **ترقية من نسخة سابقة (تلقائية):** صلاحية «إدارة السيناريوهات» تُمنح تلقائياً للأدوار القائمة (مالك/مشرف) عند أول تسجيل دخول للمالك في التطبيق — لا حاجة لأي خطوة يدوية. وإن رغبت بتطبيقها فوراً يدوياً، شغّل:
 > ```sql
 > update public.roles
 >    set permissions = array(select distinct unnest(permissions || array['manage_scenarios']))

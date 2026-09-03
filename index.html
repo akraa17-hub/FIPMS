@@ -4214,6 +4214,7 @@ async function afterCloudLogin(){
   }catch(e){}
   cloudUser = {email, role, perms};
   cloudReady = true;
+  await migrateScenPermCloud();
   finishAuthOverlay();
   try{ localStorage.setItem(CACHED_USER_KEY, JSON.stringify(cloudUser)); }catch(e){}
   await loadAllCloud();
@@ -4233,6 +4234,22 @@ async function afterCloudLogin(){
   toast('تم الاتصال بالسحابة — أهلاً ' + (email || ''));
 }
 let otpPendingEmail = '';
+async function migrateScenPermCloud(){
+  if(!sbClient || !cloudSession) return;
+  if(!cloudUser || !cloudUser.perms.includes('manage_connection')) return;
+  try{
+    const {data} = await sbClient.from('roles').select('name, permissions');
+    const list = data || [];
+    const todo = list.filter(r=>Array.isArray(r.permissions) && r.permissions.includes('manage_templates') && !r.permissions.includes('manage_scenarios'));
+    for(const r of todo){
+      try{ await sbClient.from('roles').update({permissions:[...r.permissions, 'manage_scenarios']}).eq('name', r.name); }catch(e){}
+    }
+    if(todo.length){
+      if(todo.some(r=>r.name === cloudUser.role) && !cloudUser.perms.includes('manage_scenarios')) cloudUser.perms = [...cloudUser.perms, 'manage_scenarios'];
+      toast('مُحدث تلقائياً: مُنحت صلاحية «إدارة السيناريوهات» لأدوار: ' + todo.map(r=>r.name).join('، '));
+    }
+  }catch(e){}
+}
 async function loginCloud(email, password){
   if(!ensureSb()){ toast('أدخل إعدادات الاتصال أولاً', 'err'); return; }
   try{
