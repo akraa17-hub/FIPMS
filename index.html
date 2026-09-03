@@ -484,7 +484,29 @@ body.dense table.reg{font-size:.76rem}
 .pd-gold .pd-table th{background:#f59e0b;border-color:#b45309;color:#fff}
 .pd-gold .pd-table tbody tr:nth-child(even) td{background:#fffbeb}
 .pd-gold .pd-table tfoot td{background:#fde68a;color:#78350f;border-color:#f59e0b}
-@media(max-width:1024px){ .scen-grid{grid-template-columns:1fr} .scen-side{position:static} .scen-charts{grid-template-columns:1fr} }
+.scen-plan{border:2px solid #f59e0b;background:linear-gradient(180deg,#fffbeb,#ffffff);box-shadow:0 6px 18px rgba(180,83,9,.14);margin-bottom:14px}
+.scen-plan .card-h h3{color:#92400e}
+.scen-plan-metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}
+.spm{background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 12px;text-align:center;min-width:0}
+.spm .spm-lbl{font-size:.7rem;font-weight:800;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spm .spm-val{font-size:1.08rem;font-weight:900;color:var(--text);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spm .spm-sub{font-size:.68rem;color:var(--faint);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spm.gold{background:linear-gradient(135deg,#b45309,#d97706);border-color:#b45309}
+.spm.gold .spm-lbl,.spm.gold .spm-sub{color:rgba(255,255,255,.82)}
+.spm.gold .spm-val{color:#fff}
+.scen-plan-bars{display:flex;flex-direction:column;gap:9px}
+.spb-row{display:flex;align-items:center;gap:10px}
+.spb-lbl{width:110px;font-size:.75rem;font-weight:800;color:var(--txt2);flex-shrink:0}
+.spb-track{flex:1;height:26px;border-radius:99px;overflow:hidden;display:flex;background:#f1f5f9;border:1px solid var(--border2)}
+.spb-seg{height:100%;min-width:1.2%;transition:width .25s}
+.spb-val{width:230px;font-size:.74rem;font-weight:800;flex-shrink:0;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spb-legend{display:flex;gap:14px;font-size:.7rem;font-weight:700;color:var(--txt2);flex-wrap:wrap}
+.spb-legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-inline-end:5px;vertical-align:-1px}
+.tbl .tr-scope td{background:var(--gold-soft);color:var(--gold-txt);font-weight:900}
+.tbl .tr-rest td{background:#f8fafc;color:var(--txt2)}
+.tbl .tr-plan td{background:#fde68a;color:#78350f;font-weight:900}
+.sc-plan-chip{background:linear-gradient(135deg,#b45309,#d97706);color:#fff;border-radius:6px;padding:1px 8px;font-weight:900}
+@media(max-width:1024px){ .scen-grid{grid-template-columns:1fr} .scen-side{position:static} .scen-charts{grid-template-columns:1fr} .scen-plan-metrics{grid-template-columns:repeat(2,1fr)} .spb-row{flex-wrap:wrap} .spb-val{width:100%} }
 
 /* ===== Responsive ===== */
 @media(max-width:1024px){
@@ -977,6 +999,15 @@ body.dense table.reg{font-size:.76rem}
           </div>
 
           <div class="scen-results">
+            <div class="card scen-plan">
+              <div class="card-h">
+                <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>أثر السيناريو على المخطط ككل</h3>
+              </div>
+              <div class="card-b">
+                <div class="scen-plan-metrics" id="scenPlanMetrics"></div>
+                <div class="scen-plan-bars" id="scenPlanBars"></div>
+              </div>
+            </div>
             <div class="kpis" id="scenKpis"></div>
             <div class="scen-charts">
               <div class="card">
@@ -4981,7 +5012,29 @@ function scenCompute(){
   byType.sort((a,b)=>b.area-a.area);
   byBlock.sort((a,b)=>b.area-a.area);
   byStatus.sort((a,b)=>b.area-a.area);
-  return {rows, count:rows.length, area, cur, curAvg, newVal, newAvg:scenPpm != null ? scenPpm : 0, delta, deltaPct, byType, byBlock, byStatus};
+  const selIds = new Set(rows.map(r=>r.id));
+  const rest = records.filter(r=>!selIds.has(r.id));
+  const restArea = rest.reduce((s,r)=>s+(r.area||0),0);
+  const restVal = rest.reduce((s,r)=>s+(r.value||0),0);
+  const planBeforeVal = cur + restVal;
+  const planBeforeAvg = area + restArea ? planBeforeVal/(area + restArea) : 0;
+  const planAfterVal = scenPpm != null ? newVal + restVal : planBeforeVal;
+  const planAfterAvg = area + restArea ? planAfterVal/(area + restArea) : 0;
+  const planDelta = planAfterVal - planBeforeVal;
+  const planDeltaPct = planBeforeVal ? planDelta/planBeforeVal*100 : 0;
+  const weightArea = area + restArea ? area/(area + restArea)*100 : 0;
+  const weightVal = planBeforeVal ? cur/planBeforeVal*100 : 0;
+  const weightCnt = records.length ? rows.length/records.length*100 : 0;
+  const rMap = new Map();
+  for(const r of rest){
+    const st = getStatus(r);
+    if(!rMap.has(st)) rMap.set(st, {status:st, count:0, area:0, cur:0});
+    const o = rMap.get(st); o.count++; o.area += r.area||0; o.cur += r.value||0;
+  }
+  const restByStatus = [...rMap.values()].sort((a,b)=>b.area-a.area);
+  return {rows, count:rows.length, area, cur, curAvg, newVal, newAvg:scenPpm != null ? scenPpm : 0, delta, deltaPct, byType, byBlock, byStatus,
+    restCount:rest.length, restArea, restVal, restByStatus,
+    planBeforeVal, planBeforeAvg, planAfterVal, planAfterAvg, planDelta, planDeltaPct, weightArea, weightVal, weightCnt};
 }
 function renderScenChips(){
   const wrap = $('#scenStatusChips');
@@ -5008,6 +5061,38 @@ function renderScenLive(){
 }
 function scenKpiHtml(ico, cls, lbl, val, sub, deltaHtml){
   return `<div class="kpi ${cls}"><div class="kpi-ico">${ico}</div><div><div class="kpi-lbl">${lbl}</div><div class="kpi-val">${val}</div><div class="kpi-sub">${sub}</div>${deltaHtml||''}</div></div>`;
+}
+function spmHtml(cls, lbl, val, sub){
+  return `<div class="spm ${cls}"><div class="spm-lbl">${lbl}</div><div class="spm-val">${val}</div><div class="spm-sub">${sub}</div></div>`;
+}
+function renderScenPlan(){
+  const metrics = $('#scenPlanMetrics'), bars = $('#scenPlanBars');
+  if(!metrics) return;
+  const c = scenCompute();
+  const active = scenSel.size && c.count;
+  if(!active){
+    metrics.innerHTML = '<div class="hint" style="grid-column:1/-1">اختر نطاق الحالات لرؤية أثر السيناريو على المخطط ككل — القطع غير المختارة تبقى بأسعارها الأصلية.</div>';
+    bars.innerHTML = '';
+    return;
+  }
+  metrics.innerHTML = [
+    spmHtml('', 'قيمة المخطط قبل', fmtMoney.format(c.planBeforeVal), 'ريال سعودي'),
+    spmHtml('', 'قيمة المخطط بعد', scenPpm != null ? fmtMoney.format(c.planAfterVal) : '—', scenPpm != null ? (c.planDelta>=0?'+':'') + fmtMoney.format(c.planDelta) + ' (' + (c.planDeltaPct>=0?'+':'') + c.planDeltaPct.toFixed(1) + '%)' : 'لم يُحدد السعر بعد'),
+    spmHtml('', 'متوسط المتر للمخطط قبل', fmtNum.format(c.planBeforeAvg), 'ر.س / م²'),
+    spmHtml('gold', 'متوسط المتر للمخطط بعد', scenPpm != null ? fmtNum.format(c.planAfterAvg) : '—', 'ر.س / م² للقطع كافة'),
+    spmHtml('', 'أثر المحفظة', scenPpm != null ? (c.planDelta>=0?'+':'') + fmtMoney.format(c.planDelta) : '—', scenPpm != null ? (c.planDeltaPct>=0?'+':'') + c.planDeltaPct.toFixed(1) + '%' : 'ريال سعودي'),
+    spmHtml('', 'وزن النطاق', fmtInt.format(c.count) + ' قطعة', `${c.weightArea.toFixed(1)}% مساحة · ${c.weightVal.toFixed(1)}% قيمة · ${c.weightCnt.toFixed(1)}% قطع`)
+  ].join('');
+  const pct = v=>c.planBeforeVal ? (v/c.planBeforeVal*100).toFixed(2) : 0;
+  const seg = (w, bg, tip)=>`<div class="spb-seg" style="width:${Math.max(+w,1.2)}%;background:${bg}" title="${tip}"></div>`;
+  const beforeSegs = seg(pct(c.cur), '#0ea5e9', 'النطاق المختار (بالأسعار الأساسية)') + seg(pct(c.restVal), '#e2e8f0', 'بقية المخطط (أسعار أصلية)');
+  const afterSegs = scenPpm != null
+    ? seg(pct(c.newVal), '#d97706', 'النطاق المختار (بالسعر الجديد)') + seg(pct(c.restVal), '#e2e8f0', 'بقية المخطط (أسعار أصلية)')
+    : seg(100, '#e2e8f0', 'لم يُحدد السعر بعد');
+  bars.innerHTML = `
+    <div class="spb-row"><span class="spb-lbl">المخطط قبل</span><div class="spb-track">${beforeSegs}</div><span class="spb-val">${fmtMoney.format(c.planBeforeVal)} ر.س · ${fmtNum.format(c.planBeforeAvg)} ر.س/م²</span></div>
+    <div class="spb-row"><span class="spb-lbl">المخطط بعد</span><div class="spb-track">${afterSegs}</div><span class="spb-val">${scenPpm != null ? fmtMoney.format(c.planAfterVal) + ' ر.س · ' + fmtNum.format(c.planAfterAvg) + ' ر.س/م²' : '—'}</span></div>
+    <div class="spb-legend"><span><i style="background:#d97706"></i>النطاق المعاد تسعيره</span><span><i style="background:#0ea5e9"></i>النطاق المختار (أساسي)</span><span><i style="background:#e2e8f0"></i>بقية المخطط — أسعار أصلية</span></div>`;
 }
 function renderScenKpis(){
   const c = scenCompute();
@@ -5061,18 +5146,36 @@ function renderScenTable(){
   if(!wrap) return;
   const cnt = $('#scenDetailCount');
   if(cnt) cnt.textContent = c.count ? `(${fmtInt.format(c.count)} قطعة)` : '';
-  if(!c.count){ wrap.innerHTML = `<div class="empty"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6.292a7 7 0 1 0 4 0V2"/><path d="M8.5 2h7"/><path d="M7 16h8"/></svg><div class="t">لا توجد نتائج بعد</div><div class="s">اختر نطاق الحالات من لوحة البناء لترى التفاصيل هنا</div></div>`; return; }
+  if(!c.count || !scenSel.size){ wrap.innerHTML = `<div class="empty"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6.292a7 7 0 1 0 4 0V2"/><path d="M8.5 2h7"/><path d="M7 16h8"/></svg><div class="t">لا توجد نتائج بعد</div><div class="s">اختر نطاق الحالات من لوحة البناء لترى التفاصيل هنا</div></div>`; return; }
+  const hasPpm = scenPpm != null;
+  const diffCell = (d, p, muted)=>{
+    if(muted) return '<td class="num" style="color:var(--faint)">—</td><td class="num" style="color:var(--faint)">—</td>';
+    return `<td class="num" style="color:${d>=0?'#065f46':'#991b1b'};font-weight:800">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td>`;
+  };
   const scopeTxt = `النطاق: ${scenSel.size ? [...scenSel].map(esc).join(' + ') : '—'}${scenType ? ' · نوع: ' + esc(scenType) : ''}${scenBlock ? ' · بلك: ' + esc(scenBlock) : ''} · السعر الجديد: ${scenPpm != null ? fmtNum.format(scenPpm) + ' ر.س/م²' : '—'}`;
+  const selRows = c.byBlock.map(o=>{
+    const before = o.cur, after = hasPpm ? o.newV : o.cur;
+    const d = after - before, p = before ? d/before*100 : 0;
+    return `<tr><td><b>بلك ${esc(o.block)}</b> — مختار</td><td class="num">${fmtInt.format(o.count)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtMoney.format(before)}</td><td class="num">${fmtMoney.format(after)}</td>${diffCell(d, p, !hasPpm)}</tr>`;
+  }).join('');
+  const restRows = c.restByStatus.map(o=>
+    `<tr class="tr-rest"><td>حالة ${esc(o.status)} — بقية المخطط</td><td class="num">${fmtInt.format(o.count)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtMoney.format(o.cur)}</td><td class="num">${fmtMoney.format(o.cur)}</td>${diffCell(0, 0, true)}</tr>`
+  ).join('');
   wrap.innerHTML = `<div class="scen-tbl-scope">${scopeTxt}</div>
-  <table class="tbl"><thead><tr><th>البلك</th><th>القطع</th><th>المساحة (م²)</th><th>القيمة الأساسية (ر.س)</th><th>قيمة السيناريو (ر.س)</th><th>الفرق (ر.س)</th><th>نسبة الفرق</th></tr></thead>
-  <tbody>${c.byBlock.map(o=>{
-    const d = o.newV - o.cur, p = o.cur ? d/o.cur*100 : 0;
-    return `<tr><td class="num">${esc(o.block)}</td><td class="num">${fmtInt.format(o.count)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtMoney.format(o.cur)}</td><td class="num">${fmtMoney.format(o.newV)}</td><td class="num" style="color:${d>=0?'#065f46':'#991b1b'};font-weight:800">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td></tr>`;
-  }).join('')}</tbody>
-  <tfoot><tr><td>الإجمالي</td><td class="num">${fmtInt.format(c.count)}</td><td class="num">${fmtMoney.format(c.area)}</td><td class="num">${fmtMoney.format(c.cur)}</td><td class="num">${fmtMoney.format(c.newVal)}</td><td class="num" style="color:${c.delta>=0?'#065f46':'#991b1b'};font-weight:800">${c.delta>=0?'+':''}${fmtMoney.format(c.delta)}</td><td class="num">${c.deltaPct>=0?'+':''}${c.deltaPct.toFixed(1)}%</td></tr></tfoot></table>`;
+  <table class="tbl"><thead><tr><th>البلك / البيان</th><th>القطع</th><th>المساحة (م²)</th><th>القيمة قبل (ر.س)</th><th>القيمة بعد (ر.س)</th><th>الفرق (ر.س)</th><th>نسبة الفرق</th></tr></thead>
+  <tbody>${selRows}
+  <tr class="tr-scope"><td>النطاق المختار (إجمالي)</td><td class="num">${fmtInt.format(c.count)}</td><td class="num">${fmtMoney.format(c.area)}</td><td class="num">${fmtMoney.format(c.cur)}</td><td class="num">${fmtMoney.format(hasPpm ? c.newVal : c.cur)}</td>${diffCell(hasPpm ? c.delta : 0, hasPpm ? c.deltaPct : 0, !hasPpm)}</tr>
+  ${restRows}
+  <tr class="tr-rest" style="font-weight:800"><td>بقية القطع غير المختارة</td><td class="num">${fmtInt.format(c.restCount)}</td><td class="num">${fmtMoney.format(c.restArea)}</td><td class="num">${fmtMoney.format(c.restVal)}</td><td class="num">${fmtMoney.format(c.restVal)}</td>${diffCell(0, 0, true)}</tr>
+  </tbody>
+  <tfoot>
+  <tr class="tr-plan"><td>إجمالي المخطط بعد السيناريو</td><td class="num">${fmtInt.format(c.count + c.restCount)}</td><td class="num">${fmtMoney.format(c.area + c.restArea)}</td><td class="num">${fmtMoney.format(c.planBeforeVal)}</td><td class="num">${fmtMoney.format(c.planAfterVal)}</td>${diffCell(hasPpm ? c.planDelta : 0, hasPpm ? c.planDeltaPct : 0, !hasPpm)}</tr>
+  <tr class="tr-plan" style="opacity:.85"><td>متوسط سعر المتر للمخطط كله</td><td class="num">—</td><td class="num">—</td><td class="num">${fmtNum.format(c.planBeforeAvg)} ر.س/م²</td><td class="num">${hasPpm ? fmtNum.format(c.planAfterAvg) + ' ر.س/م²' : '—'}</td><td class="num" colspan="2" style="color:${hasPpm && (c.planAfterAvg - c.planBeforeAvg) >= 0 ? '#065f46' : '#991b1b'}">${hasPpm ? (c.planAfterAvg - c.planBeforeAvg >= 0 ? '+' : '') + fmtNum.format(c.planAfterAvg - c.planBeforeAvg) + ' ر.س/م²' : '—'}</td></tr>
+  </tfoot></table>`;
 }
 function renderScenarioResults(){
   renderScenLive();
+  renderScenPlan();
   renderScenKpis();
   drawScenCharts();
   renderScenTable();
@@ -5091,7 +5194,8 @@ function renderScenarios(){
 }
 function scenSnapshot(){
   const c = scenCompute();
-  return {count:c.count, area:Math.round(c.area*100)/100, cur:Math.round(c.cur*100)/100, newVal:Math.round(c.newVal*100)/100, delta:Math.round(c.delta*100)/100, deltaPct:Math.round(c.deltaPct*100)/100};
+  return {count:c.count, area:Math.round(c.area*100)/100, cur:Math.round(c.cur*100)/100, newVal:Math.round(c.newVal*100)/100, delta:Math.round(c.delta*100)/100, deltaPct:Math.round(c.deltaPct*100)/100,
+    planAfterVal:Math.round(c.planAfterVal*100)/100, planAfterAvg:Math.round(c.planAfterAvg*100)/100, planDeltaPct:Math.round(c.planDeltaPct*100)/100, weightArea:Math.round(c.weightArea*10)/10};
 }
 function saveScenario(){
   if(!can('manage_scenarios')){ toast('ليست لديك صلاحية إدارة السيناريوهات', 'err'); return; }
@@ -5160,7 +5264,7 @@ function renderScenLib(){
     <div class="sc-card${scenCompare.has(sc.id) ? ' on' : ''}" data-scid="${sc.id}">
       <input type="checkbox" class="sc-cmp-chk" data-scchk="${sc.id}" title="أضف للمقارنة" ${scenCompare.has(sc.id)?'checked':''}>
       <div class="sc-name"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6.292a7 7 0 1 0 4 0V2"/><path d="M8.5 2h7"/><path d="M7 16h8"/></svg>${esc(sc.name)}</div>
-      <div class="sc-meta"><span>سعر المتر: ${fmtNum.format(sc.ppm)} ر.س</span><span>القطع: ${fmtInt.format(sc.snap.count)}</span><span>القيمة: ${fmtMoney.format(sc.snap.newVal)} ر.س</span><span>${new Date(sc.createdAt).toLocaleDateString('ar-EG')}</span></div>
+      <div class="sc-meta"><span>سعر المتر: ${fmtNum.format(sc.ppm)} ر.س</span><span>القطع: ${fmtInt.format(sc.snap.count)}</span><span>قيمة السيناريو: ${fmtMoney.format(sc.snap.newVal)} ر.س</span><span class="sc-plan-chip">متوسط المخطط بعد: ${fmtNum.format(sc.snap.planAfterAvg)} ر.س/م²</span><span>${new Date(sc.createdAt).toLocaleDateString('ar-EG')}</span></div>
       <div class="sc-tags">${sc.statuses.map(s=>`<span class="sc-tag gold">${esc(s)}</span>`).join('')}${sc.type?`<span class="sc-tag">${esc(sc.type)}</span>`:''}${sc.block?`<span class="sc-tag">بلك ${esc(sc.block)}</span>`:''}</div>
       <div class="sc-acts">
         <button class="btn btn-soft btn-xs" data-scact="open" data-scid="${sc.id}">فتح</button>
@@ -5178,29 +5282,36 @@ function renderScenCompare(){
   if(!sel.length){ wrap.style.display = 'none'; return; }
   wrap.style.display = 'block';
   const rows = sel.map(sc=>{
-    const d = sc.snap.delta, p = sc.snap.deltaPct;
-    return `<tr><td>${esc(sc.name)}</td><td class="num">${fmtInt.format(sc.snap.count)}</td><td class="num">${fmtMoney.format(sc.snap.area)}</td><td class="num">${fmtMoney.format(sc.snap.cur)}</td><td class="num">${fmtMoney.format(sc.snap.newVal)}</td><td class="num" style="color:${d>=0?'#065f46':'#991b1b'};font-weight:800">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td></tr>`;
+    const d = sc.snap.delta, p = sc.snap.deltaPct, pd = sc.snap.planDeltaPct;
+    return `<tr><td>${esc(sc.name)}</td><td class="num">${fmtInt.format(sc.snap.count)}</td><td class="num">${fmtMoney.format(sc.snap.area)}</td><td class="num">${fmtMoney.format(sc.snap.cur)}</td><td class="num">${fmtMoney.format(sc.snap.newVal)}</td><td class="num" style="color:${d>=0?'#065f46':'#991b1b'};font-weight:800">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td><td class="num" style="color:#b45309;font-weight:800">${fmtNum.format(sc.snap.planAfterAvg)}</td><td class="num" style="color:${pd>=0?'#065f46':'#991b1b'};font-weight:800">${pd>=0?'+':''}${pd.toFixed(1)}%</td></tr>`;
   }).join('');
-  $('#scenCompare').innerHTML = `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>السيناريو</th><th>القطع</th><th>المساحة (م²)</th><th>الأساسية (ر.س)</th><th>السيناريو (ر.س)</th><th>الفرق (ر.س)</th><th>نسبة الفرق</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  $('#scenCompare').innerHTML = `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>السيناريو</th><th>القطع</th><th>المساحة (م²)</th><th>الأساسية (ر.س)</th><th>السيناريو (ر.س)</th><th>الفرق (ر.س)</th><th>نسبة الفرق</th><th>متوسط المخطط بعد (ر.س/م²)</th><th>أثر المحفظة</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 function exportScenExcel(){
   const c = scenCompute();
   if(!c.count){ toast('اختر نطاقاً يشمل قطعاً أولاً', 'warn'); return; }
   const name = ($('#scenName').value.trim() || 'سيناريو تسعير').slice(0,31);
+  const hasPpm = scenPpm != null;
   const rows = c.byBlock.map(o=>{
-    const d = o.newV - o.cur, p = o.cur ? d/o.cur*100 : 0;
-    return {block:o.block, count:o.count, area:Math.round(o.area*100)/100, cur:Math.round(o.cur*100)/100, newV:Math.round(o.newV*100)/100, delta:Math.round(d*100)/100, pct:Math.round(p*100)/100};
+    const d = hasPpm ? o.newV - o.cur : 0, p = o.cur ? d/o.cur*100 : 0;
+    return {block:'بلك ' + o.block + ' (مختار)', count:o.count, area:Math.round(o.area*100)/100, cur:Math.round(o.cur*100)/100, newV:Math.round((hasPpm ? o.newV : o.cur)*100)/100, delta:Math.round(d*100)/100, pct:Math.round(p*100)/100};
   });
   rows.push({block:'النطاق المطبق', count:[...scenSel].join(' + ') + (scenType ? ' · ' + scenType : '') + (scenBlock ? ' · بلك ' + scenBlock : ''), area:'', cur:'', newV:'', delta:'', pct:''});
   rows.push({block:'سعر المتر الجديد', count:fmtNum.format(scenPpm||0) + ' ر.س/م²', area:'', cur:'', newV:'', delta:'', pct:''});
-  rows.push({block:'الإجمالي', count:fmtInt.format(c.count) + ' قطعة', area:Math.round(c.area*100)/100, cur:Math.round(c.cur*100)/100, newV:Math.round(c.newVal*100)/100, delta:Math.round(c.delta*100)/100, pct:Math.round(c.deltaPct*100)/100});
+  rows.push({block:'النطاق المختار (إجمالي)', count:fmtInt.format(c.count) + ' قطعة', area:Math.round(c.area*100)/100, cur:Math.round(c.cur*100)/100, newV:Math.round(c.newVal*100)/100, delta:Math.round(c.delta*100)/100, pct:Math.round(c.deltaPct*100)/100});
+  for(const o of c.restByStatus) rows.push({block:'حالة ' + o.status + ' (بقية المخطط)', count:o.count, area:Math.round(o.area*100)/100, cur:Math.round(o.cur*100)/100, newV:Math.round(o.cur*100)/100, delta:0, pct:0});
+  rows.push({block:'بقية القطع غير المختارة', count:fmtInt.format(c.restCount) + ' قطعة', area:Math.round(c.restArea*100)/100, cur:Math.round(c.restVal*100)/100, newV:Math.round(c.restVal*100)/100, delta:0, pct:0});
+  rows.push({block:'إجمالي المخطط بعد السيناريو', count:fmtInt.format(c.count + c.restCount) + ' قطعة', area:Math.round((c.area + c.restArea)*100)/100, cur:Math.round(c.planBeforeVal*100)/100, newV:Math.round(c.planAfterVal*100)/100, delta:Math.round(c.planDelta*100)/100, pct:Math.round(c.planDeltaPct*100)/100});
+  rows.push({block:'متوسط المتر للمخطط كله (ر.س/م²)', count:'قبل ' + fmtNum.format(c.planBeforeAvg) + ' ← بعد ' + (hasPpm ? fmtNum.format(c.planAfterAvg) : '—'), area:'', cur:'', newV:'', delta:'', pct:''});
+  rows.push({block:'وزن النطاق في المخطط', count:`${c.weightArea.toFixed(1)}% مساحة · ${c.weightVal.toFixed(1)}% قيمة · ${c.weightCnt.toFixed(1)}% قطع`, area:'', cur:'', newV:'', delta:'', pct:''});
   exportExcelRows(rows, [
-    {k:'block',t:'البلك / البيان'},{k:'count',t:'القطع'},{k:'area',t:'المساحة (م²)'},{k:'cur',t:'القيمة الأساسية (ر.س)'},{k:'newV',t:'قيمة السيناريو (ر.س)'},{k:'delta',t:'الفرق (ر.س)'},{k:'pct',t:'نسبة الفرق %'}
+    {k:'block',t:'البلك / البيان'},{k:'count',t:'القطع'},{k:'area',t:'المساحة (م²)'},{k:'cur',t:'القيمة قبل (ر.س)'},{k:'newV',t:'القيمة بعد (ر.س)'},{k:'delta',t:'الفرق (ر.س)'},{k:'pct',t:'نسبة الفرق %'}
   ], name, 'تقرير-سيناريو-' + name.slice(0,16), null, ['area','cur','newV','delta']);
 }
 function buildScenPrintDoc(){
   const c = scenCompute();
   const name = ($('#scenName').value.trim() || 'سيناريو تسعير');
+  const hasPpm = scenPpm != null;
   const div = document.createElement('div');
   div.className = 'print-doc pd-gold';
   div.innerHTML = `
@@ -5212,12 +5323,21 @@ function buildScenPrintDoc(){
       <span class="pd-item" style="background:#fde68a;color:#78350f;border-color:#f59e0b">قيمة السيناريو: ${fmtMoney.format(c.newVal)} ر.س (${fmtInt.format(c.count)} قطعة)</span>
       <span class="pd-item" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0">الفرق عن الأساسي: ${c.delta>=0?'+':''}${fmtMoney.format(c.delta)} ر.س (${c.deltaPct>=0?'+':''}${c.deltaPct.toFixed(1)}%)</span>
     </div>
-    <table class="pd-table"><thead><tr><th>البلك</th><th>القطع</th><th>المساحة (م²)</th><th>القيمة الأساسية (ر.س)</th><th>قيمة السيناريو (ر.س)</th><th>الفرق (ر.س)</th><th>نسبة الفرق</th></tr></thead>
+    <table class="pd-table" style="margin-bottom:14px"><thead><tr><th colspan="4">الأثر على المخطط ككل</th></tr></thead>
+    <tbody>
+      <tr><td>قيمة المخطط قبل ← بعد</td><td class="num">${fmtMoney.format(c.planBeforeVal)}</td><td class="num" style="color:#b45309;font-weight:800">${fmtMoney.format(c.planAfterVal)}</td><td class="num">${hasPpm ? (c.planDelta>=0?'+':'') + fmtMoney.format(c.planDelta) + ' (' + (c.planDeltaPct>=0?'+':'') + c.planDeltaPct.toFixed(1) + '%)' : '—'}</td></tr>
+      <tr><td>متوسط المتر للمخطط كله (ر.س/م²) قبل ← بعد</td><td class="num">${fmtNum.format(c.planBeforeAvg)}</td><td class="num" style="color:#b45309;font-weight:800">${hasPpm ? fmtNum.format(c.planAfterAvg) : '—'}</td><td class="num">${hasPpm ? (c.planAfterAvg-c.planBeforeAvg>=0?'+':'') + fmtNum.format(c.planAfterAvg-c.planBeforeAvg) : '—'}</td></tr>
+      <tr><td>وزن النطاق في المخطط</td><td class="num">${fmtInt.format(c.count)} قطعة</td><td class="num">${c.weightArea.toFixed(1)}% مساحة · ${c.weightVal.toFixed(1)}% قيمة</td><td class="num">${c.weightCnt.toFixed(1)}% قطع</td></tr>
+    </tbody></table>
+    <table class="pd-table"><thead><tr><th>البلك / البيان</th><th>القطع</th><th>المساحة (م²)</th><th>القيمة قبل (ر.س)</th><th>القيمة بعد (ر.س)</th><th>الفرق (ر.س)</th><th>نسبة الفرق</th></tr></thead>
     <tbody>${c.byBlock.map(o=>{
-      const d = o.newV - o.cur, p = o.cur ? d/o.cur*100 : 0;
-      return `<tr><td class="num">${esc(o.block)}</td><td class="num">${fmtInt.format(o.count)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtMoney.format(o.cur)}</td><td class="num">${fmtMoney.format(o.newV)}</td><td class="num">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td></tr>`;
-    }).join('')}</tbody>
-    <tfoot><tr><td>الإجمالي</td><td class="num">${fmtInt.format(c.count)}</td><td class="num">${fmtMoney.format(c.area)}</td><td class="num">${fmtMoney.format(c.cur)}</td><td class="num">${fmtMoney.format(c.newVal)}</td><td class="num">${c.delta>=0?'+':''}${fmtMoney.format(c.delta)}</td><td class="num">${c.deltaPct>=0?'+':''}${c.deltaPct.toFixed(1)}%</td></tr></tfoot></table>
+      const d = hasPpm ? o.newV - o.cur : 0, p = o.cur ? d/o.cur*100 : 0;
+      return `<tr><td class="num">بلك ${esc(o.block)} — مختار</td><td class="num">${fmtInt.format(o.count)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtMoney.format(o.cur)}</td><td class="num">${fmtMoney.format(hasPpm ? o.newV : o.cur)}</td><td class="num">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td></tr>`;
+    }).join('')}
+    <tr style="background:#fffbeb;font-weight:800"><td>النطاق المختار (إجمالي)</td><td class="num">${fmtInt.format(c.count)}</td><td class="num">${fmtMoney.format(c.area)}</td><td class="num">${fmtMoney.format(c.cur)}</td><td class="num">${fmtMoney.format(c.newVal)}</td><td class="num">${c.delta>=0?'+':''}${fmtMoney.format(c.delta)}</td><td class="num">${c.deltaPct>=0?'+':''}${c.deltaPct.toFixed(1)}%</td></tr>
+    ${c.restByStatus.map(o=>`<tr><td>حالة ${esc(o.status)} — بقية المخطط</td><td class="num">${fmtInt.format(o.count)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtMoney.format(o.cur)}</td><td class="num">${fmtMoney.format(o.cur)}</td><td class="num">—</td><td class="num">—</td></tr>`).join('')}
+    <tr><td>بقية القطع غير المختارة</td><td class="num">${fmtInt.format(c.restCount)}</td><td class="num">${fmtMoney.format(c.restArea)}</td><td class="num">${fmtMoney.format(c.restVal)}</td><td class="num">${fmtMoney.format(c.restVal)}</td><td class="num">—</td><td class="num">—</td></tr></tbody>
+    <tfoot><tr style="background:#fde68a;color:#78350f;font-weight:800"><td>إجمالي المخطط بعد السيناريو</td><td class="num">${fmtInt.format(c.count + c.restCount)}</td><td class="num">${fmtMoney.format(c.area + c.restArea)}</td><td class="num">${fmtMoney.format(c.planBeforeVal)}</td><td class="num">${fmtMoney.format(c.planAfterVal)}</td><td class="num">${hasPpm ? (c.planDelta>=0?'+':'') + fmtMoney.format(c.planDelta) : '—'}</td><td class="num">${hasPpm ? (c.planDeltaPct>=0?'+':'') + c.planDeltaPct.toFixed(1) + '%' : '—'}</td></tr></tfoot></table>
     <div class="pd-credit">أُصدر بواسطة نظام متابعة الأراضي — ${todayAr()} · هذا السيناريو افتراضي ولا يغيّر الأسعار الأساسية</div>`;
   document.body.appendChild(div);
   return div;
