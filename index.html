@@ -484,6 +484,15 @@ body.dense table.reg{font-size:.76rem}
 .pd-gold .pd-table th{background:#f59e0b;border-color:#b45309;color:#fff}
 .pd-gold .pd-table tbody tr:nth-child(even) td{background:#fffbeb}
 .pd-gold .pd-table tfoot td{background:#fde68a;color:#78350f;border-color:#f59e0b}
+.pd-sec-h{margin:16px 0 10px;font-size:.9rem;font-weight:900;color:#92400e;display:flex;align-items:center;gap:9px}
+.pd-sec-h::after{content:'';flex:1;height:1px;background:#fde68a}
+.pd-board-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.pd-board-bars{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.pd-board-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pd-board-kpis .kpi{transform:none;box-shadow:none}
+.pd-board-kpis .kpi:hover{transform:none;box-shadow:none}
+.pd-charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.pd-chart img{width:100%;border-radius:12px;border:1px solid var(--border2);background:#fff}
 .scen-plan{border:2px solid #f59e0b;background:linear-gradient(180deg,#fffbeb,#ffffff);box-shadow:0 6px 18px rgba(180,83,9,.14);margin-bottom:14px}
 .scen-plan .card-h h3{color:#92400e}
 .scen-plan-metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}
@@ -508,7 +517,63 @@ body.dense table.reg{font-size:.76rem}
 .sc-plan-chip{background:linear-gradient(135deg,#b45309,#d97706);color:#fff;border-radius:6px;padding:1px 8px;font-weight:900}
 @media(max-width:1024px){ .scen-grid{grid-template-columns:1fr} .scen-side{position:static} .scen-charts{grid-template-columns:1fr} .scen-plan-metrics{grid-template-columns:repeat(2,1fr)} .spb-row{flex-wrap:wrap} .spb-val{width:100%} }
 
-/* ===== Responsive ===== */
+/* ===== Unified mobile layer (applies to every current & future screen) ===== */
+@media(max-width:640px){
+  .topbar{gap:10px}
+  .top-title{flex:1 1 100%;min-width:0;order:1}
+  .top-title h2{font-size:1.05rem}
+  .top-title p{font-size:.72rem}
+  .top-actions{order:2;width:100%;justify-content:space-between}
+  .top-actions .dropdown{flex:1;display:flex;justify-content:flex-end}
+  .user-chip{width:100%;justify-content:space-between}
+  .kpis{grid-template-columns:repeat(2,1fr);gap:10px}
+  .kpi{flex-direction:column;align-items:flex-start;gap:8px;padding:12px 14px}
+  .kpi-val{font-size:1.12rem}
+  .charts{grid-template-columns:1fr;gap:12px}
+  .chart-box{height:230px}
+  .modal-overlay{padding:8px 8px;align-items:flex-start}
+  .modal{max-width:100%;border-radius:14px}
+  .modal-h{padding:14px 15px}
+  .modal-h h3{font-size:1rem}
+  .modal-b{padding:14px 15px;max-height:72vh}
+  .modal-f{padding:12px 15px;flex-wrap:wrap}
+  .fgrid{grid-template-columns:1fr;gap:10px;padding:12px 13px}
+  .fbar{flex-direction:column;align-items:stretch;padding:12px 14px}
+  .fbar .field{flex-direction:row;align-items:center;justify-content:space-between;gap:8px}
+  .fbar label{min-width:70px}
+  .fbar select,.fbar input{min-width:0;flex:1;width:100%}
+  .search-box{margin-inline-start:0}
+  .search-box input{min-width:0;width:100%}
+  .fpanel{grid-template-columns:repeat(2,1fr);gap:10px;padding:12px 14px}
+  .fpanel .field label{font-size:.7rem}
+  .card-h{padding:12px 14px;gap:9px}
+  .card-h h3{font-size:.92rem}
+  .card-b{padding:13px 14px}
+  .pager .info{margin-inline-start:0;width:100%}
+  .tabbar{padding:8px 10px;position:static;top:auto;margin-bottom:12px}
+  .tab-pill{flex:none;white-space:nowrap}
+  .tabbar::-webkit-scrollbar{display:none}
+  .tabbar{scrollbar-width:none}
+  .dropdown-menu{position:fixed;top:auto;inset-inline-start:12px;inset-inline-end:12px;max-height:60vh;overflow:auto}
+  .scen-banner{padding:11px 14px;gap:8px}
+  .scen-banner .scen-banner-txt{font-size:.9rem}
+  .scen-plan-metrics{grid-template-columns:1fr;gap:8px}
+  .spm{text-align:start;display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:8px}
+  .spm .spm-val{margin-top:0;text-align:end}
+  .spm .spm-lbl,.spm .spm-sub{white-space:normal}
+  .scen-live{font-size:.78rem}
+  .sc-lib .sc-card{padding-inline-start:30px}
+  .report-actions{width:100%;flex-wrap:wrap}
+  .fgrid .fld input,.fgrid .fld select{font-size:1rem}
+  .fld input,.fld select{font-size:1rem}
+}
+@media(max-width:400px){
+  .kpis{grid-template-columns:1fr}
+  .fpanel{grid-template-columns:1fr}
+  .scen-actions{flex-direction:column}
+  .scen-actions .btn{width:100%}
+  .bi-actions{flex-wrap:wrap}
+}
 @media(max-width:1024px){
   .side{transform:translateX(110%)}
   .side.open{transform:none;box-shadow:var(--shadow-lg)}
@@ -582,28 +647,7 @@ body.dense table.reg{font-size:.76rem}
         <span class="top-date-inline" id="todayChip"></span>
       </div>
       <div class="top-actions">
-        <div class="dropdown" id="exportDrop">
-          <button class="btn btn-soft btn-sm" id="btnExportDrop">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
-            تصدير
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
-          </button>
-          <div class="dropdown-menu" id="exportMenu">
-            <button class="dd-item" id="btnXlsxTop">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
-              تصدير إكسل
-            </button>
-            <button class="dd-item" id="btnPdfTop">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-              تصدير PDF
-            </button>
-            <button class="dd-item" id="btnPngTop">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L9 20"/></svg>
-              حفظ صورة PNG
-            </button>
-          </div>
-        </div>
-        <button class="btn btn-primary btn-sm" id="btnAddTop">
+        <button class="btn btn-primary btn-sm" id="btnAddTop" style="display:none">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
           إضافة أرض
         </button>
@@ -1002,6 +1046,10 @@ body.dense table.reg{font-size:.76rem}
             <div class="card scen-plan">
               <div class="card-h">
                 <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>أثر السيناريو على المخطط ككل</h3>
+                <div class="report-actions">
+                  <button class="btn btn-gold btn-sm" id="btnScenBoardPdf" title="تصدير اللمحة التنفيذية PDF"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>لمحة PDF</button>
+                  <button class="btn btn-gold btn-sm" id="btnScenBoardPng" title="تصدير اللمحة التنفيذية صورة"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L9 20"/></svg>لمحة صورة</button>
+                </div>
               </div>
               <div class="card-b">
                 <div class="scen-plan-metrics" id="scenPlanMetrics"></div>
@@ -1023,9 +1071,7 @@ body.dense table.reg{font-size:.76rem}
               <div class="card-h">
                 <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>تفاصيل السيناريو <span class="sub" id="scenDetailCount"></span></h3>
                 <div class="report-actions">
-                  <button class="btn btn-soft btn-sm" id="btnScenXlsx"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>إكسل</button>
-                  <button class="btn btn-soft btn-sm" id="btnScenPdf"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>PDF</button>
-                  <button class="btn btn-soft btn-sm" id="btnScenPng"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L9 20"/></svg>صورة</button>
+                  <button class="btn btn-soft btn-sm" id="btnScenXlsx"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>إكسل تفصيلي</button>
                 </div>
               </div>
               <div class="card-b flush" style="overflow:auto;max-height:52vh"><div class="tbl-wrap" id="scenTblWrap"></div></div>
@@ -4186,7 +4232,6 @@ function updateUserChip(){
 }
 function closeDdMenus(){
   $('#userMenu').classList.remove('open');
-  $('#exportMenu').classList.remove('open');
 }
 function updateCloudBadge(){
   const b = $('#cloudModeBadge');
@@ -5325,14 +5370,20 @@ function exportScenExcel(){
     {k:'block',t:'البلك / البيان'},{k:'count',t:'القطع'},{k:'area',t:'المساحة (م²)'},{k:'cur',t:'القيمة قبل (ر.س)'},{k:'newV',t:'القيمة بعد (ر.س)'},{k:'delta',t:'الفرق (ر.س)'},{k:'pct',t:'نسبة الفرق %'}
   ], name, 'تقرير-سيناريو-' + name.slice(0,16), null, ['area','cur','newV','delta']);
 }
-function buildScenPrintDoc(){
+function buildScenBoardDoc(){
   const c = scenCompute();
   const name = ($('#scenName').value.trim() || 'سيناريو تسعير');
-  const hasPpm = scenPpm != null;
+  const chartImgs = [];
+  if(typeof Chart !== 'undefined'){
+    for(const id of ['scChType','scChBlock']){
+      const cv = document.getElementById(id);
+      if(cv && cv.width){ try{ chartImgs.push(cv.toDataURL('image/png')); }catch(e){} }
+    }
+  }
   const div = document.createElement('div');
   div.className = 'print-doc pd-gold';
   div.innerHTML = `
-    <div class="pd-band"><h2>${esc(name)}</h2><span class="pd-no">تقرير سيناريو تسعير</span></div>
+    <div class="pd-band"><h2>${esc(name)}</h2><span class="pd-no">لمحة تنفيذية</span></div>
     <div class="pd-meta">
       <span class="pd-item">تاريخ الإصدار: ${esc(todayStr())}</span>
       <span class="pd-item">النطاق: ${scenSel.size ? [...scenSel].map(esc).join(' + ') : '—'}${scenType ? ' · ' + esc(scenType) : ''}${scenBlock ? ' · بلك ' + esc(scenBlock) : ''}</span>
@@ -5340,40 +5391,31 @@ function buildScenPrintDoc(){
       <span class="pd-item" style="background:#fde68a;color:#78350f;border-color:#f59e0b">قيمة السيناريو: ${fmtMoney.format(c.newVal)} ر.س (${fmtInt.format(c.count)} قطعة)</span>
       <span class="pd-item" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0">الفرق عن الأساسي: ${c.delta>=0?'+':''}${fmtMoney.format(c.delta)} ر.س (${c.deltaPct>=0?'+':''}${c.deltaPct.toFixed(1)}%)</span>
     </div>
-    <table class="pd-table" style="margin-bottom:14px"><thead><tr><th colspan="4">الأثر على المخطط ككل</th></tr></thead>
-    <tbody>
-      <tr><td>قيمة المخطط قبل ← بعد</td><td class="num">${fmtMoney.format(c.planBeforeVal)}</td><td class="num" style="color:#b45309;font-weight:800">${fmtMoney.format(c.planAfterVal)}</td><td class="num">${hasPpm ? (c.planDelta>=0?'+':'') + fmtMoney.format(c.planDelta) + ' (' + (c.planDeltaPct>=0?'+':'') + c.planDeltaPct.toFixed(1) + '%)' : '—'}</td></tr>
-      <tr><td>متوسط المتر للمخطط كله (ر.س/م²) قبل ← بعد</td><td class="num">${fmtNum.format(c.planBeforeAvg)}</td><td class="num" style="color:#b45309;font-weight:800">${hasPpm ? fmtNum.format(c.planAfterAvg) : '—'}</td><td class="num">${hasPpm ? (c.planAfterAvg-c.planBeforeAvg>=0?'+':'') + fmtNum.format(c.planAfterAvg-c.planBeforeAvg) : '—'}</td></tr>
-      <tr><td>وزن النطاق في المخطط</td><td class="num">${fmtInt.format(c.count)} قطعة</td><td class="num">${c.weightArea.toFixed(1)}% مساحة · ${c.weightVal.toFixed(1)}% قيمة</td><td class="num">${c.weightCnt.toFixed(1)}% قطع</td></tr>
-    </tbody></table>
-    <table class="pd-table"><thead><tr><th>البلك / البيان</th><th>القطع</th><th>المساحة (م²)</th><th>القيمة قبل (ر.س)</th><th>القيمة بعد (ر.س)</th><th>الفرق (ر.س)</th><th>نسبة الفرق</th></tr></thead>
-    <tbody>${c.byBlock.map(o=>{
-      const d = hasPpm ? o.newV - o.cur : 0, p = o.cur ? d/o.cur*100 : 0;
-      return `<tr><td class="num">بلك ${esc(o.block)} — مختار</td><td class="num">${fmtInt.format(o.count)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtMoney.format(o.cur)}</td><td class="num">${fmtMoney.format(hasPpm ? o.newV : o.cur)}</td><td class="num">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td></tr>`;
-    }).join('')}
-    <tr style="background:#fffbeb;font-weight:800"><td>النطاق المختار (إجمالي)</td><td class="num">${fmtInt.format(c.count)}</td><td class="num">${fmtMoney.format(c.area)}</td><td class="num">${fmtMoney.format(c.cur)}</td><td class="num">${fmtMoney.format(c.newVal)}</td><td class="num">${c.delta>=0?'+':''}${fmtMoney.format(c.delta)}</td><td class="num">${c.deltaPct>=0?'+':''}${c.deltaPct.toFixed(1)}%</td></tr>
-    ${c.restByStatus.map(o=>`<tr><td>حالة ${esc(o.status)} — بقية المخطط</td><td class="num">${fmtInt.format(o.count)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtMoney.format(o.cur)}</td><td class="num">${fmtMoney.format(o.cur)}</td><td class="num">—</td><td class="num">—</td></tr>`).join('')}
-    <tr><td>بقية القطع غير المختارة</td><td class="num">${fmtInt.format(c.restCount)}</td><td class="num">${fmtMoney.format(c.restArea)}</td><td class="num">${fmtMoney.format(c.restVal)}</td><td class="num">${fmtMoney.format(c.restVal)}</td><td class="num">—</td><td class="num">—</td></tr></tbody>
-    <tfoot><tr style="background:#fde68a;color:#78350f;font-weight:800"><td>إجمالي المخطط بعد السيناريو</td><td class="num">${fmtInt.format(c.count + c.restCount)}</td><td class="num">${fmtMoney.format(c.area + c.restArea)}</td><td class="num">${fmtMoney.format(c.planBeforeVal)}</td><td class="num">${fmtMoney.format(c.planAfterVal)}</td><td class="num">${hasPpm ? (c.planDelta>=0?'+':'') + fmtMoney.format(c.planDelta) : '—'}</td><td class="num">${hasPpm ? (c.planDeltaPct>=0?'+':'') + c.planDeltaPct.toFixed(1) + '%' : '—'}</td></tr></tfoot></table>
-    <div class="pd-credit">أُصدر بواسطة نظام متابعة الأراضي — ${todayAr()} · هذا السيناريو افتراضي ولا يغيّر الأسعار الأساسية</div>`;
+    <div class="pd-sec-h"><h3>أثر السيناريو على المخطط ككل</h3></div>
+    <div class="pd-board-metrics">${$('#scenPlanMetrics').innerHTML}</div>
+    <div class="pd-board-bars">${$('#scenPlanBars').innerHTML}</div>
+    <div class="pd-sec-h"><h3>نتائج السيناريو</h3></div>
+    <div class="pd-board-kpis">${$('#scenKpis').innerHTML}</div>
+    ${chartImgs.length ? `<div class="pd-charts">${chartImgs.map(src=>`<div class="pd-chart"><img src="${src}" alt="رسم بياني"></div>`).join('')}</div>` : ''}
+    <div class="pd-credit">أُصدر بواسطة نظام متابعة الأراضي — ${todayAr()} · لمحة افتراضية لا تغيّر الأسعار الأساسية</div>`;
   document.body.appendChild(div);
   return div;
 }
-function exportScenPdf(){
+function exportScenBoardPdf(){
   const c = scenCompute();
-  if(!c.count){ toast('اختر نطاقاً يشمل قطعاً أولاً', 'warn'); return; }
+  if(!c.count || !scenSel.size){ toast('اختر نطاقاً يشمل قطعاً أولاً', 'warn'); return; }
   if(!checkLib('jspdf') || !checkLib('html2canvas')) return;
-  const doc = buildScenPrintDoc();
+  const doc = buildScenBoardDoc();
   const name = ($('#scenName').value.trim() || 'سيناريو').slice(0,24);
-  doExportPdf(doc, 'تقرير-سيناريو-' + name, 3).then(()=>doc.remove());
+  doExportPdf(doc, 'لمحة-سيناريو-' + name, 2.5).then(()=>doc.remove());
 }
-function exportScenPng(){
+function exportScenBoardPng(){
   const c = scenCompute();
-  if(!c.count){ toast('اختر نطاقاً يشمل قطعاً أولاً', 'warn'); return; }
+  if(!c.count || !scenSel.size){ toast('اختر نطاقاً يشمل قطعاً أولاً', 'warn'); return; }
   if(!checkLib('html2canvas')) return;
-  const doc = buildScenPrintDoc();
+  const doc = buildScenBoardDoc();
   const name = ($('#scenName').value.trim() || 'سيناريو').slice(0,24);
-  doExportPng(doc, 'تقرير-سيناريو-' + name, 3).then(()=>doc.remove());
+  doExportPng(doc, 'لمحة-سيناريو-' + name, 2.5).then(()=>doc.remove());
 }
 
 /* ===== Tabs engine (global component) ===== */
@@ -5440,6 +5482,7 @@ function switchView(name){
   $('#pageSub').textContent = sec ? sec.dataset.sub : '';
   $('#side').classList.remove('open');
   $('#sideMask').classList.remove('show');
+  $('#btnAddTop').style.display = name === 'registry' ? '' : 'none';
   if(name === 'archive') renderArchive();
   if(name === 'scenarios') renderScenarios();
   if(name === 'backup'){ renderBackup(); renderStatusManager(); renderRegStatusManager(); renderTaxStatusManager(); renderCloudCard(); renderRecycle(); renderUsersGroup(); updateAccBadges(); }
@@ -5591,10 +5634,6 @@ function bindEvents(){
     const doc = exportRegistryPrintDoc();
     doExportPng(doc, 'سجل-الأراضي').then(()=>doc.remove());
   });
-
-  $('#btnXlsxTop').addEventListener('click', exportAllExcel);
-  $('#btnPdfTop').addEventListener('click', ()=>exportReportPDF('view-dashboard'));
-  $('#btnPngTop').addEventListener('click', ()=>exportReportPNG('view-dashboard'));
 
   $('#btnExportJson').addEventListener('click', exportJson);
   $('#btnImportJson').addEventListener('click', ()=>{ if(!can('manage_settings')){ toast('ليست لديك صلاحية الاستيراد', 'err'); return; } fileMode = 'json'; $('#fileInput').click(); });
@@ -5871,15 +5910,8 @@ function bindEvents(){
     closeDdMenus();
     if(!wasOpen) m.classList.add('open');
   });
-  $('#btnExportDrop').addEventListener('click', e=>{
-    e.stopPropagation();
-    const m = $('#exportMenu');
-    const wasOpen = m.classList.contains('open');
-    closeDdMenus();
-    if(!wasOpen) m.classList.add('open');
-  });
   document.addEventListener('click', e=>{
-    if(!e.target.closest('#userDrop') && !e.target.closest('#exportDrop')) closeDdMenus();
+    if(!e.target.closest('#userDrop')) closeDdMenus();
   });
   $('#uMenuSettings').addEventListener('click', ()=>{ closeDdMenus(); switchView('backup'); });
   $('#uMenuChangePw').addEventListener('click', ()=>{ closeDdMenus(); changeOwnPassword(); });
@@ -6310,8 +6342,8 @@ function bindEvents(){
     renderScenLib();
   });
   $('#btnScenXlsx').addEventListener('click', exportScenExcel);
-  $('#btnScenPdf').addEventListener('click', exportScenPdf);
-  $('#btnScenPng').addEventListener('click', exportScenPng);
+  $('#btnScenBoardPdf').addEventListener('click', exportScenBoardPdf);
+  $('#btnScenBoardPng').addEventListener('click', exportScenBoardPng);
 }
 let fileMode = 'json';
 
