@@ -495,18 +495,20 @@ body.dense table.reg{font-size:.76rem}
 .prg.total .ico{background:rgba(255,255,255,.22);color:#fff}
 .prg.total .prg-grid span{color:rgba(255,255,255,.85)}
 .prg.total .prg-grid b{color:#fff}
-table.plr{width:100%;border-collapse:collapse;font-size:.8rem;min-width:680px}
-table.plr th{position:sticky;top:0;background:#f8fafc;color:#334155;font-weight:800;font-size:.74rem;padding:10px 10px;border-bottom:2px solid var(--border);white-space:nowrap;text-align:end;z-index:2}
-table.plr td{padding:8px 10px;border-bottom:1px solid #eef1f6;white-space:nowrap;text-align:end}
-table.plr td.num{direction:ltr;font-variant-numeric:tabular-nums}
-table.plr tr.plr-avail td{background:#f0fdf4 !important}
-table.plr tr.plr-avail td.st-cell{color:#166534;font-weight:800}
-table.plr tbody tr:nth-child(even):not(.plr-avail){background:#f9fafc}
-table.plr tbody tr:hover:not(.plr-avail){background:#eef4ff}
-table.plr .st-chip{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:99px;font-size:.68rem;font-weight:800}
-table.plr .st-sold{background:#d1fae5;color:#065f46}
-table.plr .st-resv{background:#fef3c7;color:#92400e}
-table.plr .st-avail{background:#bbf7d0;color:#14532d}
+table.plr{width:100%;border-collapse:collapse;font-size:.82rem;min-width:680px}
+table.plr th{position:sticky;top:0;background:#f8fafc;color:#334155;font-weight:800;font-size:.76rem;padding:11px 12px;border-bottom:2px solid var(--border);white-space:nowrap;text-align:end;z-index:2}
+table.plr td{padding:9px 12px;border-bottom:1px solid #eef1f6;white-space:nowrap;text-align:end;line-height:1.6}
+table.plr td.num{direction:ltr;font-variant-numeric:tabular-nums;font-weight:600}
+table.plr td.st-cell{font-weight:800;text-align:center;white-space:nowrap;border-radius:0}
+table.plr td.cell-sold{background:#e0f2fe;color:#075985}
+table.plr td.cell-resv{background:#fef3c7;color:#92400e}
+table.plr td.cell-avail{background:#dcfce7;color:#166534}
+table.plr td.cell-other{background:#eef1f6;color:#475569}
+table.plr tbody tr:nth-child(even) td:not(.st-cell){background:#f9fafc}
+table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
+.pd-plr{font-size:.8rem}
+.pd-plr th{font-size:.76rem;padding:10px 12px}
+.pd-plr td{padding:9px 12px;line-height:1.55}
 .btn-gold{background:linear-gradient(135deg,#b45309,#d97706);color:#fff;border-color:#b45309}
 .btn-gold:hover{filter:brightness(1.1)}
 .gold-kpi .kpi-ico{background:linear-gradient(135deg,#b45309,#d97706);color:#fff}
@@ -2499,16 +2501,17 @@ function exportReportPNG(elId){
   if(!el) return;
   doExportPng(el, 'تقرير-الأراضي');
 }
-async function doExportPdf(el, name, scale){
+async function doExportPdf(el, name, scale, orient){
   if(!can('export')){ toast('ليست لديك صلاحية التصدير', 'err'); return; }
   busy(true, 'جارٍ إنشاء ملف PDF…');
+  const portrait = orient === 'p';
   try{
     if(document.fonts && document.fonts.load){ try{ await Promise.all([document.fonts.load('800 16px Cairo'), document.fonts.load('700 16px Cairo'), document.fonts.load('400 16px Cairo')]); }catch(e){} }
     const clone = el.cloneNode(true);
     clone.style.position = 'absolute';
     clone.style.left = '-12000px';
     clone.style.top = '0';
-    clone.style.width = '1150px';
+    clone.style.width = portrait ? '794px' : '1150px';
     clone.style.background = '#ffffff';
     clone.style.color = '#0f172a';
     clone.style.padding = '22px';
@@ -2517,7 +2520,7 @@ async function doExportPdf(el, name, scale){
     const canvas = await html2canvas(clone, {scale: scale || 2, backgroundColor:'#ffffff', useCORS:true});
     clone.remove();
     const {jsPDF} = window.jspdf;
-    const pdf = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+    const pdf = new jsPDF({orientation: portrait ? 'portrait' : 'landscape', unit:'mm', format:'a4'});
     const pw = pdf.internal.pageSize.getWidth();
     const ph = pdf.internal.pageSize.getHeight();
     const maxSliceH = Math.floor(canvas.width * ph / pw);
@@ -2550,12 +2553,21 @@ async function doExportPdf(el, name, scale){
   }
   busy(false);
 }
-async function doExportPng(el, name, scale){
+async function doExportPng(el, name, scale, orient){
   if(!can('export')){ toast('ليست لديك صلاحية التصدير', 'err'); return; }
   busy(true, 'جارٍ إنشاء الصورة…');
+  const portrait = orient === 'p';
   try{
     if(document.fonts && document.fonts.load){ try{ await Promise.all([document.fonts.load('800 16px Cairo'), document.fonts.load('700 16px Cairo'), document.fonts.load('400 16px Cairo')]); }catch(e){} }
-    const canvas = await html2canvas(el, {scale: scale || 2, backgroundColor:'#ffffff', useCORS:true});
+    const clone = el.cloneNode(true);
+    clone.style.position = 'absolute';
+    clone.style.left = '-12000px';
+    clone.style.top = '0';
+    clone.style.width = portrait ? '794px' : '1150px';
+    clone.style.background = '#ffffff';
+    document.body.appendChild(clone);
+    const canvas = await html2canvas(clone, {scale: scale || 2, backgroundColor:'#ffffff', useCORS:true});
+    clone.remove();
     const a = document.createElement('a');
     a.download = `${name}-${todayStr()}.png`;
     a.href = canvas.toDataURL('image/png');
@@ -5780,7 +5792,7 @@ function exportScenImpactPng(){
 
 /* ===== Plan report (تقرير المخطط الكامل) ===== */
 function planRepStatusLabel(st){
-  if(st === 'تم الإفراغ') return 'مباع';
+  if(st === 'تم الإفراغ') return 'تم الإفراغ';
   if(st === 'محجوزة') return 'محجوز';
   if(st === 'متاحة') return 'متاح';
   return st;
@@ -5798,7 +5810,7 @@ function planRepRows(){
 function planRepCompute(){
   const rows = planRepRows();
   const groups = {
-    sold:{label:'مباع', count:0, area:0, val:0},
+    sold:{label:'تم الإفراغ', count:0, area:0, val:0},
     resv:{label:'محجوز', count:0, area:0, val:0},
     avail:{label:'متاح', count:0, area:0, val:0},
     other:{label:'أخرى', count:0, area:0, val:0}
@@ -5826,11 +5838,11 @@ function prgCard(cls, icoSvg, label, g, note){
     ${note ? `<div class="prg-note">${note}</div>` : ''}
   </div>`;
 }
-function planRepStChip(st){
-  if(st === 'تم الإفراغ') return '<span class="st-chip st-sold">مباع</span>';
-  if(st === 'محجوزة') return '<span class="st-chip st-resv">محجوز</span>';
-  if(st === 'متاحة') return '<span class="st-chip st-avail">متاح</span>';
-  return '<span class="st-chip" style="background:#eef1f6;color:#475569">' + esc(st) + '</span>';
+function planRepStCell(st){
+  if(st === 'تم الإفراغ') return '<td class="st-cell cell-sold">تم الإفراغ</td>';
+  if(st === 'محجوزة') return '<td class="st-cell cell-resv">محجوز</td>';
+  if(st === 'متاحة') return '<td class="st-cell cell-avail">متاح</td>';
+  return '<td class="st-cell cell-other">' + esc(st) + '</td>';
 }
 function renderPlanReport(){
   const wrap = $('#planRepTblWrap'), meta = $('#planRepMeta'), groups = $('#planRepGroups');
@@ -5849,7 +5861,7 @@ function renderPlanReport(){
   const icoAvail = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6.292a7 7 0 1 0 4 0V2"/><path d="M8.5 2h7"/><path d="M7 16h8"/></svg>';
   const icoOther = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 12h.01M12 16h.01"/></svg>';
   const icoTot = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m5 16 4-6 4 3 5-8"/></svg>';
-  let cards = prgCard('sold', icoSold, 'مباع (تم الإفراغ)', c.groups.sold, '');
+  let cards = prgCard('sold', icoSold, 'تم الإفراغ', c.groups.sold, '');
   cards += prgCard('resv', icoResv, 'محجوز', c.groups.resv, '');
   cards += prgCard('avail', icoAvail, 'متاح — بسعر السيناريو', c.groups.avail, 'الخلفية الخضراء في الجدول = سعر السيناريو');
   if(c.groups.other.count) cards += prgCard('other', icoOther, 'أخرى', c.groups.other, '');
@@ -5863,8 +5875,8 @@ function renderPlanReport(){
     </div>
   </div>`;
   groups.innerHTML = cards;
-  wrap.innerHTML = `<table class="plr"><thead><tr><th>رقم البلك</th><th>القطعة</th><th>المساحة (م²)</th><th>سعر المتر (ر.س)</th><th>القيمة (ر.س)</th><th>الحالة</th></tr></thead>
-  <tbody>${c.rows.map(o=>`<tr${o.isAvail ? ' class="plr-avail"' : ''}><td class="num">${esc(o.block)}</td><td class="num">${esc(o.landNo)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtNum.format(o.ppm)}</td><td class="num">${fmtMoney.format(o.val)}</td><td class="st-cell">${planRepStChip(o.st)}</td></tr>`).join('')}</tbody></table>`;
+  wrap.innerHTML = `<table class="plr"><colgroup><col style="width:12%"><col style="width:12%"><col style="width:16%"><col style="width:17%"><col style="width:22%"><col style="width:13%"></colgroup><thead><tr><th>رقم البلك</th><th>القطعة</th><th>المساحة (م²)</th><th>سعر المتر (ر.س)</th><th>القيمة (ر.س)</th><th>الحالة</th></tr></thead>
+  <tbody>${c.rows.map(o=>`<tr><td class="num">${esc(o.block)}</td><td class="num">${esc(o.landNo)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtNum.format(o.ppm)}</td><td class="num">${fmtMoney.format(o.val)}</td>${planRepStCell(o.st)}</tr>`).join('')}</tbody></table>`;
 }
 function round2(v){ return Math.round(v*100)/100; }
 function exportPlanRepExcel(){
@@ -5881,7 +5893,7 @@ function exportPlanRepExcel(){
   push([]);
   const gHdr = push(['المجموعة','القطع','المساحة (م²)','النسبة %','السعر الإجمالي (ر.س)','متوسط سعر المتر (ر.س/م²)']);
   const g = c.groups;
-  const gSold = push(['مباع (تم الإفراغ)', g.sold.count, round2(g.sold.area), round2(g.sold.pct), round2(g.sold.val), round2(g.sold.avg)]);
+  const gSold = push(['تم الإفراغ', g.sold.count, round2(g.sold.area), round2(g.sold.pct), round2(g.sold.val), round2(g.sold.avg)]);
   const gResv = push(['محجوز', g.resv.count, round2(g.resv.area), round2(g.resv.pct), round2(g.resv.val), round2(g.resv.avg)]);
   const gAvail = push(['متاح (بسعر السيناريو)', g.avail.count, round2(g.avail.area), round2(g.avail.pct), round2(g.avail.val), round2(g.avail.avg)]);
   const gOther = g.other.count ? push(['أخرى', g.other.count, round2(g.other.area), round2(g.other.pct), round2(g.other.val), round2(g.other.avg)]) : null;
@@ -5894,13 +5906,18 @@ function exportPlanRepExcel(){
   ws['!cols'] = [{wch:30},{wch:12},{wch:14},{wch:11},{wch:18},{wch:20}];
   const bold = idx=>{ for(let i=0;i<6;i++){ const a = XLSX.utils.encode_cell({r:idx-1, c:i}); if(ws[a]) ws[a].s = Object.assign({}, ws[a].s, {font:{bold:true}}); } };
   const fill = (idx, rgb)=>{ for(let i=0;i<6;i++){ const a = XLSX.utils.encode_cell({r:idx-1, c:i}); if(ws[a]) ws[a].s = Object.assign({}, ws[a].s, {fill:{fgColor:{rgb}}, patternType:'solid'}); } };
+  const cellFill = (rowIdx, colIdx, rgb)=>{ const a = XLSX.utils.encode_cell({r:rowIdx-1, c:colIdx}); if(ws[a]) ws[a].s = Object.assign({}, ws[a].s, {fill:{fgColor:{rgb}}, patternType:'solid'}); };
   bold(titleRow); bold(gHdr); bold(tHdr); bold(gTotal);
   fill(gTotal, 'FFFDE68A');
   fill(gAvail, 'FFDCFCE7');
   fill(gSold, 'FFD1FAE5');
   fill(gResv, 'FFFEF3C7');
   if(gOther) fill(gOther, 'FFF1F5F9');
-  dataRows.forEach((rowIdx, i)=>{ if(c.rows[i].isAvail) fill(rowIdx, 'FFF0FDF4'); });
+  const stRgb = {'تم الإفراغ':'FFE0F2FE', 'محجوز':'FFFEF3C7', 'متاح':'FFDCFCE7'};
+  dataRows.forEach((rowIdx, i)=>{
+    const st = planRepStatusLabel(c.rows[i].st);
+    cellFill(rowIdx, 5, stRgb[st] || 'FFF1F5F9');
+  });
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'تقرير المخطط');
   XLSX.writeFile(wb, `تقرير-المخطط-الكامل-${todayStr()}.xlsx`);
@@ -5915,7 +5932,7 @@ function buildPlanRepPrintDoc(){
   const icoOther = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 12h.01M12 16h.01"/></svg>';
   const icoTot = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m5 16 4-6 4 3 5-8"/></svg>';
   const g = c.groups;
-  let cards = prgCard('sold', icoSold, 'مباع (تم الإفراغ)', g.sold, '');
+  let cards = prgCard('sold', icoSold, 'تم الإفراغ', g.sold, '');
   cards += prgCard('resv', icoResv, 'محجوز', g.resv, '');
   cards += prgCard('avail', icoAvail, 'متاح — بسعر السيناريو', g.avail, '');
   if(g.other.count) cards += prgCard('other', icoOther, 'أخرى', g.other, '');
@@ -5928,6 +5945,11 @@ function buildPlanRepPrintDoc(){
       <span>متوسط سعر المتر <b>${fmtNum.format(c.totalAvg)} ر.س/م²</b></span>
     </div>
   </div>`;
+  const stCellStyle = {'تم الإفراغ':['#e0f2fe','#075985'], 'محجوزة':['#fef3c7','#92400e'], 'متاحة':['#dcfce7','#166534']};
+  const pdfStCell = o=>{
+    const m = stCellStyle[o.st] || ['#eef1f6','#475569'];
+    return `<td style="background:${m[0]};color:${m[1]};font-weight:800;text-align:center">${esc(planRepStatusLabel(o.st))}</td>`;
+  };
   const div = document.createElement('div');
   div.className = 'print-doc pd-gold';
   div.innerHTML = `
@@ -5940,8 +5962,8 @@ function buildPlanRepPrintDoc(){
     <div class="pd-sec-h"><h3>الإجماليات</h3></div>
     <div class="pd-groups">${cards}</div>
     <div class="pd-sec-h"><h3>جدول القطع</h3></div>
-    <table class="pd-table"><thead><tr><th>رقم البلك</th><th>القطعة</th><th>المساحة (م²)</th><th>سعر المتر (ر.س)</th><th>القيمة (ر.س)</th><th>الحالة</th></tr></thead>
-    <tbody>${c.rows.map(o=>`<tr${o.isAvail ? ' style="background:#f0fdf4"' : ''}><td class="num">${esc(o.block)}</td><td class="num">${esc(o.landNo)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtNum.format(o.ppm)}</td><td class="num">${fmtMoney.format(o.val)}</td><td>${esc(planRepStatusLabel(o.st))}</td></tr>`).join('')}</tbody></table>
+    <table class="pd-table pd-plr"><colgroup><col style="width:14%"><col style="width:14%"><col style="width:17%"><col style="width:17%"><col style="width:22%"><col style="width:16%"></colgroup><thead><tr><th>رقم البلك</th><th>القطعة</th><th>المساحة (م²)</th><th>سعر المتر (ر.س)</th><th>القيمة (ر.س)</th><th>الحالة</th></tr></thead>
+    <tbody>${c.rows.map(o=>`<tr><td class="num">${esc(o.block)}</td><td class="num">${esc(o.landNo)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtNum.format(o.ppm)}</td><td class="num">${fmtMoney.format(o.val)}</td>${pdfStCell(o)}</tr>`).join('')}</tbody></table>
     <div class="pd-credit">أُصدر بواسطة نظام متابعة الأراضي — ${todayAr()} · المتاح معروض بأسعار السيناريو (افتراضية لا تغيّر الأسعار الأساسية)</div>`;
   document.body.appendChild(div);
   return div;
@@ -5950,13 +5972,13 @@ function exportPlanRepPdf(){
   if(!planRepCompute().rows.length){ toast('لا توجد قطع في المخطط', 'warn'); return; }
   if(!checkLib('jspdf') || !checkLib('html2canvas')) return;
   const doc = buildPlanRepPrintDoc();
-  doExportPdf(doc, 'تقرير-المخطط-الكامل', 3).then(()=>doc.remove());
+  doExportPdf(doc, 'تقرير-المخطط-الكامل', 3, 'p').then(()=>doc.remove());
 }
 function exportPlanRepPng(){
   if(!planRepCompute().rows.length){ toast('لا توجد قطع في المخطط', 'warn'); return; }
   if(!checkLib('html2canvas')) return;
   const doc = buildPlanRepPrintDoc();
-  doExportPng(doc, 'تقرير-المخطط-الكامل', 3).then(()=>doc.remove());
+  doExportPng(doc, 'تقرير-المخطط-الكامل', 3, 'p').then(()=>doc.remove());
 }
 
 /* ===== Tabs engine (global component) ===== */
