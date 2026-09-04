@@ -455,6 +455,17 @@ body.dense table.reg{font-size:.76rem}
 .scen-live{margin:12px 0;background:var(--gold-soft);border:1.5px dashed var(--gold);border-radius:12px;padding:11px 14px;font-size:.82rem;font-weight:800;color:var(--gold-txt);display:flex;flex-direction:column;gap:5px;line-height:1.7}
 .scen-live b{font-size:.95rem}
 .scen-actions{display:flex;gap:7px;flex-wrap:wrap}
+.scen-mode-tog{display:flex;border:1.5px solid var(--border2);border-radius:10px;overflow:hidden;width:100%}
+.scen-mode-btn{flex:1;padding:8px 10px;font-size:.76rem;font-weight:800;background:#fff;border:none;cursor:pointer;color:var(--muted);transition:all .15s;white-space:normal;line-height:1.4}
+.scen-mode-btn.active{background:linear-gradient(135deg,#b45309,#d97706);color:#fff}
+.scen-matrix{display:flex;flex-direction:column;gap:7px;max-height:280px;overflow:auto;padding:3px}
+.scen-matrix > label{font-size:.72rem;color:var(--muted);font-weight:600}
+.scen-mrow{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:9px;padding:6px 10px;background:#fbfcfe}
+.scen-mrow .sm-lbl{flex:1;font-size:.74rem;font-weight:700;display:flex;flex-direction:column;line-height:1.45;min-width:0}
+.scen-mrow .sm-lbl .sm-st{color:var(--sky-txt);font-weight:800}
+.scen-mrow .sm-lbl small{font-weight:500;color:var(--faint);font-size:.66rem}
+.scen-mrow input{width:92px;flex:none;border:1px solid var(--border2);border-radius:8px;padding:6px 8px;font-size:.82rem;text-align:center;outline:none}
+.scen-mrow input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(217,119,6,.12)}
 .btn-gold{background:linear-gradient(135deg,#b45309,#d97706);color:#fff;border-color:#b45309}
 .btn-gold:hover{filter:brightness(1.1)}
 .gold-kpi .kpi-ico{background:linear-gradient(135deg,#b45309,#d97706);color:#fff}
@@ -1024,7 +1035,18 @@ body.dense table.reg{font-size:.76rem}
                   <div class="fld"><label>نوع الأرض (اختياري)</label><select id="scenType"></select></div>
                   <div class="fld"><label>البلك (اختياري)</label><select id="scenBlock"></select></div>
                 </div>
-                <div class="fld"><label>سعر المتر الجديد (ر.س / م²)</label><input type="number" id="scenPpm" min="0" step="any" placeholder="مثال: 650"></div>
+                <div class="fld">
+                  <label>نمط التسعير</label>
+                  <div class="scen-mode-tog" id="scenModeTog">
+                    <button type="button" class="scen-mode-btn active" data-scmode="uniform">سعر موحد</button>
+                    <button type="button" class="scen-mode-btn" data-scmode="matrix">أسعار حسب النوع والحالة</button>
+                  </div>
+                </div>
+                <div class="fld" id="scenPpmWrap"><label>سعر المتر الجديد (ر.س / م²)</label><input type="number" id="scenPpm" min="0" step="any" placeholder="مثال: 650"></div>
+                <div class="scen-matrix" id="scenMatrixWrap" style="display:none">
+                  <label>أسعار مخصصة (نوع × حالة) — اترك الحقل فارغاً ليبقى السعر الأصلي</label>
+                  <div id="scenMatrix"></div>
+                </div>
                 <div class="scen-live" id="scenLive"></div>
                 <div class="fld"><label>اسم السيناريو</label><input type="text" id="scenName" placeholder="مثال: بيع بقية المخطط بسعر 650" maxlength="60"></div>
                 <div class="scen-actions">
@@ -1054,8 +1076,8 @@ body.dense table.reg{font-size:.76rem}
               <div class="card-h">
                 <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>أثر السيناريو على المخطط ككل</h3>
                 <div class="report-actions">
-                  <button class="btn btn-gold btn-sm" id="btnScenBoardPdf" title="تصدير اللمحة التنفيذية PDF"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>لمحة PDF</button>
-                  <button class="btn btn-gold btn-sm" id="btnScenBoardPng" title="تصدير اللمحة التنفيذية صورة"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L9 20"/></svg>لمحة صورة</button>
+                  <button class="btn btn-gold btn-sm" id="btnScenImpactPdf" title="تصدير بطاقة الأثر وحدها PDF"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>بطاقة PDF</button>
+                  <button class="btn btn-gold btn-sm" id="btnScenImpactPng" title="تصدير بطاقة الأثر وحدها صورة"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L9 20"/></svg>بطاقة صورة</button>
                 </div>
               </div>
               <div class="card-b">
@@ -1078,6 +1100,8 @@ body.dense table.reg{font-size:.76rem}
               <div class="card-h">
                 <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>تفاصيل السيناريو <span class="sub" id="scenDetailCount"></span></h3>
                 <div class="report-actions">
+                  <button class="btn btn-soft btn-sm" id="btnScenBoardPdf" title="تصدير اللمحة الكاملة بالشارتات PDF"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>لمحة PDF</button>
+                  <button class="btn btn-soft btn-sm" id="btnScenBoardPng" title="تصدير اللمحة الكاملة بالشارتات صورة"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L9 20"/></svg>لمحة صورة</button>
                   <button class="btn btn-soft btn-sm" id="btnScenXlsx"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>إكسل تفصيلي</button>
                 </div>
               </div>
@@ -5043,6 +5067,8 @@ let scenCompare = new Set();
 let scenCharts = {};
 let scenTombstones = [];
 let scenDefaultId = null;
+let scenPriceMode = 'uniform';
+let scenMatrix = new Map();
 function loadScenarios(){
   try{ const s = localStorage.getItem(SCEN_KEY); if(s){ const p = JSON.parse(s); if(Array.isArray(p)) return p; } }catch(e){}
   return [];
@@ -5073,14 +5099,14 @@ function scenApplyDefault(def){
   if(def !== scenDefaultId){
     scenDefaultId = def;
     saveScenDefaultLocal();
-    if(def != null && !scenSel.size && scenPpm == null){
+    if(def != null && !scenSel.size && !scenHasPrices()){
       const sc = scenarios.find(x=>x.id === def);
       if(sc) openScenario(sc.id);
     }
   }
 }
 function scenAutoOpenDefault(){
-  if(scenSel.size || scenPpm != null) return false;
+  if(scenSel.size || scenHasPrices()) return false;
   const sc = scenarios.find(x=>x.id === scenDefaultId);
   if(!sc) return false;
   openScenario(sc.id);
@@ -5129,30 +5155,60 @@ function scenScope(){
   if(scenBlock) list = list.filter(r=>String(r.block) === scenBlock);
   return list;
 }
+function scenHasPrices(){
+  return scenPriceMode === 'matrix' ? scenMatrix.size > 0 : scenPpm != null;
+}
+function scenPriceFor(r){
+  if(scenPriceMode === 'matrix'){
+    const p = scenMatrix.get((r.landType || '—') + '|' + getStatus(r));
+    return (p == null || isNaN(p)) ? null : p;
+  }
+  return scenPpm;
+}
+function scenAppliedTxt(){
+  if(scenPriceMode === 'matrix'){
+    if(!scenMatrix.size) return '—';
+    return [...scenMatrix.entries()].map(([k,v])=>k.replace('|',' × ') + ' ← ' + fmtNum.format(v)).join(' · ');
+  }
+  return scenPpm != null ? fmtNum.format(scenPpm) + ' ر.س/م²' : '—';
+}
+function scenMatrixRows(){
+  const map = new Map();
+  for(const r of scenScope()){
+    const t = r.landType || '—';
+    const st = getStatus(r);
+    const key = t + '|' + st;
+    if(!map.has(key)) map.set(key, {type:t, status:st, count:0, area:0, val:0});
+    const o = map.get(key); o.count++; o.area += r.area||0; o.val += r.value||0;
+  }
+  const arr = [...map.values()].sort((a,b)=>b.area-a.area);
+  for(const o of arr) o.avg = o.area ? o.val/o.area : 0;
+  return arr;
+}
 function scenCompute(){
   const rows = scenScope();
   const area = rows.reduce((s,r)=>s+(r.area||0),0);
   const cur = rows.reduce((s,r)=>s+(r.value||0),0);
   const curAvg = area ? cur/area : 0;
-  const newVal = scenPpm != null ? area * scenPpm : 0;
-  const delta = scenPpm != null ? newVal - cur : 0;
+  const hasP = scenHasPrices();
+  const newVal = rows.reduce((s,r)=>{ const p = scenPriceFor(r); return s + (p != null ? (r.area||0)*p : (r.value||0)); }, 0);
+  const delta = hasP ? newVal - cur : 0;
   const deltaPct = cur ? delta/cur*100 : 0;
   const tMap = new Map(), bMap = new Map(), sMap = new Map();
   for(const r of rows){
+    const p = scenPriceFor(r);
+    const nv = p != null ? (r.area||0)*p : (r.value||0);
     const t = r.landType || '—';
-    if(!tMap.has(t)) tMap.set(t, {type:t, count:0, area:0, cur:0});
-    const to = tMap.get(t); to.count++; to.area += r.area||0; to.cur += r.value||0;
+    if(!tMap.has(t)) tMap.set(t, {type:t, count:0, area:0, cur:0, newV:0});
+    const to = tMap.get(t); to.count++; to.area += r.area||0; to.cur += r.value||0; to.newV += nv;
     const b = String(r.block || '—');
-    if(!bMap.has(b)) bMap.set(b, {block:b, count:0, area:0, cur:0});
-    const bo = bMap.get(b); bo.count++; bo.area += r.area||0; bo.cur += r.value||0;
+    if(!bMap.has(b)) bMap.set(b, {block:b, count:0, area:0, cur:0, newV:0});
+    const bo = bMap.get(b); bo.count++; bo.area += r.area||0; bo.cur += r.value||0; bo.newV += nv;
     const st = getStatus(r);
-    if(!sMap.has(st)) sMap.set(st, {status:st, count:0, area:0, cur:0});
-    const so = sMap.get(st); so.count++; so.area += r.area||0; so.cur += r.value||0;
+    if(!sMap.has(st)) sMap.set(st, {status:st, count:0, area:0, cur:0, newV:0});
+    const so = sMap.get(st); so.count++; so.area += r.area||0; so.cur += r.value||0; so.newV += nv;
   }
-  const byType = [], byBlock = [], byStatus = [];
-  for(const o of tMap.values()){ o.newV = o.area * (scenPpm||0); byType.push(o); }
-  for(const o of bMap.values()){ o.newV = o.area * (scenPpm||0); byBlock.push(o); }
-  for(const o of sMap.values()){ o.newV = o.area * (scenPpm||0); byStatus.push(o); }
+  const byType = [...tMap.values()], byBlock = [...bMap.values()], byStatus = [...sMap.values()];
   byType.sort((a,b)=>b.area-a.area);
   byBlock.sort((a,b)=>b.area-a.area);
   byStatus.sort((a,b)=>b.area-a.area);
@@ -5162,7 +5218,7 @@ function scenCompute(){
   const restVal = rest.reduce((s,r)=>s+(r.value||0),0);
   const planBeforeVal = cur + restVal;
   const planBeforeAvg = area + restArea ? planBeforeVal/(area + restArea) : 0;
-  const planAfterVal = scenPpm != null ? newVal + restVal : planBeforeVal;
+  const planAfterVal = hasP ? newVal + restVal : planBeforeVal;
   const planAfterAvg = area + restArea ? planAfterVal/(area + restArea) : 0;
   const planDelta = planAfterVal - planBeforeVal;
   const planDeltaPct = planBeforeVal ? planDelta/planBeforeVal*100 : 0;
@@ -5176,7 +5232,7 @@ function scenCompute(){
     const o = rMap.get(st); o.count++; o.area += r.area||0; o.cur += r.value||0;
   }
   const restByStatus = [...rMap.values()].sort((a,b)=>b.area-a.area);
-  return {rows, count:rows.length, area, cur, curAvg, newVal, newAvg:scenPpm != null ? scenPpm : 0, delta, deltaPct, byType, byBlock, byStatus,
+  return {rows, count:rows.length, area, cur, curAvg, newVal, newAvg: hasP && area ? newVal/area : 0, delta, deltaPct, byType, byBlock, byStatus,
     restCount:rest.length, restArea, restVal, restByStatus,
     planBeforeVal, planBeforeAvg, planAfterVal, planAfterAvg, planDelta, planDeltaPct, weightArea, weightVal, weightCnt};
 }
@@ -5188,15 +5244,36 @@ function renderScenChips(){
     return `<span class="scen-chip${scenSel.has(n) ? ' on' : ''}" data-scst="${esc(n)}">${esc(n)}<span class="cnt">${fmtInt.format(cnt)}</span></span>`;
   }).join('');
 }
+function renderScenMatrix(){
+  const wrap = $('#scenMatrixWrap'), el = $('#scenMatrix');
+  if(!wrap || !el) return;
+  const arr = scenMatrixRows();
+  el.innerHTML = arr.length ? arr.map(o=>{
+    const key = o.type + '|' + o.status;
+    const v = scenMatrix.has(key) ? scenMatrix.get(key) : '';
+    return `<div class="scen-mrow" data-smkey="${esc(key)}">
+      <div class="sm-lbl">${esc(o.type)} <span class="sm-st">× ${esc(o.status)}</span><small>${fmtInt.format(o.count)} قطعة · ${fmtMoney.format(o.area)} م² · متوسط متر حالي ${fmtNum.format(o.avg)} ر.س</small></div>
+      <input type="number" min="0" step="any" placeholder="${fmtNum.format(o.avg)}" value="${v}" data-smppm="${esc(key)}">
+    </div>`;
+  }).join('') : '<div class="hint">لا توجد تركيبات نوع × حالة في النطاق المحدد — اختر الحالات أولاً</div>';
+}
+function syncScenModeUI(){
+  const ppmWrap = $('#scenPpmWrap'), mWrap = $('#scenMatrixWrap');
+  const btns = document.querySelectorAll('.scen-mode-btn');
+  btns.forEach(b=>b.classList.toggle('active', b.dataset.scmode === scenPriceMode));
+  if(ppmWrap) ppmWrap.style.display = scenPriceMode === 'matrix' ? 'none' : '';
+  if(mWrap) mWrap.style.display = scenPriceMode === 'matrix' ? '' : 'none';
+}
 function renderScenLive(){
   const el = $('#scenLive');
   if(!el) return;
   if(!scenSel.size){ el.innerHTML = '<b>ابدأ باختيار نطاق الحالات</b><span>مثال: اختر «متاحة» ثم أدخل سعر المتر الجديد 650 لترى إجمالي البيع المتوقع لباقي المخطط.</span>'; return; }
   const c = scenCompute();
+  const hasP = scenHasPrices();
   let html = `<b>النطاق المحدد: ${fmtInt.format(c.count)} قطعة · ${fmtMoney.format(c.area)} م²</b>`;
   html += `<span>القيمة الأساسية: ${fmtMoney.format(c.cur)} ر.س · متوسط المتر الأساسي: ${fmtNum.format(c.curAvg)} ر.س/م²</span>`;
-  if(scenPpm != null){
-    html += `<span style="color:#b45309">القيمة الجديدة: <b>${fmtMoney.format(c.newVal)} ر.س</b> · متوسط المتر الجديد: <b>${fmtNum.format(scenPpm)} ر.س/م²</b></span>`;
+  if(hasP){
+    html += `<span style="color:#b45309">القيمة الجديدة: <b>${fmtMoney.format(c.newVal)} ر.س</b> · متوسط المتر الجديد: <b>${fmtNum.format(c.newAvg)} ر.س/م²</b></span>`;
     html += `<span style="color:${c.delta >= 0 ? '#065f46' : '#991b1b'}">الفرق المتوقع: ${c.delta >= 0 ? '+' : ''}${fmtMoney.format(c.delta)} ر.س (${c.deltaPct >= 0 ? '+' : ''}${c.deltaPct.toFixed(1)}%)</span>`;
   } else {
     html += '<span>أدخل سعر المتر الجديد لاحتساب قيمة السيناريو.</span>';
@@ -5213,6 +5290,7 @@ function renderScenPlan(){
   const metrics = $('#scenPlanMetrics'), bars = $('#scenPlanBars');
   if(!metrics) return;
   const c = scenCompute();
+  const hasP = scenHasPrices();
   const active = scenSel.size && c.count;
   if(!active){
     metrics.innerHTML = '<div class="hint" style="grid-column:1/-1">اختر نطاق الحالات لرؤية أثر السيناريو على المخطط ككل — القطع غير المختارة تبقى بأسعارها الأصلية.</div>';
@@ -5221,27 +5299,28 @@ function renderScenPlan(){
   }
   metrics.innerHTML = [
     spmHtml('', 'قيمة المخطط قبل', fmtMoney.format(c.planBeforeVal), 'ريال سعودي'),
-    spmHtml('', 'قيمة المخطط بعد', scenPpm != null ? fmtMoney.format(c.planAfterVal) : '—', scenPpm != null ? (c.planDelta>=0?'+':'') + fmtMoney.format(c.planDelta) + ' (' + (c.planDeltaPct>=0?'+':'') + c.planDeltaPct.toFixed(1) + '%)' : 'لم يُحدد السعر بعد'),
+    spmHtml('', 'قيمة المخطط بعد', hasP ? fmtMoney.format(c.planAfterVal) : '—', hasP ? (c.planDelta>=0?'+':'') + fmtMoney.format(c.planDelta) + ' (' + (c.planDeltaPct>=0?'+':'') + c.planDeltaPct.toFixed(1) + '%)' : 'لم يُحدد السعر بعد'),
     spmHtml('', 'متوسط المتر للمخطط قبل', fmtNum.format(c.planBeforeAvg), 'ر.س / م²'),
-    spmHtml('gold', 'متوسط المتر للمخطط بعد', scenPpm != null ? fmtNum.format(c.planAfterAvg) : '—', 'ر.س / م² للقطع كافة'),
-    spmHtml('', 'أثر المحفظة', scenPpm != null ? (c.planDelta>=0?'+':'') + fmtMoney.format(c.planDelta) : '—', scenPpm != null ? (c.planDeltaPct>=0?'+':'') + c.planDeltaPct.toFixed(1) + '%' : 'ريال سعودي'),
+    spmHtml('gold', 'متوسط المتر للمخطط بعد', hasP ? fmtNum.format(c.planAfterAvg) : '—', 'ر.س / م² للقطع كافة'),
+    spmHtml('', 'أثر المحفظة', hasP ? (c.planDelta>=0?'+':'') + fmtMoney.format(c.planDelta) : '—', hasP ? (c.planDeltaPct>=0?'+':'') + c.planDeltaPct.toFixed(1) + '%' : 'ريال سعودي'),
     spmHtml('', 'وزن النطاق', fmtInt.format(c.count) + ' قطعة', `${c.weightArea.toFixed(1)}% مساحة · ${c.weightVal.toFixed(1)}% قيمة · ${c.weightCnt.toFixed(1)}% قطع`)
   ].join('');
   const pct = v=>c.planBeforeVal ? (v/c.planBeforeVal*100).toFixed(2) : 0;
   const seg = (w, bg, tip)=>`<div class="spb-seg" style="width:${Math.max(+w,1.2)}%;background:${bg}" title="${tip}"></div>`;
   const beforeSegs = seg(pct(c.cur), '#0ea5e9', 'النطاق المختار (بالأسعار الأساسية)') + seg(pct(c.restVal), '#e2e8f0', 'بقية المخطط (أسعار أصلية)');
-  const afterSegs = scenPpm != null
+  const afterSegs = hasP
     ? seg(pct(c.newVal), '#d97706', 'النطاق المختار (بالسعر الجديد)') + seg(pct(c.restVal), '#e2e8f0', 'بقية المخطط (أسعار أصلية)')
     : seg(100, '#e2e8f0', 'لم يُحدد السعر بعد');
   bars.innerHTML = `
     <div class="spb-row"><span class="spb-lbl">المخطط قبل</span><div class="spb-track">${beforeSegs}</div><span class="spb-val">${fmtMoney.format(c.planBeforeVal)} ر.س · ${fmtNum.format(c.planBeforeAvg)} ر.س/م²</span></div>
-    <div class="spb-row"><span class="spb-lbl">المخطط بعد</span><div class="spb-track">${afterSegs}</div><span class="spb-val">${scenPpm != null ? fmtMoney.format(c.planAfterVal) + ' ر.س · ' + fmtNum.format(c.planAfterAvg) + ' ر.س/م²' : '—'}</span></div>
+    <div class="spb-row"><span class="spb-lbl">المخطط بعد</span><div class="spb-track">${afterSegs}</div><span class="spb-val">${hasP ? fmtMoney.format(c.planAfterVal) + ' ر.س · ' + fmtNum.format(c.planAfterAvg) + ' ر.س/م²' : '—'}</span></div>
     <div class="spb-legend"><span><i style="background:#d97706"></i>النطاق المعاد تسعيره</span><span><i style="background:#0ea5e9"></i>النطاق المختار (أساسي)</span><span><i style="background:#e2e8f0"></i>بقية المخطط — أسعار أصلية</span></div>`;
 }
 function renderScenKpis(){
   const c = scenCompute();
+  const hasP = scenHasPrices();
   const up = c.delta >= 0;
-  const deltaHtml = scenPpm != null ? `<span class="kpi-delta ${up?'up':'down'}">${up?'▲':'▼'} ${fmtMoney.format(Math.abs(c.delta))} ر.س (${up?'+':''}${c.deltaPct.toFixed(1)}%)</span>` : '';
+  const deltaHtml = hasP ? `<span class="kpi-delta ${up?'up':'down'}">${up?'▲':'▼'} ${fmtMoney.format(Math.abs(c.delta))} ر.س (${up?'+':''}${c.deltaPct.toFixed(1)}%)</span>` : '';
   const icReg = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>';
   const icArea = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 3 21"/><path d="M21 3h-6M21 3v6"/><path d="M3 21h6M3 21v-6"/></svg>';
   const icMoney = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>';
@@ -5252,9 +5331,9 @@ function renderScenKpis(){
     scenKpiHtml(icReg, '', 'القطع المشمولة', fmtInt.format(c.count), 'قطعة أرض', ''),
     scenKpiHtml(icArea, '', 'المساحة المشمولة', fmtMoney.format(c.area), 'متر مربع', ''),
     scenKpiHtml(icMoney, '', 'القيمة الأساسية', fmtMoney.format(c.cur), 'ريال سعودي', ''),
-    scenKpiHtml(icFlask, 'gold-kpi', 'قيمة السيناريو', scenPpm != null ? fmtMoney.format(c.newVal) : '—', scenPpm != null ? `بسعر ${fmtNum.format(scenPpm)} ر.س/م²` : 'لم يُحدد السعر بعد', deltaHtml),
-    scenKpiHtml(icAvg, '', 'متوسط سعر المتر', fmtNum.format(c.curAvg) + (scenPpm != null ? `<span style="color:#b45309"> ← ${fmtNum.format(scenPpm)}</span>` : ''), 'ر.س / م²', ''),
-    scenKpiHtml(icDelta, '', 'الفرق المتوقع', scenPpm != null ? (up?'+':'') + fmtMoney.format(c.delta) : '—', scenPpm != null ? (up?'+':'') + c.deltaPct.toFixed(1) + '%' : 'ريال سعودي', '')
+    scenKpiHtml(icFlask, 'gold-kpi', 'قيمة السيناريو', hasP ? fmtMoney.format(c.newVal) : '—', hasP ? (scenPriceMode === 'matrix' ? `أسعار مخصصة (${scenMatrix.size} تركيبة)` : `بسعر ${fmtNum.format(scenPpm)} ر.س/م²`) : 'لم يُحدد السعر بعد', deltaHtml),
+    scenKpiHtml(icAvg, '', 'متوسط سعر المتر', fmtNum.format(c.curAvg) + (hasP ? `<span style="color:#b45309"> ← ${fmtNum.format(c.newAvg)}</span>` : ''), 'ر.س / م²', ''),
+    scenKpiHtml(icDelta, '', 'الفرق المتوقع', hasP ? (up?'+':'') + fmtMoney.format(c.delta) : '—', hasP ? (up?'+':'') + c.deltaPct.toFixed(1) + '%' : 'ريال سعودي', '')
   ].join('');
 }
 function drawScenCharts(){
@@ -5291,12 +5370,12 @@ function renderScenTable(){
   const cnt = $('#scenDetailCount');
   if(cnt) cnt.textContent = c.count ? `(${fmtInt.format(c.count)} قطعة)` : '';
   if(!c.count || !scenSel.size){ wrap.innerHTML = `<div class="empty"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6.292a7 7 0 1 0 4 0V2"/><path d="M8.5 2h7"/><path d="M7 16h8"/></svg><div class="t">لا توجد نتائج بعد</div><div class="s">اختر نطاق الحالات من لوحة البناء لترى التفاصيل هنا</div></div>`; return; }
-  const hasPpm = scenPpm != null;
+  const hasPpm = scenHasPrices();
   const diffCell = (d, p, muted)=>{
     if(muted) return '<td class="num" style="color:var(--faint)">—</td><td class="num" style="color:var(--faint)">—</td>';
     return `<td class="num" style="color:${d>=0?'#065f46':'#991b1b'};font-weight:800">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td>`;
   };
-  const scopeTxt = `النطاق: ${scenSel.size ? [...scenSel].map(esc).join(' + ') : '—'}${scenType ? ' · نوع: ' + esc(scenType) : ''}${scenBlock ? ' · بلك: ' + esc(scenBlock) : ''} · السعر الجديد: ${scenPpm != null ? fmtNum.format(scenPpm) + ' ر.س/م²' : '—'}`;
+  const scopeTxt = `النطاق: ${scenSel.size ? [...scenSel].map(esc).join(' + ') : '—'}${scenType ? ' · نوع: ' + esc(scenType) : ''}${scenBlock ? ' · بلك: ' + esc(scenBlock) : ''} · السعر الجديد: ${esc(scenAppliedTxt())}`;
   const selRows = c.byBlock.map(o=>{
     const before = o.cur, after = hasPpm ? o.newV : o.cur;
     const d = after - before, p = before ? d/before*100 : 0;
@@ -5332,8 +5411,10 @@ function renderScenarios(){
   typeSel.innerHTML = '<option value="">الكل</option>' + types.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
   blockSel.innerHTML = '<option value="">الكل</option>' + blocks.map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join('');
   typeSel.value = scenType; blockSel.value = scenBlock;
+  syncScenModeUI();
   renderScenChips();
   scenAutoOpenDefault();
+  renderScenMatrix();
   renderScenLib();
   renderScenarioResults();
   scenCloudRefresh();
@@ -5346,13 +5427,19 @@ function scenSnapshot(){
 function saveScenario(){
   if(!can('manage_scenarios')){ toast('ليست لديك صلاحية إدارة السيناريوهات', 'err'); return; }
   if(!scenSel.size){ toast('اختر نطاق الحالات أولاً', 'warn'); return; }
-  if(scenPpm == null || isNaN(scenPpm)){ toast('أدخل سعر المتر الجديد', 'warn'); return; }
+  if(!scenHasPrices()){ toast('أدخل سعراً موحداً أو سعراً واحداً على الأقل في الأسعار المخصصة', 'warn'); return; }
   const name = $('#scenName').value.trim();
   if(!name){ toast('اكتب اسم السيناريو أولاً', 'warn'); return; }
   const c = scenCompute();
   if(!c.count){ toast('النطاق المحدد لا يشمل أي قطعة', 'warn'); return; }
   const nowIso = new Date().toISOString();
-  const scObj = {id:Date.now(), name:name.slice(0,60), statuses:[...scenSel], type:scenType, block:scenBlock, ppm:scenPpm, createdAt:nowIso, updatedAt:nowIso, snap:scenSnapshot()};
+  const scObj = {
+    id:Date.now(), name:name.slice(0,60), statuses:[...scenSel], type:scenType, block:scenBlock,
+    priceMode:scenPriceMode,
+    ppm: scenPriceMode === 'uniform' ? scenPpm : null,
+    ppms: scenPriceMode === 'matrix' ? [...scenMatrix.entries()].map(([key,ppm])=>({key, ppm})) : [],
+    createdAt:nowIso, updatedAt:nowIso, snap:scenSnapshot()
+  };
   scenarios.unshift(scObj);
   saveScenarios();
   scenDefaultId = scObj.id;
@@ -5362,18 +5449,26 @@ function saveScenario(){
   renderScenLib();
   toast('حُفظ السيناريو وأصبح الافتراضي المشترك للفريق');
 }
+function scenApplyPrices(sc){
+  scenPriceMode = sc.priceMode === 'matrix' ? 'matrix' : 'uniform';
+  scenMatrix = new Map();
+  if(scenPriceMode === 'matrix' && Array.isArray(sc.ppms)) for(const p of sc.ppms) scenMatrix.set(p.key, p.ppm);
+  scenPpm = scenPriceMode === 'uniform' ? sc.ppm : null;
+}
 function openScenario(id){
   const sc = scenarios.find(x=>x.id === id);
   if(!sc) return;
   scenSel = new Set(sc.statuses);
   scenType = sc.type || '';
   scenBlock = sc.block || '';
-  scenPpm = sc.ppm;
+  scenApplyPrices(sc);
   $('#scenType').value = scenType;
   $('#scenBlock').value = scenBlock;
-  $('#scenPpm').value = scenPpm;
+  $('#scenPpm').value = scenPpm == null ? '' : scenPpm;
   $('#scenName').value = sc.name;
+  syncScenModeUI();
   renderScenChips();
+  renderScenMatrix();
   renderScenarioResults();
   window.scrollTo({top:0, behavior:'smooth'});
 }
@@ -5415,6 +5510,10 @@ function renameScenario(id){
   const nm = prompt('اسم جديد للسيناريو:', sc.name);
   if(nm && nm.trim()){ sc.name = nm.trim().slice(0,60); sc.updatedAt = new Date().toISOString(); saveScenarios(); scenCloudSave(); renderScenLib(); toast('تمت إعادة التسمية'); }
 }
+function scenPriceLabel(sc){
+  if(sc.priceMode === 'matrix' && Array.isArray(sc.ppms) && sc.ppms.length) return 'أسعار مخصصة: ' + sc.ppms.length + ' تركيبة';
+  return 'سعر المتر: ' + fmtNum.format(sc.ppm) + ' ر.س';
+}
 function renderScenLib(){
   const cntEl = $('#scenLibCount');
   if(cntEl) cntEl.textContent = scenarios.length ? `(${fmtInt.format(scenarios.length)})` : '';
@@ -5425,7 +5524,7 @@ function renderScenLib(){
     <div class="sc-card${scenCompare.has(sc.id) ? ' on' : ''}" data-scid="${sc.id}">
       <input type="checkbox" class="sc-cmp-chk" data-scchk="${sc.id}" title="أضف للمقارنة" ${scenCompare.has(sc.id)?'checked':''}>
       <div class="sc-name"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6.292a7 7 0 1 0 4 0V2"/><path d="M8.5 2h7"/><path d="M7 16h8"/></svg>${esc(sc.name)}</div>
-      <div class="sc-meta"><span>سعر المتر: ${fmtNum.format(sc.ppm)} ر.س</span><span>القطع: ${fmtInt.format(sc.snap.count)}</span><span>قيمة السيناريو: ${fmtMoney.format(sc.snap.newVal)} ر.س</span><span class="sc-plan-chip">متوسط المخطط بعد: ${fmtNum.format(sc.snap.planAfterAvg)} ر.س/م²</span><span>${new Date(sc.createdAt).toLocaleDateString('ar-EG')}</span></div>
+      <div class="sc-meta"><span>${esc(scenPriceLabel(sc))}</span><span>القطع: ${fmtInt.format(sc.snap.count)}</span><span>قيمة السيناريو: ${fmtMoney.format(sc.snap.newVal)} ر.س</span><span class="sc-plan-chip">متوسط المخطط بعد: ${fmtNum.format(sc.snap.planAfterAvg)} ر.س/م²</span><span>${new Date(sc.createdAt).toLocaleDateString('ar-EG')}</span></div>
       <div class="sc-tags">${sc.statuses.map(s=>`<span class="sc-tag gold">${esc(s)}</span>`).join('')}${sc.type?`<span class="sc-tag">${esc(sc.type)}</span>`:''}${sc.block?`<span class="sc-tag">بلك ${esc(sc.block)}</span>`:''}</div>
       <div class="sc-acts">
         <button class="btn btn-soft btn-xs" data-scact="open" data-scid="${sc.id}">فتح</button>
@@ -5452,13 +5551,18 @@ function exportScenExcel(){
   const c = scenCompute();
   if(!c.count){ toast('اختر نطاقاً يشمل قطعاً أولاً', 'warn'); return; }
   const name = ($('#scenName').value.trim() || 'سيناريو تسعير').slice(0,31);
-  const hasPpm = scenPpm != null;
+  const hasPpm = scenHasPrices();
   const rows = c.byBlock.map(o=>{
     const d = hasPpm ? o.newV - o.cur : 0, p = o.cur ? d/o.cur*100 : 0;
     return {block:'بلك ' + o.block + ' (مختار)', count:o.count, area:Math.round(o.area*100)/100, cur:Math.round(o.cur*100)/100, newV:Math.round((hasPpm ? o.newV : o.cur)*100)/100, delta:Math.round(d*100)/100, pct:Math.round(p*100)/100};
   });
   rows.push({block:'النطاق المطبق', count:[...scenSel].join(' + ') + (scenType ? ' · ' + scenType : '') + (scenBlock ? ' · بلك ' + scenBlock : ''), area:'', cur:'', newV:'', delta:'', pct:''});
-  rows.push({block:'سعر المتر الجديد', count:fmtNum.format(scenPpm||0) + ' ر.س/م²', area:'', cur:'', newV:'', delta:'', pct:''});
+  if(scenPriceMode === 'matrix'){
+    for(const [key, ppm] of scenMatrix) rows.push({block:'سعر: ' + key.replace('|',' × '), count:fmtNum.format(ppm) + ' ر.س/م²', area:'', cur:'', newV:'', delta:'', pct:''});
+    rows.push({block:'التركيبات غير المسعّرة', count:'تبقى بأسعارها الأصلية', area:'', cur:'', newV:'', delta:'', pct:''});
+  }else{
+    rows.push({block:'سعر المتر الجديد', count:fmtNum.format(scenPpm||0) + ' ر.س/م²', area:'', cur:'', newV:'', delta:'', pct:''});
+  }
   rows.push({block:'النطاق المختار (إجمالي)', count:fmtInt.format(c.count) + ' قطعة', area:Math.round(c.area*100)/100, cur:Math.round(c.cur*100)/100, newV:Math.round(c.newVal*100)/100, delta:Math.round(c.delta*100)/100, pct:Math.round(c.deltaPct*100)/100});
   for(const o of c.restByStatus) rows.push({block:'حالة ' + o.status + ' (بقية المخطط)', count:o.count, area:Math.round(o.area*100)/100, cur:Math.round(o.cur*100)/100, newV:Math.round(o.cur*100)/100, delta:0, pct:0});
   rows.push({block:'بقية القطع غير المختارة', count:fmtInt.format(c.restCount) + ' قطعة', area:Math.round(c.restArea*100)/100, cur:Math.round(c.restVal*100)/100, newV:Math.round(c.restVal*100)/100, delta:0, pct:0});
@@ -5486,7 +5590,7 @@ function buildScenBoardDoc(){
     <div class="pd-meta">
       <span class="pd-item">تاريخ الإصدار: ${esc(todayStr())}</span>
       <span class="pd-item">النطاق: ${scenSel.size ? [...scenSel].map(esc).join(' + ') : '—'}${scenType ? ' · ' + esc(scenType) : ''}${scenBlock ? ' · بلك ' + esc(scenBlock) : ''}</span>
-      <span class="pd-item">سعر المتر المطبق: ${fmtNum.format(scenPpm||0)} ر.س/م²</span>
+      <span class="pd-item">الأسعار المطبقة: ${esc(scenAppliedTxt())}</span>
       <span class="pd-item" style="background:#fde68a;color:#78350f;border-color:#f59e0b">قيمة السيناريو: ${fmtMoney.format(c.newVal)} ر.س (${fmtInt.format(c.count)} قطعة)</span>
       <span class="pd-item" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0">الفرق عن الأساسي: ${c.delta>=0?'+':''}${fmtMoney.format(c.delta)} ر.س (${c.deltaPct>=0?'+':''}${c.deltaPct.toFixed(1)}%)</span>
     </div>
@@ -5515,6 +5619,40 @@ function exportScenBoardPng(){
   const doc = buildScenBoardDoc();
   const name = ($('#scenName').value.trim() || 'سيناريو').slice(0,24);
   doExportPng(doc, 'لمحة-سيناريو-' + name, 2.5).then(()=>doc.remove());
+}
+function buildScenImpactDoc(){
+  const name = ($('#scenName').value.trim() || 'سيناريو تسعير');
+  const div = document.createElement('div');
+  div.className = 'print-doc pd-gold';
+  div.innerHTML = `
+    <div class="pd-band"><h2>${esc(name)}</h2><span class="pd-no">بطاقة أثر السيناريو على المخطط</span></div>
+    <div class="pd-meta">
+      <span class="pd-item">تاريخ الإصدار: ${esc(todayStr())}</span>
+      <span class="pd-item">النطاق: ${scenSel.size ? [...scenSel].map(esc).join(' + ') : '—'}${scenType ? ' · ' + esc(scenType) : ''}${scenBlock ? ' · بلك ' + esc(scenBlock) : ''}</span>
+      <span class="pd-item">الأسعار المطبقة: ${esc(scenAppliedTxt())}</span>
+    </div>
+    <div class="pd-sec-h"><h3>أثر السيناريو على المخطط ككل</h3></div>
+    <div class="pd-board-metrics">${$('#scenPlanMetrics').innerHTML}</div>
+    <div class="pd-board-bars">${$('#scenPlanBars').innerHTML}</div>
+    <div class="pd-credit">أُصدر بواسطة نظام متابعة الأراضي — ${todayAr()} · لمحة افتراضية لا تغيّر الأسعار الأساسية</div>`;
+  document.body.appendChild(div);
+  return div;
+}
+function exportScenImpactPdf(){
+  const c = scenCompute();
+  if(!c.count || !scenSel.size){ toast('اختر نطاقاً يشمل قطعاً أولاً', 'warn'); return; }
+  if(!checkLib('jspdf') || !checkLib('html2canvas')) return;
+  const doc = buildScenImpactDoc();
+  const name = ($('#scenName').value.trim() || 'سيناريو').slice(0,24);
+  doExportPdf(doc, 'بطاقة-أثر-' + name, 2.5).then(()=>doc.remove());
+}
+function exportScenImpactPng(){
+  const c = scenCompute();
+  if(!c.count || !scenSel.size){ toast('اختر نطاقاً يشمل قطعاً أولاً', 'warn'); return; }
+  if(!checkLib('html2canvas')) return;
+  const doc = buildScenImpactDoc();
+  const name = ($('#scenName').value.trim() || 'سيناريو').slice(0,24);
+  doExportPng(doc, 'بطاقة-أثر-' + name, 2.5).then(()=>doc.remove());
 }
 
 /* ===== Tabs engine (global component) ===== */
@@ -6406,16 +6544,37 @@ function bindEvents(){
     const n = ch.dataset.scst;
     if(scenSel.has(n)) scenSel.delete(n); else scenSel.add(n);
     renderScenChips();
+    renderScenMatrix();
     renderScenarioResults();
   });
-  $('#scenType').addEventListener('change', e=>{ scenType = e.target.value; renderScenarioResults(); });
-  $('#scenBlock').addEventListener('change', e=>{ scenBlock = e.target.value; renderScenarioResults(); });
+  $('#scenType').addEventListener('change', e=>{ scenType = e.target.value; renderScenMatrix(); renderScenarioResults(); });
+  $('#scenBlock').addEventListener('change', e=>{ scenBlock = e.target.value; renderScenMatrix(); renderScenarioResults(); });
   $('#scenPpm').addEventListener('input', e=>{ const v = parseFloat(e.target.value); scenPpm = isNaN(v) ? null : v; renderScenarioResults(); });
+  $('#scenModeTog').addEventListener('click', e=>{
+    const b = e.target.closest('.scen-mode-btn');
+    if(!b || b.dataset.scmode === scenPriceMode) return;
+    scenPriceMode = b.dataset.scmode;
+    syncScenModeUI();
+    renderScenMatrix();
+    renderScenarioResults();
+  });
+  $('#scenMatrix').addEventListener('input', e=>{
+    const inp = e.target.closest('input[data-smppm]');
+    if(!inp) return;
+    const key = inp.dataset.smppm;
+    const v = parseFloat(inp.value);
+    if(isNaN(v)) scenMatrix.delete(key); else scenMatrix.set(key, v);
+    renderScenarioResults();
+  });
   $('#btnScenSave').addEventListener('click', saveScenario);
   $('#btnScenReset').addEventListener('click', ()=>{
     scenSel = new Set(); scenType = ''; scenBlock = ''; scenPpm = null;
+    scenPriceMode = 'uniform';
+    scenMatrix = new Map();
     $('#scenType').value = ''; $('#scenBlock').value = ''; $('#scenPpm').value = ''; $('#scenName').value = '';
+    syncScenModeUI();
     renderScenChips();
+    renderScenMatrix();
     renderScenarioResults();
   });
   $('#scenLib').addEventListener('click', e=>{
@@ -6444,6 +6603,8 @@ function bindEvents(){
   $('#btnScenXlsx').addEventListener('click', exportScenExcel);
   $('#btnScenBoardPdf').addEventListener('click', exportScenBoardPdf);
   $('#btnScenBoardPng').addEventListener('click', exportScenBoardPng);
+  $('#btnScenImpactPdf').addEventListener('click', exportScenImpactPdf);
+  $('#btnScenImpactPng').addEventListener('click', exportScenImpactPng);
 }
 let fileMode = 'json';
 
