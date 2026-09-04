@@ -458,14 +458,18 @@ body.dense table.reg{font-size:.76rem}
 .scen-mode-tog{display:flex;border:1.5px solid var(--border2);border-radius:10px;overflow:hidden;width:100%}
 .scen-mode-btn{flex:1;padding:8px 10px;font-size:.76rem;font-weight:800;background:#fff;border:none;cursor:pointer;color:var(--muted);transition:all .15s;white-space:normal;line-height:1.4}
 .scen-mode-btn.active{background:linear-gradient(135deg,#b45309,#d97706);color:#fff}
-.scen-matrix{display:flex;flex-direction:column;gap:7px;max-height:280px;overflow:auto;padding:3px}
+.scen-matrix{display:flex;flex-direction:column;gap:7px;max-height:300px;overflow:auto;padding:3px}
 .scen-matrix > label{font-size:.72rem;color:var(--muted);font-weight:600}
-.scen-mrow{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:9px;padding:6px 10px;background:#fbfcfe}
-.scen-mrow .sm-lbl{flex:1;font-size:.74rem;font-weight:700;display:flex;flex-direction:column;line-height:1.45;min-width:0}
-.scen-mrow .sm-lbl .sm-st{color:var(--sky-txt);font-weight:800}
-.scen-mrow .sm-lbl small{font-weight:500;color:var(--faint);font-size:.66rem}
-.scen-mrow input{width:92px;flex:none;border:1px solid var(--border2);border-radius:8px;padding:6px 8px;font-size:.82rem;text-align:center;outline:none}
+.scen-rules-hint{font-size:.66rem;color:var(--gold-txt);background:var(--gold-soft);border:1px dashed var(--gold);border-radius:8px;padding:6px 9px;line-height:1.6}
+.scen-mrow{display:flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:9px;padding:7px 9px;background:#fbfcfe;flex-wrap:wrap}
+.scen-mrow .sm-sels{display:flex;gap:6px;flex:1;min-width:150px}
+.scen-mrow select{flex:1;min-width:0;border:1px solid var(--border2);border-radius:8px;padding:6px 7px;font-size:.76rem;outline:none;background:#fff}
+.scen-mrow select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(217,119,6,.12)}
+.scen-mrow input{width:88px;flex:none;border:1px solid var(--border2);border-radius:8px;padding:6px 8px;font-size:.8rem;text-align:center;outline:none}
 .scen-mrow input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(217,119,6,.12)}
+.scen-mrow .sm-del{width:26px;height:26px;flex:none;border:none;border-radius:7px;background:transparent;color:var(--faint);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.scen-mrow .sm-del:hover{background:var(--danger-soft);color:var(--danger-txt)}
+.scen-mrow .sm-cnt{width:100%;font-size:.65rem;color:var(--muted);font-weight:700}
 .btn-gold{background:linear-gradient(135deg,#b45309,#d97706);color:#fff;border-color:#b45309}
 .btn-gold:hover{filter:brightness(1.1)}
 .gold-kpi .kpi-ico{background:linear-gradient(135deg,#b45309,#d97706);color:#fff}
@@ -1039,13 +1043,15 @@ body.dense table.reg{font-size:.76rem}
                   <label>نمط التسعير</label>
                   <div class="scen-mode-tog" id="scenModeTog">
                     <button type="button" class="scen-mode-btn active" data-scmode="uniform">سعر موحد</button>
-                    <button type="button" class="scen-mode-btn" data-scmode="matrix">أسعار حسب النوع والحالة</button>
+                    <button type="button" class="scen-mode-btn" data-scmode="matrix">سعر متعدد (نوع × حالة)</button>
                   </div>
                 </div>
                 <div class="fld" id="scenPpmWrap"><label>سعر المتر الجديد (ر.س / م²)</label><input type="number" id="scenPpm" min="0" step="any" placeholder="مثال: 650"></div>
-                <div class="scen-matrix" id="scenMatrixWrap" style="display:none">
-                  <label>أسعار مخصصة (نوع × حالة) — اترك الحقل فارغاً ليبقى السعر الأصلي</label>
-                  <div id="scenMatrix"></div>
+                <div class="scen-matrix" id="scenRulesWrap" style="display:none">
+                  <label>أسعار مخصصة — اختر النوع والحالة لكل صف بحرية (خيار «الكل» يسعّر الكل)</label>
+                  <div class="scen-rules-hint">الأولوية للتركيبة الأدق (نوع + حالة محددان) · غير المطابق لأي صف يبقى بسعره الأصلي</div>
+                  <div id="scenRules"></div>
+                  <button class="btn btn-soft btn-xs" id="btnScenRuleAdd" type="button"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>إضافة سعر</button>
                 </div>
                 <div class="scen-live" id="scenLive"></div>
                 <div class="fld"><label>اسم السيناريو</label><input type="text" id="scenName" placeholder="مثال: بيع بقية المخطط بسعر 650" maxlength="60"></div>
@@ -5068,7 +5074,8 @@ let scenCharts = {};
 let scenTombstones = [];
 let scenDefaultId = null;
 let scenPriceMode = 'uniform';
-let scenMatrix = new Map();
+let scenRules = [];
+let scenRuleSeq = 1;
 function loadScenarios(){
   try{ const s = localStorage.getItem(SCEN_KEY); if(s){ const p = JSON.parse(s); if(Array.isArray(p)) return p; } }catch(e){}
   return [];
@@ -5155,35 +5162,66 @@ function scenScope(){
   if(scenBlock) list = list.filter(r=>String(r.block) === scenBlock);
   return list;
 }
+function scenRuleValid(rule){
+  return rule && rule.ppm != null && !isNaN(rule.ppm);
+}
 function scenHasPrices(){
-  return scenPriceMode === 'matrix' ? scenMatrix.size > 0 : scenPpm != null;
+  return scenPriceMode === 'matrix' ? scenRules.some(scenRuleValid) : scenPpm != null;
+}
+function scenRuleMatches(rule, r){
+  const tm = rule.type === 'الكل' || rule.type === (r.landType || '—');
+  const sm = rule.status === 'الكل' || rule.status === getStatus(r);
+  return tm && sm;
 }
 function scenPriceFor(r){
   if(scenPriceMode === 'matrix'){
-    const p = scenMatrix.get((r.landType || '—') + '|' + getStatus(r));
-    return (p == null || isNaN(p)) ? null : p;
+    let best = null, bestScore = -1;
+    for(const rule of scenRules){
+      if(!scenRuleValid(rule)) continue;
+      if(!scenRuleMatches(rule, r)) continue;
+      const score = (rule.type === 'الكل' ? 0 : 2) + (rule.status === 'الكل' ? 0 : 1);
+      if(score > bestScore){ best = rule.ppm; bestScore = score; }
+    }
+    return best;
   }
   return scenPpm;
 }
+function scenRuleLabel(rule){
+  return (rule.type === 'الكل' ? 'كل الأنواع' : rule.type) + ' × ' + (rule.status === 'الكل' ? 'كل الحالات' : rule.status);
+}
 function scenAppliedTxt(){
   if(scenPriceMode === 'matrix'){
-    if(!scenMatrix.size) return '—';
-    return [...scenMatrix.entries()].map(([k,v])=>k.replace('|',' × ') + ' ← ' + fmtNum.format(v)).join(' · ');
+    const list = scenRules.filter(scenRuleValid);
+    if(!list.length) return '—';
+    return list.map(r=>scenRuleLabel(r) + ' ← ' + fmtNum.format(r.ppm)).join(' · ');
   }
   return scenPpm != null ? fmtNum.format(scenPpm) + ' ر.س/م²' : '—';
 }
-function scenMatrixRows(){
+function scenRuleCounts(rule){
+  let count = 0, area = 0, val = 0;
+  for(const r of scenScope()){
+    if(scenRuleMatches(rule, r)){ count++; area += r.area||0; val += r.value||0; }
+  }
+  return {count, area, avg: area ? val/area : 0};
+}
+function scenRulesTypeOptions(){
+  const types = [...new Set(records.map(r=>r.landType).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ar'));
+  return ['الكل'].concat(types);
+}
+function scenRulesStatusOptions(){
+  const names = scenStatusesAll();
+  return ['الكل'].concat(names);
+}
+function scenGenerateRules(){
+  if(scenRules.length) return;
   const map = new Map();
   for(const r of scenScope()){
-    const t = r.landType || '—';
-    const st = getStatus(r);
-    const key = t + '|' + st;
-    if(!map.has(key)) map.set(key, {type:t, status:st, count:0, area:0, val:0});
-    const o = map.get(key); o.count++; o.area += r.area||0; o.val += r.value||0;
+    const key = (r.landType || '—') + '|' + getStatus(r);
+    if(!map.has(key)) map.set(key, {type:r.landType || '—', status:getStatus(r), area:0});
+    map.get(key).area += r.area||0;
   }
   const arr = [...map.values()].sort((a,b)=>b.area-a.area);
-  for(const o of arr) o.avg = o.area ? o.val/o.area : 0;
-  return arr;
+  for(const o of arr) scenRules.push({id:scenRuleSeq++, type:o.type, status:o.status, ppm:null});
 }
 function scenCompute(){
   const rows = scenScope();
@@ -5244,21 +5282,39 @@ function renderScenChips(){
     return `<span class="scen-chip${scenSel.has(n) ? ' on' : ''}" data-scst="${esc(n)}">${esc(n)}<span class="cnt">${fmtInt.format(cnt)}</span></span>`;
   }).join('');
 }
-function renderScenMatrix(){
-  const wrap = $('#scenMatrixWrap'), el = $('#scenMatrix');
+function renderScenRules(){
+  const wrap = $('#scenRulesWrap'), el = $('#scenRules');
   if(!wrap || !el) return;
-  const arr = scenMatrixRows();
-  el.innerHTML = arr.length ? arr.map(o=>{
-    const key = o.type + '|' + o.status;
-    const v = scenMatrix.has(key) ? scenMatrix.get(key) : '';
-    return `<div class="scen-mrow" data-smkey="${esc(key)}">
-      <div class="sm-lbl">${esc(o.type)} <span class="sm-st">× ${esc(o.status)}</span><small>${fmtInt.format(o.count)} قطعة · ${fmtMoney.format(o.area)} م² · متوسط متر حالي ${fmtNum.format(o.avg)} ر.س</small></div>
-      <input type="number" min="0" step="any" placeholder="${fmtNum.format(o.avg)}" value="${v}" data-smppm="${esc(key)}">
+  if(!scenRules.length){ scenGenerateRules(); }
+  const types = scenRulesTypeOptions(), statuses = scenRulesStatusOptions();
+  const opts = (list, cur)=>list.map(o=>`<option value="${esc(o)}" ${o === cur ? 'selected' : ''}>${esc(o)}</option>`).join('');
+  el.innerHTML = scenRules.map(rule=>{
+    const c = scenRuleCounts(rule);
+    const has = scenRuleValid(rule);
+    return `<div class="scen-mrow" data-smrule="${rule.id}">
+      <div class="sm-sels">
+        <select data-smtype="${rule.id}" title="نوع الأرض">${opts(types, rule.type)}</select>
+        <select data-smstatus="${rule.id}" title="الحالة">${opts(statuses, rule.status)}</select>
+      </div>
+      <input type="number" min="0" step="any" placeholder="السعر" value="${rule.ppm == null ? '' : rule.ppm}" data-smppm="${rule.id}">
+      <button type="button" class="sm-del" data-smdel="${rule.id}" title="حذف الصف"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      <small class="sm-cnt" data-smcnt="${rule.id}">${has ? `يطابق ${fmtInt.format(c.count)} قطعة · ${fmtMoney.format(c.area)} م²` : 'لا سعر — يُتجاهل'}</small>
     </div>`;
-  }).join('') : '<div class="hint">لا توجد تركيبات نوع × حالة في النطاق المحدد — اختر الحالات أولاً</div>';
+  }).join('') || '<div class="hint">أضف صف سعر من الزر أدناه — غير المطابق يبقى بسعره الأصلي</div>';
+}
+function updateScenRuleCounters(){
+  const el = $('#scenRules');
+  if(!el) return;
+  el.querySelectorAll('[data-smcnt]').forEach(cnt=>{
+    const rule = scenRules.find(x=>x.id === +cnt.dataset.smcnt);
+    if(!rule) return;
+    const has = scenRuleValid(rule);
+    const c = scenRuleCounts(rule);
+    cnt.textContent = has ? `يطابق ${fmtInt.format(c.count)} قطعة · ${fmtMoney.format(c.area)} م²` : 'لا سعر — يُتجاهل';
+  });
 }
 function syncScenModeUI(){
-  const ppmWrap = $('#scenPpmWrap'), mWrap = $('#scenMatrixWrap');
+  const ppmWrap = $('#scenPpmWrap'), mWrap = $('#scenRulesWrap');
   const btns = document.querySelectorAll('.scen-mode-btn');
   btns.forEach(b=>b.classList.toggle('active', b.dataset.scmode === scenPriceMode));
   if(ppmWrap) ppmWrap.style.display = scenPriceMode === 'matrix' ? 'none' : '';
@@ -5331,7 +5387,7 @@ function renderScenKpis(){
     scenKpiHtml(icReg, '', 'القطع المشمولة', fmtInt.format(c.count), 'قطعة أرض', ''),
     scenKpiHtml(icArea, '', 'المساحة المشمولة', fmtMoney.format(c.area), 'متر مربع', ''),
     scenKpiHtml(icMoney, '', 'القيمة الأساسية', fmtMoney.format(c.cur), 'ريال سعودي', ''),
-    scenKpiHtml(icFlask, 'gold-kpi', 'قيمة السيناريو', hasP ? fmtMoney.format(c.newVal) : '—', hasP ? (scenPriceMode === 'matrix' ? `أسعار مخصصة (${scenMatrix.size} تركيبة)` : `بسعر ${fmtNum.format(scenPpm)} ر.س/م²`) : 'لم يُحدد السعر بعد', deltaHtml),
+    scenKpiHtml(icFlask, 'gold-kpi', 'قيمة السيناريو', hasP ? fmtMoney.format(c.newVal) : '—', hasP ? (scenPriceMode === 'matrix' ? `أسعار مخصصة (${scenRules.filter(scenRuleValid).length} صف)` : `بسعر ${fmtNum.format(scenPpm)} ر.س/م²`) : 'لم يُحدد السعر بعد', deltaHtml),
     scenKpiHtml(icAvg, '', 'متوسط سعر المتر', fmtNum.format(c.curAvg) + (hasP ? `<span style="color:#b45309"> ← ${fmtNum.format(c.newAvg)}</span>` : ''), 'ر.س / م²', ''),
     scenKpiHtml(icDelta, '', 'الفرق المتوقع', hasP ? (up?'+':'') + fmtMoney.format(c.delta) : '—', hasP ? (up?'+':'') + c.deltaPct.toFixed(1) + '%' : 'ريال سعودي', '')
   ].join('');
@@ -5414,7 +5470,7 @@ function renderScenarios(){
   syncScenModeUI();
   renderScenChips();
   scenAutoOpenDefault();
-  renderScenMatrix();
+  renderScenRules();
   renderScenLib();
   renderScenarioResults();
   scenCloudRefresh();
@@ -5437,7 +5493,7 @@ function saveScenario(){
     id:Date.now(), name:name.slice(0,60), statuses:[...scenSel], type:scenType, block:scenBlock,
     priceMode:scenPriceMode,
     ppm: scenPriceMode === 'uniform' ? scenPpm : null,
-    ppms: scenPriceMode === 'matrix' ? [...scenMatrix.entries()].map(([key,ppm])=>({key, ppm})) : [],
+    rules: scenPriceMode === 'matrix' ? scenRules.filter(scenRuleValid).map(r=>({type:r.type, status:r.status, ppm:r.ppm})) : [],
     createdAt:nowIso, updatedAt:nowIso, snap:scenSnapshot()
   };
   scenarios.unshift(scObj);
@@ -5451,8 +5507,14 @@ function saveScenario(){
 }
 function scenApplyPrices(sc){
   scenPriceMode = sc.priceMode === 'matrix' ? 'matrix' : 'uniform';
-  scenMatrix = new Map();
-  if(scenPriceMode === 'matrix' && Array.isArray(sc.ppms)) for(const p of sc.ppms) scenMatrix.set(p.key, p.ppm);
+  scenRules = [];
+  if(scenPriceMode === 'matrix'){
+    if(Array.isArray(sc.rules)){
+      for(const r of sc.rules) if(r && r.ppm != null) scenRules.push({id:scenRuleSeq++, type:r.type || 'الكل', status:r.status || 'الكل', ppm:r.ppm});
+    }else if(Array.isArray(sc.ppms)){
+      for(const p of sc.ppms){ const parts = String(p.key).split('|'); scenRules.push({id:scenRuleSeq++, type:parts[0] || 'الكل', status:parts[1] || 'الكل', ppm:p.ppm}); }
+    }
+  }
   scenPpm = scenPriceMode === 'uniform' ? sc.ppm : null;
 }
 function openScenario(id){
@@ -5468,7 +5530,7 @@ function openScenario(id){
   $('#scenName').value = sc.name;
   syncScenModeUI();
   renderScenChips();
-  renderScenMatrix();
+  renderScenRules();
   renderScenarioResults();
   window.scrollTo({top:0, behavior:'smooth'});
 }
@@ -5511,6 +5573,7 @@ function renameScenario(id){
   if(nm && nm.trim()){ sc.name = nm.trim().slice(0,60); sc.updatedAt = new Date().toISOString(); saveScenarios(); scenCloudSave(); renderScenLib(); toast('تمت إعادة التسمية'); }
 }
 function scenPriceLabel(sc){
+  if(sc.priceMode === 'matrix' && Array.isArray(sc.rules) && sc.rules.length) return 'أسعار مخصصة: ' + sc.rules.length + ' تركيبة';
   if(sc.priceMode === 'matrix' && Array.isArray(sc.ppms) && sc.ppms.length) return 'أسعار مخصصة: ' + sc.ppms.length + ' تركيبة';
   return 'سعر المتر: ' + fmtNum.format(sc.ppm) + ' ر.س';
 }
@@ -5558,7 +5621,7 @@ function exportScenExcel(){
   });
   rows.push({block:'النطاق المطبق', count:[...scenSel].join(' + ') + (scenType ? ' · ' + scenType : '') + (scenBlock ? ' · بلك ' + scenBlock : ''), area:'', cur:'', newV:'', delta:'', pct:''});
   if(scenPriceMode === 'matrix'){
-    for(const [key, ppm] of scenMatrix) rows.push({block:'سعر: ' + key.replace('|',' × '), count:fmtNum.format(ppm) + ' ر.س/م²', area:'', cur:'', newV:'', delta:'', pct:''});
+    for(const r of scenRules.filter(scenRuleValid)) rows.push({block:'سعر: ' + scenRuleLabel(r), count:fmtNum.format(r.ppm) + ' ر.س/م²', area:'', cur:'', newV:'', delta:'', pct:''});
     rows.push({block:'التركيبات غير المسعّرة', count:'تبقى بأسعارها الأصلية', area:'', cur:'', newV:'', delta:'', pct:''});
   }else{
     rows.push({block:'سعر المتر الجديد', count:fmtNum.format(scenPpm||0) + ' ر.س/م²', area:'', cur:'', newV:'', delta:'', pct:''});
@@ -6544,37 +6607,64 @@ function bindEvents(){
     const n = ch.dataset.scst;
     if(scenSel.has(n)) scenSel.delete(n); else scenSel.add(n);
     renderScenChips();
-    renderScenMatrix();
+    renderScenRules();
     renderScenarioResults();
   });
-  $('#scenType').addEventListener('change', e=>{ scenType = e.target.value; renderScenMatrix(); renderScenarioResults(); });
-  $('#scenBlock').addEventListener('change', e=>{ scenBlock = e.target.value; renderScenMatrix(); renderScenarioResults(); });
+  $('#scenType').addEventListener('change', e=>{ scenType = e.target.value; renderScenRules(); renderScenarioResults(); });
+  $('#scenBlock').addEventListener('change', e=>{ scenBlock = e.target.value; renderScenRules(); renderScenarioResults(); });
   $('#scenPpm').addEventListener('input', e=>{ const v = parseFloat(e.target.value); scenPpm = isNaN(v) ? null : v; renderScenarioResults(); });
   $('#scenModeTog').addEventListener('click', e=>{
     const b = e.target.closest('.scen-mode-btn');
     if(!b || b.dataset.scmode === scenPriceMode) return;
     scenPriceMode = b.dataset.scmode;
     syncScenModeUI();
-    renderScenMatrix();
+    renderScenRules();
     renderScenarioResults();
   });
-  $('#scenMatrix').addEventListener('input', e=>{
+  $('#btnScenRuleAdd').addEventListener('click', ()=>{
+    scenRules.push({id:scenRuleSeq++, type:'الكل', status:'الكل', ppm:null});
+    renderScenRules();
+  });
+  $('#scenRules').addEventListener('change', e=>{
+    const sel = e.target.closest('select[data-smtype], select[data-smstatus]');
+    if(sel){
+      const rule = scenRules.find(x=>x.id === +sel.dataset.smtype || x.id === +sel.dataset.smstatus);
+      if(rule){
+        if(sel.dataset.smtype) rule.type = sel.value;
+        else rule.status = sel.value;
+        updateScenRuleCounters();
+        renderScenarioResults();
+      }
+      return;
+    }
+  });
+  $('#scenRules').addEventListener('input', e=>{
     const inp = e.target.closest('input[data-smppm]');
     if(!inp) return;
-    const key = inp.dataset.smppm;
+    const rule = scenRules.find(x=>x.id === +inp.dataset.smppm);
+    if(!rule) return;
     const v = parseFloat(inp.value);
-    if(isNaN(v)) scenMatrix.delete(key); else scenMatrix.set(key, v);
+    rule.ppm = isNaN(v) ? null : v;
+    updateScenRuleCounters();
+    renderScenarioResults();
+  });
+  $('#scenRules').addEventListener('click', e=>{
+    const del = e.target.closest('button[data-smdel]');
+    if(!del) return;
+    const id = +del.dataset.smdel;
+    scenRules = scenRules.filter(x=>x.id !== id);
+    renderScenRules();
     renderScenarioResults();
   });
   $('#btnScenSave').addEventListener('click', saveScenario);
   $('#btnScenReset').addEventListener('click', ()=>{
     scenSel = new Set(); scenType = ''; scenBlock = ''; scenPpm = null;
     scenPriceMode = 'uniform';
-    scenMatrix = new Map();
+    scenRules = [];
     $('#scenType').value = ''; $('#scenBlock').value = ''; $('#scenPpm').value = ''; $('#scenName').value = '';
     syncScenModeUI();
     renderScenChips();
-    renderScenMatrix();
+    renderScenRules();
     renderScenarioResults();
   });
   $('#scenLib').addEventListener('click', e=>{
