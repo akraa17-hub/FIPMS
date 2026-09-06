@@ -512,6 +512,7 @@ table.plr td.cell-sold{background:#e0f2fe;color:#075985}
 table.plr td.cell-resv{background:#fef3c7;color:#92400e}
 table.plr td.cell-avail{background:#dcfce7;color:#166534}
 table.plr td.cell-other{background:#eef1f6;color:#475569}
+.scen-mark{color:#b45309;font-size:.78rem;margin-inline-start:2px;display:inline-block}
 table.plr tbody tr:nth-child(even) td:not(.st-cell){background:#f9fafc}
 table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
 .pd-plr{font-size:.8rem}
@@ -5810,26 +5811,30 @@ function planRepStatusLabel(st){
   return st;
 }
 function planRepRows(){
+  const scopedIds = new Set(scenScope().map(r=>r.id));
   return records.map(r=>{
     const st = getStatus(r);
     const isAvail = st === 'متاحة';
-    const p = isAvail ? scenPriceFor(r) : null;
-    const ppm = p != null ? p : (r.pricePerMeter || 0);
-    const val = p != null ? (r.area||0)*p : (r.value||0);
-    return {r, block:String(r.block||'—'), landNo:String(r.landNo||'—'), area:r.area||0, st, isAvail, ppm, val};
+    const inScope = scopedIds.has(r.id);
+    const p = inScope ? scenPriceFor(r) : null;
+    const priced = p != null;
+    const ppm = priced ? p : (r.pricePerMeter || 0);
+    const val = priced ? (r.area||0)*p : (r.value||0);
+    return {r, block:String(r.block||'—'), landNo:String(r.landNo||'—'), area:r.area||0, st, isAvail, priced, ppm, val};
   }).sort((a,b)=>{ const ab = ((+a.block)||0) - ((+b.block)||0); return ab || String(a.landNo).localeCompare(String(b.landNo), 'ar', {numeric:true}); });
 }
 function planRepCompute(){
   const rows = planRepRows();
   const groups = {
-    sold:{label:'تم الإفراغ', count:0, area:0, val:0},
-    resv:{label:'محجوز', count:0, area:0, val:0},
-    avail:{label:'متاح', count:0, area:0, val:0},
-    other:{label:'أخرى', count:0, area:0, val:0}
+    sold:{label:'تم الإفراغ', count:0, area:0, val:0, priced:0},
+    resv:{label:'محجوز', count:0, area:0, val:0, priced:0},
+    avail:{label:'متاح', count:0, area:0, val:0, priced:0},
+    other:{label:'أخرى', count:0, area:0, val:0, priced:0}
   };
   for(const o of rows){
     const g = o.st === 'تم الإفراغ' ? groups.sold : o.st === 'محجوزة' ? groups.resv : o.st === 'متاحة' ? groups.avail : groups.other;
     g.count++; g.area += o.area; g.val += o.val;
+    if(o.priced) g.priced++;
   }
   for(const k in groups) groups[k].avg = groups[k].area ? groups[k].val/groups[k].area : 0;
   const totalArea = groups.sold.area + groups.resv.area + groups.avail.area + groups.other.area;
@@ -5839,6 +5844,14 @@ function planRepCompute(){
   const origVal = rows.reduce((s,o)=>s+(o.r.value||0),0);
   const origAvg = totalArea ? origVal/totalArea : 0;
   return {rows, groups, totalArea, totalVal, totalAvg, origVal, origAvg};
+}
+function prgScenTitle(base, g){
+  return g.priced > 0 ? base + ' — بسعر السيناريو' : base;
+}
+function prgScenNote(g, baseNote){
+  if(g.count && g.priced > 0 && g.priced < g.count) return `${g.priced} من ${g.count} قطعة بسعر السيناريو — الباقي بأسعاره الأصلية`;
+  if(g.count && g.priced === g.count) return 'كل قطع المجموعة بأسعار السيناريو';
+  return baseNote;
 }
 function planAvgBannerHtml(c){
   const delta = c.totalAvg - c.origAvg;
@@ -5860,11 +5873,12 @@ function prgCard(cls, icoSvg, label, g, note){
     ${note ? `<div class="prg-note">${note}</div>` : ''}
   </div>`;
 }
-function planRepStCell(st){
-  if(st === 'تم الإفراغ') return '<td class="st-cell cell-sold">تم الإفراغ</td>';
-  if(st === 'محجوزة') return '<td class="st-cell cell-resv">محجوز</td>';
-  if(st === 'متاحة') return '<td class="st-cell cell-avail">متاح</td>';
-  return '<td class="st-cell cell-other">' + esc(st) + '</td>';
+function planRepStCell(st, priced){
+  const mark = priced ? '<span class="scen-mark" title="سعر السيناريو">✦</span>' : '';
+  if(st === 'تم الإفراغ') return `<td class="st-cell cell-sold">تم الإفراغ${mark}</td>`;
+  if(st === 'محجوزة') return `<td class="st-cell cell-resv">محجوز${mark}</td>`;
+  if(st === 'متاحة') return `<td class="st-cell cell-avail">متاح${mark}</td>`;
+  return `<td class="st-cell cell-other">${esc(st)}${mark}</td>`;
 }
 function renderPlanReport(){
   const wrap = $('#planRepTblWrap'), meta = $('#planRepMeta'), groups = $('#planRepGroups'), avgWrap = $('#planRepAvg');
@@ -5884,10 +5898,10 @@ function renderPlanReport(){
   const icoAvail = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6.292a7 7 0 1 0 4 0V2"/><path d="M8.5 2h7"/><path d="M7 16h8"/></svg>';
   const icoOther = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 12h.01M12 16h.01"/></svg>';
   const icoTot = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m5 16 4-6 4 3 5-8"/></svg>';
-  let cards = prgCard('sold', icoSold, 'تم الإفراغ', c.groups.sold, '');
-  cards += prgCard('resv', icoResv, 'محجوز', c.groups.resv, '');
-  cards += prgCard('avail', icoAvail, 'متاح — بسعر السيناريو', c.groups.avail, 'الخلفية الخضراء في الجدول = سعر السيناريو');
-  if(c.groups.other.count) cards += prgCard('other', icoOther, 'أخرى', c.groups.other, '');
+  let cards = prgCard('sold', icoSold, prgScenTitle('تم الإفراغ', c.groups.sold), c.groups.sold, prgScenNote(c.groups.sold, ''));
+  cards += prgCard('resv', icoResv, prgScenTitle('محجوز', c.groups.resv), c.groups.resv, prgScenNote(c.groups.resv, ''));
+  cards += prgCard('avail', icoAvail, prgScenTitle('متاح', c.groups.avail), c.groups.avail, prgScenNote(c.groups.avail, 'الصفوف المعلّمة ✦ بأسعار السيناريو'));
+  if(c.groups.other.count) cards += prgCard('other', icoOther, prgScenTitle('أخرى', c.groups.other), c.groups.other, prgScenNote(c.groups.other, ''));
   cards += `<div class="prg total">
     <div class="prg-h"><span class="ico">${icoTot}</span>إجمالي المخطط</div>
     <div class="prg-grid">
@@ -5899,7 +5913,7 @@ function renderPlanReport(){
   </div>`;
   groups.innerHTML = cards;
   wrap.innerHTML = `<table class="plr"><colgroup><col style="width:12%"><col style="width:12%"><col style="width:16%"><col style="width:17%"><col style="width:22%"><col style="width:13%"></colgroup><thead><tr><th>رقم البلك</th><th>القطعة</th><th>المساحة (م²)</th><th>سعر المتر (ر.س)</th><th>القيمة (ر.س)</th><th>الحالة</th></tr></thead>
-  <tbody>${c.rows.map(o=>`<tr><td class="num">${esc(o.block)}</td><td class="num">${esc(o.landNo)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtNum.format(o.ppm)}</td><td class="num">${fmtMoney.format(o.val)}</td>${planRepStCell(o.st)}</tr>`).join('')}</tbody></table>`;
+  <tbody>${c.rows.map(o=>`<tr><td class="num">${esc(o.block)}</td><td class="num">${esc(o.landNo)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtNum.format(o.ppm)}</td><td class="num">${fmtMoney.format(o.val)}</td>${planRepStCell(o.st, o.priced)}</tr>`).join('')}</tbody></table>`;
 }
 function round2(v){ return Math.round(v*100)/100; }
 function exportPlanRepExcel(){
@@ -5916,15 +5930,15 @@ function exportPlanRepExcel(){
   push([]);
   const gHdr = push(['المجموعة','القطع','المساحة (م²)','النسبة %','السعر الإجمالي (ر.س)','متوسط سعر المتر (ر.س/م²)']);
   const g = c.groups;
-  const gSold = push(['تم الإفراغ', g.sold.count, round2(g.sold.area), round2(g.sold.pct), round2(g.sold.val), round2(g.sold.avg)]);
-  const gResv = push(['محجوز', g.resv.count, round2(g.resv.area), round2(g.resv.pct), round2(g.resv.val), round2(g.resv.avg)]);
-  const gAvail = push(['متاح (بسعر السيناريو)', g.avail.count, round2(g.avail.area), round2(g.avail.pct), round2(g.avail.val), round2(g.avail.avg)]);
-  const gOther = g.other.count ? push(['أخرى', g.other.count, round2(g.other.area), round2(g.other.pct), round2(g.other.val), round2(g.other.avg)]) : null;
+  const gSold = push([g.sold.priced ? 'تم الإفراغ (بسعر السيناريو)' : 'تم الإفراغ', g.sold.count, round2(g.sold.area), round2(g.sold.pct), round2(g.sold.val), round2(g.sold.avg)]);
+  const gResv = push([g.resv.priced ? 'محجوز (بسعر السيناريو)' : 'محجوز', g.resv.count, round2(g.resv.area), round2(g.resv.pct), round2(g.resv.val), round2(g.resv.avg)]);
+  const gAvail = push([g.avail.priced ? 'متاح (بسعر السيناريو)' : 'متاح', g.avail.count, round2(g.avail.area), round2(g.avail.pct), round2(g.avail.val), round2(g.avail.avg)]);
+  const gOther = g.other.count ? push([g.other.priced ? 'أخرى (بسعر السيناريو)' : 'أخرى', g.other.count, round2(g.other.area), round2(g.other.pct), round2(g.other.val), round2(g.other.avg)]) : null;
   const gTotal = push(['إجمالي المخطط', c.rows.length, round2(c.totalArea), 100, round2(c.totalVal), round2(c.totalAvg)]);
   push([]);
   const tHdr = push(['رقم البلك','القطعة','المساحة (م²)','سعر المتر (ر.س)','القيمة (ر.س)','الحالة']);
   const dataRows = [];
-  for(const o of c.rows) dataRows.push(push([o.block, o.landNo, o.area, round2(o.ppm), round2(o.val), planRepStatusLabel(o.st)]));
+  for(const o of c.rows) dataRows.push(push([o.block, o.landNo, o.area, round2(o.ppm), round2(o.val), planRepStatusLabel(o.st) + (o.priced ? ' (سيناريو)' : '')]));
   const ws = XLSX.utils.aoa_to_sheet(aoa);
   ws['!cols'] = [{wch:30},{wch:12},{wch:14},{wch:11},{wch:18},{wch:20}];
   const bold = idx=>{ for(let i=0;i<6;i++){ const a = XLSX.utils.encode_cell({r:idx-1, c:i}); if(ws[a]) ws[a].s = Object.assign({}, ws[a].s, {font:{bold:true}}); } };
@@ -5955,10 +5969,10 @@ function buildPlanRepPrintDoc(){
   const icoOther = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 12h.01M12 16h.01"/></svg>';
   const icoTot = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m5 16 4-6 4 3 5-8"/></svg>';
   const g = c.groups;
-  let cards = prgCard('sold', icoSold, 'تم الإفراغ', g.sold, '');
-  cards += prgCard('resv', icoResv, 'محجوز', g.resv, '');
-  cards += prgCard('avail', icoAvail, 'متاح — بسعر السيناريو', g.avail, '');
-  if(g.other.count) cards += prgCard('other', icoOther, 'أخرى', g.other, '');
+  let cards = prgCard('sold', icoSold, prgScenTitle('تم الإفراغ', g.sold), g.sold, prgScenNote(g.sold, ''));
+  cards += prgCard('resv', icoResv, prgScenTitle('محجوز', g.resv), g.resv, prgScenNote(g.resv, ''));
+  cards += prgCard('avail', icoAvail, prgScenTitle('متاح', g.avail), g.avail, prgScenNote(g.avail, 'الصفوف المعلّمة ✦ بأسعار السيناريو'));
+  if(g.other.count) cards += prgCard('other', icoOther, prgScenTitle('أخرى', g.other), g.other, prgScenNote(g.other, ''));
   cards += `<div class="prg total">
     <div class="prg-h"><span class="ico">${icoTot}</span>إجمالي المخطط</div>
     <div class="prg-grid">
@@ -5971,7 +5985,8 @@ function buildPlanRepPrintDoc(){
   const stCellStyle = {'تم الإفراغ':['#e0f2fe','#075985'], 'محجوزة':['#fef3c7','#92400e'], 'متاحة':['#dcfce7','#166534']};
   const pdfStCell = o=>{
     const m = stCellStyle[o.st] || ['#eef1f6','#475569'];
-    return `<td style="background:${m[0]};color:${m[1]};font-weight:800;text-align:center">${esc(planRepStatusLabel(o.st))}</td>`;
+    const mark = o.priced ? ' <span style="color:#b45309">✦</span>' : '';
+    return `<td style="background:${m[0]};color:${m[1]};font-weight:800;text-align:center">${esc(planRepStatusLabel(o.st))}${mark}</td>`;
   };
   const div = document.createElement('div');
   div.className = 'print-doc pd-gold';
