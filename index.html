@@ -481,6 +481,14 @@ body.dense table.reg{font-size:.76rem}
 .prg .prg-grid span{display:flex;justify-content:space-between;gap:6px;color:#475569}
 .prg .prg-grid b{font-weight:900;color:#1e293b}
 .prg-note{margin-top:7px;font-size:.66rem;font-weight:700;color:var(--gold-txt);background:rgba(255,255,255,.65);border-radius:7px;padding:4px 8px}
+.prg .prg-grid .avg-big{grid-column:1/-1;border-top:1px solid rgba(255,255,255,.35);padding-top:6px;margin-top:4px}
+.prg .prg-grid .avg-big b{font-size:1.18rem}
+.pr-avg-banner{background:linear-gradient(135deg,#b45309,#d97706);color:#fff;border-radius:14px;padding:15px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:14px;box-shadow:0 6px 18px rgba(180,83,9,.25)}
+.pr-avg-lbl{font-size:.85rem;font-weight:800;opacity:.92;display:flex;align-items:center;gap:8px}
+.pr-avg-val{font-size:1.65rem;font-weight:900;letter-spacing:-.5px;direction:ltr}
+.pr-avg-val span{font-size:.92rem;font-weight:700;opacity:.85}
+.pr-avg-meta{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);padding:5px 13px;border-radius:99px;font-size:.8rem;font-weight:800}
+@media(max-width:640px){ .pr-avg-banner{gap:9px;padding:13px 15px} .pr-avg-val{font-size:1.35rem} }
 .pd-groups{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .pd-groups .prg{flex:1;min-width:190px}
 .prg.sold{background:#ecfdf5;border-color:#a7f3d0}
@@ -1171,6 +1179,7 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
               </div>
             </div>
             <div class="card-b">
+              <div id="planRepAvg"></div>
               <div class="planrep-meta" id="planRepMeta"></div>
               <div class="planrep-groups" id="planRepGroups"></div>
               <div class="tbl-wrap" style="max-height:60vh" id="planRepTblWrap"></div>
@@ -5178,7 +5187,8 @@ function scenApplyDefault(def){
   if(def !== scenDefaultId){
     scenDefaultId = def;
     saveScenDefaultLocal();
-    if(def != null && !scenSel.size && !scenHasPrices()){
+    const nameEl = $('#scenName');
+    if(def != null && !scenSel.size && !scenHasPrices() && (!nameEl || !nameEl.value.trim())){
       const sc = scenarios.find(x=>x.id === def);
       if(sc) openScenario(sc.id);
     }
@@ -5530,6 +5540,8 @@ function renderScenarioResults(){
   renderScenKpis();
   drawScenCharts();
   renderScenTable();
+  const planPanel = $('#panel-scenPanelPlan');
+  if(planPanel && planPanel.classList.contains('active')) renderPlanReport();
 }
 function renderScenarios(){
   const typeSel = $('#scenType'), blockSel = $('#scenBlock');
@@ -5824,7 +5836,17 @@ function planRepCompute(){
   for(const k in groups) groups[k].pct = totalArea ? groups[k].area/totalArea*100 : 0;
   const totalVal = groups.sold.val + groups.resv.val + groups.avail.val + groups.other.val;
   const totalAvg = totalArea ? totalVal/totalArea : 0;
-  return {rows, groups, totalArea, totalVal, totalAvg};
+  const origVal = rows.reduce((s,o)=>s+(o.r.value||0),0);
+  const origAvg = totalArea ? origVal/totalArea : 0;
+  return {rows, groups, totalArea, totalVal, totalAvg, origVal, origAvg};
+}
+function planAvgBannerHtml(c){
+  const delta = c.totalAvg - c.origAvg;
+  return `<div class="pr-avg-banner">
+    <div class="pr-avg-lbl"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m5 16 4-6 4 3 5-8"/></svg>متوسط سعر المتر للمخطط كله</div>
+    <div class="pr-avg-val">${fmtNum.format(c.totalAvg)} <span>ر.س / م²</span></div>
+    <div class="pr-avg-meta">قبل: ${fmtNum.format(c.origAvg)} · التغير: ${delta>=0?'+':''}${fmtNum.format(delta)} ر.س/م²</div>
+  </div>`;
 }
 function prgCard(cls, icoSvg, label, g, note){
   return `<div class="prg ${cls}">
@@ -5845,15 +5867,16 @@ function planRepStCell(st){
   return '<td class="st-cell cell-other">' + esc(st) + '</td>';
 }
 function renderPlanReport(){
-  const wrap = $('#planRepTblWrap'), meta = $('#planRepMeta'), groups = $('#planRepGroups');
+  const wrap = $('#planRepTblWrap'), meta = $('#planRepMeta'), groups = $('#planRepGroups'), avgWrap = $('#planRepAvg');
   if(!wrap || !meta || !groups) return;
   const c = planRepCompute();
   $('#planRepCount').textContent = `(${fmtInt.format(c.rows.length)} قطعة)`;
   const hasP = scenHasPrices();
   const name = $('#scenName').value.trim() || '—';
+  if(avgWrap) avgWrap.innerHTML = planAvgBannerHtml(c);
   meta.innerHTML = `
-    <span class="prm-chip">السيناريو الحالي: ${esc(name)}</span>
-    <span class="prm-chip gold">الأسعار المطبقة: ${esc(scenAppliedTxt())}</span>
+    <span class="prm-chip gold" style="font-weight:900">السيناريو الحالي: ${esc(name)}</span>
+    <span class="prm-chip">الأسعار المطبقة: ${esc(scenAppliedTxt())}</span>
     <span class="prm-chip">تاريخ الإصدار: ${esc(todayStr())}</span>
     ${!hasP ? '<span class="prm-chip" style="border-color:#fca5a5;color:#991b1b">لا أسعار سيناريو — المتاح بأسعاره الأصلية</span>' : ''}`;
   const icoSold = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
@@ -5871,7 +5894,7 @@ function renderPlanReport(){
       <span>المساحة الكلية <b>${fmtMoney.format(c.totalArea)} م²</b></span>
       <span>القطع <b>${fmtInt.format(c.rows.length)}</b></span>
       <span>السعر الإجمالي <b>${fmtMoney.format(c.totalVal)} ر.س</b></span>
-      <span>متوسط سعر المتر <b>${fmtNum.format(c.totalAvg)} ر.س/م²</b></span>
+      <span class="avg-big">متوسط سعر المتر <b>${fmtNum.format(c.totalAvg)} ر.س/م²</b></span>
     </div>
   </div>`;
   groups.innerHTML = cards;
@@ -5942,7 +5965,7 @@ function buildPlanRepPrintDoc(){
       <span>المساحة الكلية <b>${fmtMoney.format(c.totalArea)} م²</b></span>
       <span>القطع <b>${fmtInt.format(c.rows.length)}</b></span>
       <span>السعر الإجمالي <b>${fmtMoney.format(c.totalVal)} ر.س</b></span>
-      <span>متوسط سعر المتر <b>${fmtNum.format(c.totalAvg)} ر.س/م²</b></span>
+      <span class="avg-big">متوسط سعر المتر <b>${fmtNum.format(c.totalAvg)} ر.س/م²</b></span>
     </div>
   </div>`;
   const stCellStyle = {'تم الإفراغ':['#e0f2fe','#075985'], 'محجوزة':['#fef3c7','#92400e'], 'متاحة':['#dcfce7','#166534']};
@@ -5959,6 +5982,7 @@ function buildPlanRepPrintDoc(){
       <span class="pd-item">الأسعار المطبقة: ${esc(scenAppliedTxt())}</span>
       <span class="pd-item">القطع: ${fmtInt.format(c.rows.length)}</span>
     </div>
+    ${planAvgBannerHtml(c)}
     <div class="pd-sec-h"><h3>الإجماليات</h3></div>
     <div class="pd-groups">${cards}</div>
     <div class="pd-sec-h"><h3>جدول القطع</h3></div>
