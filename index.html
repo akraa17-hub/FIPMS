@@ -227,6 +227,19 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
 .fgrid input:focus,.fgrid select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.13)}
 .fgrid input.err,.fgrid select.err{border-color:var(--danger);box-shadow:0 0 0 3px rgba(239,68,68,.12)}
 .hint{font-size:.72rem;color:var(--faint)}
+.buyers-hint{font-size:.72rem;color:var(--muted);margin-bottom:9px}
+.buyer-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.buyer-row input[type="text"]{flex:1.4;min-width:130px;border:1px solid var(--border2);border-radius:9px;padding:8px 11px;font-size:.85rem;outline:none;background:#fff}
+.buyer-row select{flex:1;min-width:110px;border:1px solid var(--border2);border-radius:9px;padding:8px 10px;font-size:.85rem;outline:none;background:#fff}
+.buyer-row input[type="number"]{width:96px;border:1px solid var(--border2);border-radius:9px;padding:8px 10px;font-size:.85rem;outline:none;background:#fff;text-align:center}
+.buyer-row input:focus,.buyer-row select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.buyer-row .b-del{width:30px;height:30px;flex:none;border:none;border-radius:8px;background:transparent;color:var(--faint);cursor:pointer;font-size:1.05rem;display:flex;align-items:center;justify-content:center}
+.buyer-row .b-del:hover{background:var(--danger-soft);color:var(--danger-txt)}
+.buyers-foot{display:flex;align-items:center;gap:12px;margin-top:6px;flex-wrap:wrap}
+.buyers-total{font-size:.78rem;font-weight:800;color:var(--primary-d);background:var(--primary-soft);border-radius:99px;padding:5px 13px}
+.buyers-total.over{color:var(--danger-txt);background:var(--danger-soft)}
+.c-buyers{font-size:.68rem;color:var(--muted);font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-buyers b{color:var(--sky-txt)}
 
 /* ===== Filters panel & active chips ===== */
 .fwrap{border-bottom:1px solid var(--border)}
@@ -1772,6 +1785,7 @@ let lastSaved = null;
 let storageOK = true;
 let charts = {};
 let editingId = null;
+let editingBuyers = [];
 let valueTouched = false;
 
 const state = {
@@ -1934,7 +1948,12 @@ function cellHtml(r, col){
   if(k === 'area' || k === 'value') return `<span class="num">${money2(v)}</span>`;
   if(k === 'pricePerMeter') return `<span class="num">${num2(v)}</span>`;
   if(k === 'block' || k === 'landNo') return `<span class="num">${v == null || v === '' ? '—' : esc(v)}</span>`;
-  if(k === 'clientName') return v ? esc(v).replace(/\n/g,'<br>') : '—';
+  if(k === 'clientName'){
+    const partners = Array.isArray(r.buyers) && r.buyers.length ? r.buyers : [];
+    const line = partners.length ? `<div class="c-buyers">+ شركاء: ${partners.map(p=>`<b>${esc(p.name)}</b> ${p.sharePct}%`).join(' · ')}</div>` : '';
+    if(v) return esc(v).replace(/\n/g,'<br>') + line;
+    return partners.length ? line : '—';
+  }
   if(k === 'clientType') return v ? `<span class="badge ${v === 'كاش' ? 'b-teal' : v === 'تطبيق' ? 'b-sky' : 'b-violet'}">${esc(v)}</span>` : '—';
   if(k === 'via') return v ? `<span class="badge b-slate">${esc(v)}</span>` : '—';
   return v ? `<span class="num">${esc(v)}</span>` : '—';
@@ -2291,6 +2310,7 @@ function fieldHtml(key){
 function openModal(rec){
   editingId = rec ? rec.id : null;
   valueTouched = false;
+  editingBuyers = rec && Array.isArray(rec.buyers) ? rec.buyers.map(b=>({id:b.id || (Date.now()+Math.random()), name:b.name||'', type:b.type||'', sharePct:b.sharePct||''})) : [];
   $('#modalTitleTxt').textContent = rec ? `تعديل — بلك ${rec.block || '—'} / أرض ${rec.landNo || '—'}` : 'إضافة أرض جديدة';
   $('#modalBody').innerHTML = FORM_GROUPS.map(g=>`
     <fieldset class="fset">
@@ -2298,7 +2318,17 @@ function openModal(rec){
       <div class="fgrid">${g.keys.map(fieldHtml).join('')}</div>
     </fieldset>
     <div class="hint" style="margin-top:-12px">* القيمة تُحسب تلقائياً = المساحة × سعر المتر، ويمكنك تعديلها يدوياً عند الحاجة.</div>
-  `).join('');
+  `).join('') + `
+    <fieldset class="fset">
+      <legend>الشركاء في القطعة (اختياري)</legend>
+      <div class="buyers-hint">أضف سطراً لكل شريك — المشتري الرئيسي أعلاه يأخذ النسبة المتبقية تلقائياً (100% − مجموع الشركاء)</div>
+      <div id="buyersRows"></div>
+      <div class="buyers-foot">
+        <button class="btn btn-soft btn-sm" id="btnAddBuyer" type="button"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>إضافة شريك</button>
+        <span class="buyers-total" id="buyersTotal"></span>
+      </div>
+    </fieldset>`;
+  renderBuyersRows();
   if(rec){
     for(const c of COLS){
       const el = $(`#f_${c.k}`);
@@ -2329,11 +2359,53 @@ function openModal(rec){
   $('#f_contractNo').addEventListener('input', updateStatusHint);
   $('#f_status').addEventListener('change', updateStatusHint);
   updateStatusHint();
+  $('#buyersRows').addEventListener('input', e=>{
+    const row = e.target.closest('.buyer-row');
+    if(!row) return;
+    const b = editingBuyers.find(x=>x.id === +row.dataset.bid);
+    if(!b) return;
+    if(e.target.classList.contains('b-name')) b.name = e.target.value;
+    else if(e.target.classList.contains('b-type')) b.type = e.target.value;
+    else if(e.target.classList.contains('b-pct')) b.sharePct = e.target.value;
+    renderBuyersSummary();
+  });
+  $('#buyersRows').addEventListener('click', e=>{
+    const del = e.target.closest('.b-del');
+    if(!del) return;
+    const row = del.closest('.buyer-row');
+    editingBuyers = editingBuyers.filter(x=>x.id !== +row.dataset.bid);
+    renderBuyersRows();
+  });
+  $('#btnAddBuyer').addEventListener('click', ()=>{
+    editingBuyers.push({id:Date.now() + Math.random(), name:'', type:'', sharePct:''});
+    renderBuyersRows();
+  });
   $('#modalOverlay').classList.add('open');
 }
 function closeModal(){
   $('#modalOverlay').classList.remove('open');
   editingId = null;
+  editingBuyers = [];
+}
+function renderBuyersRows(){
+  const wrap = $('#buyersRows');
+  if(!wrap) return;
+  wrap.innerHTML = editingBuyers.map(b=>`
+    <div class="buyer-row" data-bid="${b.id}">
+      <input type="text" class="b-name" placeholder="اسم الشريك" value="${esc(b.name)}">
+      <select class="b-type">${OPTS.clientType.map(o=>`<option value="${esc(o)}" ${o === b.type ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>
+      <input type="number" class="b-pct" placeholder="النسبة %" min="0" max="100" step="any" value="${b.sharePct}">
+      <button type="button" class="b-del" title="حذف الشريك">×</button>
+    </div>`).join('') || '<div class="hint">لا يوجد شركاء — القطعة بملكية المشتري الرئيسي بالكامل</div>';
+  renderBuyersSummary();
+}
+function renderBuyersSummary(){
+  const tot = $('#buyersTotal');
+  if(!tot) return;
+  const sum = Math.round(editingBuyers.reduce((s,b)=>s+((+b.sharePct)||0),0)*100)/100;
+  const rem = Math.round(Math.max(0, 100 - sum)*100)/100;
+  tot.textContent = editingBuyers.length ? `مجموع الشركاء: ${sum}% · المتبقي للمشتري الرئيسي: ${rem}%` : 'المشتري الرئيسي: 100%';
+  tot.classList.toggle('over', sum > 100);
 }
 function saveModal(){
   if(!can('edit_records')){ toast('ليست لديك صلاحية التعديل', 'err'); closeModal(); return; }
@@ -2357,6 +2429,10 @@ function saveModal(){
   markErr('pricePerMeter', !(out.pricePerMeter > 0));
   if(!ok){ toast('يرجى تعبئة الحقول الإلزامية: نوع الأرض، المساحة، سعر المتر', 'err'); return; }
   if(out.value == null) out.value = Math.round(out.area * out.pricePerMeter * 100) / 100;
+  const buyers = editingBuyers.filter(b=>String(b.name).trim()).map(b=>({id:b.id, name:String(b.name).trim().slice(0,60), type:b.type, sharePct:Math.round((+b.sharePct||0)*100)/100}));
+  const buyersSum = Math.round(buyers.reduce((s,b)=>s+b.sharePct,0)*100)/100;
+  if(buyersSum > 100){ toast('مجموع نسب الشركاء يتجاوز 100% — عدّل النسب', 'err'); return; }
+  out.buyers = buyers;
 
   if(editingId != null){
     const i = records.findIndex(r=>r.id === editingId);
@@ -2368,6 +2444,7 @@ function saveModal(){
     toast('تمت إضافة الأرض بنجاح');
   }
   save();
+  if(cloudReady) buyersCloudSave();
   closeModal();
   renderAll();
 }
@@ -4498,6 +4575,7 @@ function applySettingsBlobs(map){
   if(map.regPrefs && typeof map.regPrefs === 'object') regPrefs = Object.assign(regPrefs, map.regPrefs);
   if(map.scen_lib && Array.isArray(map.scen_lib.items)) scenMergeFromCloud(map.scen_lib.items);
   if(Object.prototype.hasOwnProperty.call(map, 'scen_default')) scenApplyDefault(map.scen_default);
+  if(map.land_buyers && Array.isArray(map.land_buyers.items)) buyersMergeFromCloud(map.land_buyers.items);
   const ver = map.dataVersion;
   if(typeof ver === 'number' && ver < DATA_VERSION) runCloudMigrations(ver, map);
   else if(typeof ver === 'number') localStorage.setItem('fipms_data_version_v1', String(ver));
@@ -5232,6 +5310,35 @@ async function scenCloudRefresh(){
     const {data:dd} = await sbClient.from('app_settings').select('value').eq('key','scen_default').maybeSingle();
     if(dd && dd.value !== undefined) scenApplyDefault(dd.value);
   }catch(e){}
+}
+
+/* ===== Land buyers (شركاء القطعة) ===== */
+const BUYERS_KEY = 'land_buyers';
+async function buyersCloudSave(){
+  if(!sbClient || !cloudReady) return;
+  try{
+    const {data} = await sbClient.from('app_settings').select('value').eq('key', BUYERS_KEY).maybeSingle();
+    let items = [];
+    if(data && data.value && Array.isArray(data.value.items)) items = data.value.items;
+    const merged = new Map();
+    for(const it of items){ if(it && it.landId != null) merged.set(it.landId, it); }
+    for(const r of records){
+      if(Array.isArray(r.buyers) && r.buyers.length) merged.set(r.id, {landId:r.id, buyers:r.buyers, updatedAt:new Date().toISOString()});
+    }
+    const validIds = new Set([...records.map(r=>r.id), ...archive.map(a=>a.id)]);
+    for(const key of [...merged.keys()]) if(!validIds.has(key)) merged.delete(key);
+    await sbClient.from('app_settings').upsert({key:BUYERS_KEY, value:{items:[...merged.values()], updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''});
+  }catch(e){}
+}
+function buyersMergeFromCloud(items){
+  const map = new Map();
+  for(const it of items){ if(it && it.landId != null && Array.isArray(it.buyers)) map.set(it.landId, it.buyers); }
+  let changed = false;
+  for(const r of records){
+    const b = map.get(r.id);
+    if(b && JSON.stringify(r.buyers || []) !== JSON.stringify(b)){ r.buyers = b.map(x=>({id:x.id || (Date.now()+Math.random()), name:x.name||'', type:x.type||'', sharePct:x.sharePct||''})); changed = true; }
+  }
+  if(changed){ try{ save(); }catch(e){} }
 }
 function scenStatusesAll(){
   const names = SYSTEM_STATUSES.map(s=>s.name);
