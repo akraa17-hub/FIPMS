@@ -2275,9 +2275,27 @@ function boardInScope(sc, r){
   if(sc.block && String(r.block) !== sc.block) return false;
   return true;
 }
+function scenSimulate(sc){
+  const sts = new Set(sc.statuses || []);
+  let list = sts.size ? records.filter(r=>sts.has(getStatus(r))) : [];
+  if(sc.type) list = list.filter(r=>r.landType === sc.type);
+  if(sc.block) list = list.filter(r=>String(r.block) === sc.block);
+  const scopedIds = new Set(list.map(r=>r.id));
+  let newVal = 0;
+  for(const r of list){
+    const p = boardScenarioPriceFor(sc, r);
+    newVal += p != null ? (r.area||0)*p : (r.value||0);
+  }
+  const restVal = records.filter(r=>!scopedIds.has(r.id)).reduce((s,r)=>s+(r.value||0),0);
+  const planAfterVal = newVal + restVal;
+  const totalArea = records.reduce((s,r)=>s+(r.area||0),0);
+  const planAfterAvg = totalArea ? planAfterVal/totalArea : 0;
+  return {planAfterVal, planAfterAvg, scopedIds, totalArea};
+}
 function boardData(){
   const sc = boardScenarioRef();
   const useScen = boardPriceMode === 'scen' && !!sc;
+  const sim = useScen ? scenSimulate(sc) : null;
   const groups = [
     {key:'freed', label:'الإفراغات', color:'#10b981', count:0, area:0, value:0},
     {key:'cash', label:'محجوز كاش', color:'#f59e0b', count:0, area:0, value:0},
@@ -2296,16 +2314,17 @@ function boardData(){
     const g = byKey[key];
     g.count++; g.area += r.area||0;
     let val = r.value||0;
-    if(key === 'avail' && useScen && boardInScope(sc, r)){
+    if(sim && sim.scopedIds.has(r.id)){
       const p = boardScenarioPriceFor(sc, r);
       if(p != null) val = (r.area||0) * p;
     }
     g.value += val;
   }
   const totalArea = groups.reduce((s,g)=>s+g.area,0);
-  const totalValue = groups.reduce((s,g)=>s+g.value,0);
+  const summedValue = groups.reduce((s,g)=>s+g.value,0);
   for(const g of groups) g.pct = totalArea ? g.area/totalArea*100 : 0;
-  const avgPpmB = totalArea ? totalValue/totalArea : 0;
+  const totalValue = sim ? sim.planAfterVal : summedValue;
+  const avgPpmB = sim ? sim.planAfterAvg : (totalArea ? totalValue/totalArea : 0);
   return {groups: groups.filter(g=>g.key !== 'other' || g.count), totalArea, totalValue, avgPpm: avgPpmB, useScen, hasScen: !!sc, scName: sc ? sc.name : ''};
 }
 function renderBoardCard(){
