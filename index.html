@@ -3026,7 +3026,7 @@ function bloomRows(list){
     const fp = g.reduce((s,r)=>s+((+r.firstPayment)||0),0);
     const tp = g.reduce((s,r)=>s+((+r.transferPayment)||0),0);
     const blocks = Array.from(new Set(g.map(r=>String(r.block||'').trim()).filter(Boolean)));
-    const lands = g.map(r=>`${String(r.block||'—').trim()}/${String(r.landNo||'—').trim()}`);
+    const lands = g.map(r=>String(r.landNo||'—').trim());
     merged.push(Object.assign({}, base, {
       bloom:true, bloomCount:g.length,
       block: blocks.join('، '),
