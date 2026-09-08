@@ -803,10 +803,6 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
       <section id="view-dashboard" class="view active" data-title="لوحة التحكم" data-sub="نظرة شاملة على محفظة الأراضي">
         <div class="kpis" id="kpis"></div>
         <div class="charts">
-          <div class="card">
-            <div class="card-h"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z"/></svg>توزيع القطع حسب نوع الأرض<span class="sub">العدد</span></h3></div>
-            <div class="card-b"><div class="chart-box"><canvas id="chTypeCount"></canvas></div></div>
-          </div>
           <div class="card board-card">
             <div class="card-h">
               <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>نظرة مجلس الإدارة<span class="sub">المساحات وقيم المبيعات</span></h3>
@@ -821,6 +817,10 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
               <div class="board-rows" id="boardRows"></div>
             </div>
             <div class="board-totals" id="boardTotals"></div>
+          </div>
+          <div class="card">
+            <div class="card-h"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z"/></svg>توزيع القطع حسب نوع الأرض<span class="sub">العدد</span></h3></div>
+            <div class="card-b"><div class="chart-box"><canvas id="chTypeCount"></canvas></div></div>
           </div>
         </div>
         <div class="card" id="dashTypeCard">
