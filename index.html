@@ -1804,6 +1804,8 @@ let records = [];
 let lastSaved = null;
 let storageOK = true;
 let charts = {};
+let dashChartSig = '';
+let rptChartSig = '';
 let editingId = null;
 let editingBuyers = [];
 let paymentTouched = false;
@@ -2218,6 +2220,16 @@ function avgPpm(list){
   return a ? v/a : 0;
 }
 function drawCharts(){
+  const ts = typeSummary(records);
+  const labels = ts.map(o=>o.type);
+  const colors = ts.map(o=>TYPE_COLORS[o.type] || '#94a3b8');
+  const mon = monthlyAgg(records);
+  const stMap = new Map();
+  for(const r of records){ const s = getStatus(r); stMap.set(s, (stMap.get(s)||0) + 1); }
+  const stLabels = Array.from(stMap.keys());
+  const sig = JSON.stringify({tc:[labels, ts.map(o=>o.count)], tv:[labels, ts.map(o=>Math.round(o.value))], mo:[mon.map(o=>o.label), mon.map(o=>Math.round(o.value))], st:[stLabels, stLabels.map(s=>stMap.get(s))]});
+  if(dashChartSig === sig) return;
+  dashChartSig = sig;
   for(const k in charts){ if(charts[k]) charts[k].destroy(); }
   charts = {};
   if(typeof Chart === 'undefined'){
@@ -2227,33 +2239,25 @@ function drawCharts(){
   Chart.defaults.font.family = "'Tajawal','Segoe UI',sans-serif";
   Chart.defaults.font.size = 12;
 
-  const ts = typeSummary(records);
-  const labels = ts.map(o=>o.type);
-  const colors = ts.map(o=>TYPE_COLORS[o.type] || '#94a3b8');
-
   charts.tc = new Chart($('#chTypeCount'), {
     type:'doughnut',
     data:{labels, datasets:[{data:ts.map(o=>o.count), backgroundColor:colors, borderWidth:2, borderColor:'#fff'}]},
-    options:{maintainAspectRatio:false, cutout:'62%', plugins:{legend:{position:'bottom', rtl:true, labels:{padding:12, usePointStyle:true, pointStyle:'circle'}}, tooltip:{rtl:true, callbacks:{label:c=>` ${c.label}: ${c.raw} قطعة`}}}}
+    options:{maintainAspectRatio:false, cutout:'62%', animation:{duration:250}, plugins:{legend:{position:'bottom', rtl:true, labels:{padding:12, usePointStyle:true, pointStyle:'circle'}}, tooltip:{rtl:true, callbacks:{label:c=>` ${c.label}: ${c.raw} قطعة`}}}}
   });
   charts.tv = new Chart($('#chTypeValue'), {
     type:'bar',
     data:{labels, datasets:[{data:ts.map(o=>o.value), backgroundColor:colors, borderRadius:8, maxBarThickness:54}]},
-    options:{maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{rtl:true, callbacks:{label:c=>' ' + fmtNum.format(c.raw) + ' ر.س'}}}, scales:{y:{ticks:{callback:v=>fmtCompact.format(v)}}, x:{grid:{display:false}}}}
+    options:{maintainAspectRatio:false, animation:{duration:250}, plugins:{legend:{display:false}, tooltip:{rtl:true, callbacks:{label:c=>' ' + fmtNum.format(c.raw) + ' ر.س'}}}, scales:{y:{ticks:{callback:v=>fmtCompact.format(v)}}, x:{grid:{display:false}}}}
   });
-  const mon = monthlyAgg(records);
   charts.mo = new Chart($('#chMonthly'), {
     type:'bar',
     data:{labels:mon.map(o=>o.label), datasets:[{label:'قيمة الإفراغات', data:mon.map(o=>o.value), backgroundColor:'#10b981', borderRadius:8, maxBarThickness:34}]},
-    options:{maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{rtl:true, callbacks:{label:c=>' ' + fmtMoney.format(c.raw) + ' ر.س'}}}, scales:{y:{ticks:{callback:v=>fmtCompact.format(v)}}, x:{grid:{display:false}}}}
+    options:{maintainAspectRatio:false, animation:{duration:250}, plugins:{legend:{display:false}, tooltip:{rtl:true, callbacks:{label:c=>' ' + fmtMoney.format(c.raw) + ' ر.س'}}}, scales:{y:{ticks:{callback:v=>fmtCompact.format(v)}}, x:{grid:{display:false}}}}
   });
-  const stMap = new Map();
-  for(const r of records){ const s = getStatus(r); stMap.set(s, (stMap.get(s)||0) + 1); }
-  const stLabels = Array.from(stMap.keys());
   charts.st = new Chart($('#chStatus'), {
     type:'doughnut',
     data:{labels:stLabels, datasets:[{data:stLabels.map(s=>stMap.get(s)), backgroundColor:stLabels.map(s=>statusColor(s)), borderWidth:2, borderColor:'#fff'}]},
-    options:{maintainAspectRatio:false, cutout:'62%', plugins:{legend:{position:'bottom', rtl:true, labels:{padding:12, usePointStyle:true, pointStyle:'circle'}}, tooltip:{rtl:true, callbacks:{label:c=>` ${c.label}: ${c.raw} قطعة`}}}}
+    options:{maintainAspectRatio:false, cutout:'62%', animation:{duration:250}, plugins:{legend:{position:'bottom', rtl:true, labels:{padding:12, usePointStyle:true, pointStyle:'circle'}}, tooltip:{rtl:true, callbacks:{label:c=>` ${c.label}: ${c.raw} قطعة`}}}}
   });
 }
 
@@ -2280,13 +2284,17 @@ function renderReports(){
   }).join('')}</tbody>`;
 
   if(typeof Chart !== 'undefined'){
-    if(charts.rpt){ charts.rpt.destroy(); }
     const labels = ts.map(o=>o.type);
-    charts.rpt = new Chart($('#chRptType'), {
-      type:'doughnut',
-      data:{labels, datasets:[{data:ts.map(o=>o.count), backgroundColor:ts.map(o=>TYPE_COLORS[o.type]||'#94a3b8'), borderWidth:2, borderColor:'#fff'}]},
-      options:{maintainAspectRatio:false, cutout:'62%', plugins:{legend:{position:'bottom', rtl:true, labels:{padding:12, usePointStyle:true, pointStyle:'circle'}}, tooltip:{rtl:true, callbacks:{label:c=>` ${c.label}: ${c.raw} قطعة`}}}}
-    });
+    const rptSig = JSON.stringify([labels, ts.map(o=>o.count)]);
+    if(rptChartSig !== rptSig){
+      rptChartSig = rptSig;
+      if(charts.rpt){ charts.rpt.destroy(); }
+      charts.rpt = new Chart($('#chRptType'), {
+        type:'doughnut',
+        data:{labels, datasets:[{data:ts.map(o=>o.count), backgroundColor:ts.map(o=>TYPE_COLORS[o.type]||'#94a3b8'), borderWidth:2, borderColor:'#fff'}]},
+        options:{maintainAspectRatio:false, cutout:'62%', animation:{duration:250}, plugins:{legend:{position:'bottom', rtl:true, labels:{padding:12, usePointStyle:true, pointStyle:'circle'}}, tooltip:{rtl:true, callbacks:{label:c=>` ${c.label}: ${c.raw} قطعة`}}}}
+      });
+    }
   }
   renderTaxLog();
   renderRegLog();
@@ -5716,22 +5724,27 @@ function renderScenKpis(){
     scenKpiHtml(icDelta, '', 'الفرق المتوقع', hasP ? (up?'+':'') + fmtMoney.format(c.delta) : '—', hasP ? (up?'+':'') + c.deltaPct.toFixed(1) + '%' : 'ريال سعودي', '')
   ].join('');
 }
+let scenChartSig = '';
+let scenDrawTimer = null;
 function drawScenCharts(){
-  for(const k in scenCharts){ if(scenCharts[k]){ try{ scenCharts[k].destroy(); }catch(e){} } }
-  scenCharts = {};
   const c = scenCompute();
-  if(!c.count || typeof Chart === 'undefined') return;
-  try{ Chart.defaults.font.family = "'Tajawal','Segoe UI',sans-serif"; }catch(e){}
+  if(!c.count || typeof Chart === 'undefined'){ scenChartSig = ''; return; }
   const golds = ['#b45309','#d97706','#f59e0b','#fbbf24','#fcd34d','#92400e','#fde68a'];
   const byT = c.byType.map((o,i)=>({type:o.type, val:Math.round(o.newV||o.cur), col: TYPE_COLORS[o.type] || golds[i % golds.length]}));
+  const bl = c.byBlock.slice(0, 10);
+  const sig = JSON.stringify({ty:byT.map(o=>[o.type,o.val,o.col]), bl:bl.map(o=>[o.block,Math.round(o.cur),Math.round(o.newV)])});
+  if(scenChartSig === sig) return;
+  scenChartSig = sig;
+  for(const k in scenCharts){ if(scenCharts[k]){ try{ scenCharts[k].destroy(); }catch(e){} } }
+  scenCharts = {};
+  try{ Chart.defaults.font.family = "'Tajawal','Segoe UI',sans-serif"; }catch(e){}
   if(byT.length){
     scenCharts.ty = new Chart($('#scChType'), {
       type:'doughnut',
       data:{labels:byT.map(o=>o.type), datasets:[{data:byT.map(o=>o.val), backgroundColor:byT.map(o=>o.col), borderWidth:2, borderColor:'#fff'}]},
-      options:{maintainAspectRatio:false, cutout:'60%', plugins:{legend:{position:'bottom', rtl:true, labels:{padding:12, usePointStyle:true, pointStyle:'circle'}}, tooltip:{rtl:true, callbacks:{label:ctx=>` ${ctx.label}: ${fmtMoney.format(ctx.raw)} ر.س`}}}}
+      options:{maintainAspectRatio:false, cutout:'60%', animation:{duration:200}, plugins:{legend:{position:'bottom', rtl:true, labels:{padding:12, usePointStyle:true, pointStyle:'circle'}}, tooltip:{rtl:true, callbacks:{label:ctx=>` ${ctx.label}: ${fmtMoney.format(ctx.raw)} ر.س`}}}}
     });
   }
-  const bl = c.byBlock.slice(0, 10);
   if(bl.length){
     scenCharts.bl = new Chart($('#scChBlock'), {
       type:'bar',
@@ -5739,9 +5752,13 @@ function drawScenCharts(){
         {label:'القيمة الأساسية', data:bl.map(o=>Math.round(o.cur)), backgroundColor:'#e2e8f0', borderRadius:6, maxBarThickness:26},
         {label:'قيمة السيناريو', data:bl.map(o=>Math.round(o.newV)), backgroundColor:'#d97706', borderRadius:6, maxBarThickness:26}
       ]},
-      options:{maintainAspectRatio:false, plugins:{legend:{position:'bottom', rtl:true, labels:{padding:10, usePointStyle:true}}, tooltip:{rtl:true, callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmtMoney.format(ctx.raw)} ر.س`}}}, scales:{y:{ticks:{callback:v=>fmtCompact.format(v)}}, x:{grid:{display:false}}}}
+      options:{maintainAspectRatio:false, animation:{duration:200}, plugins:{legend:{position:'bottom', rtl:true, labels:{padding:10, usePointStyle:true}}, tooltip:{rtl:true, callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmtMoney.format(ctx.raw)} ر.س`}}}, scales:{y:{ticks:{callback:v=>fmtCompact.format(v)}}, x:{grid:{display:false}}}}
     });
   }
+}
+function scheduleScenCharts(){
+  if(scenDrawTimer) clearTimeout(scenDrawTimer);
+  scenDrawTimer = setTimeout(()=>{ scenDrawTimer = null; drawScenCharts(); }, 150);
 }
 function renderScenTable(){
   const c = scenCompute();
@@ -5780,7 +5797,7 @@ function renderScenarioResults(){
   renderScenLive();
   renderScenPlan();
   renderScenKpis();
-  drawScenCharts();
+  scheduleScenCharts();
   renderScenTable();
   const planPanel = $('#panel-scenPanelPlan');
   if(planPanel && planPanel.classList.contains('active')) renderPlanReport();
