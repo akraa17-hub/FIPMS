@@ -3027,7 +3027,11 @@ function bloomRows(list){
     const area = g.reduce((s,r)=>s+(r.area||0),0);
     const value = g.reduce((s,r)=>s+(r.value||0),0);
     const fp = g.reduce((s,r)=>s+((+r.firstPayment)||0),0);
-    const tp = g.reduce((s,r)=>s+((+r.transferPayment)||0),0);
+    const tp = g.reduce((s,r)=>{
+      const t = r.transferPayment;
+      if(t != null && t !== '') return s + ((+t)||0);
+      return s + ((r.value||0) - ((+r.firstPayment)||0));
+    },0);
     const blocks = Array.from(new Set(g.map(r=>String(r.block||'').trim()).filter(Boolean)));
     const lands = g.map(r=>String(r.landNo||'—').trim());
     merged.push(Object.assign({}, base, {
