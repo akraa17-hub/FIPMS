@@ -2396,8 +2396,11 @@ function openModal(rec){
   }
   function autoPay(){
     if(paymentTouched) return;
-    const v = parseFloat(val.value), f = parseFloat(fp.value);
-    if(!isNaN(f)) tp.value = (!isNaN(v) && v > 0) ? Math.round((v - f)*100)/100 : '';
+    const v = parseFloat(val.value);
+    if(isNaN(v)) return;
+    const f = parseFloat(fp.value);
+    const base = isNaN(f) ? 0 : f;
+    tp.value = Math.round((v - base)*100)/100;
   }
   area.addEventListener('input', autoCalc);
   ppm.addEventListener('input', autoCalc);
