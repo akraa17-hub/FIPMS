@@ -822,10 +822,6 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
             </div>
             <div class="board-totals" id="boardTotals"></div>
           </div>
-          <div class="card">
-            <div class="card-h"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z"/></svg>توزيع الحالات<span class="sub">عدد القطع</span></h3></div>
-            <div class="card-b"><div class="chart-box"><canvas id="chStatus"></canvas></div></div>
-          </div>
         </div>
         <div class="card" id="dashTypeCard">
           <div class="card-h">
@@ -2340,11 +2336,8 @@ function drawCharts(){
   const ts = typeSummary(records);
   const labels = ts.map(o=>o.type);
   const colors = ts.map(o=>TYPE_COLORS[o.type] || '#94a3b8');
-  const stMap = new Map();
-  for(const r of records){ const s = getStatus(r); stMap.set(s, (stMap.get(s)||0) + 1); }
-  const stLabels = Array.from(stMap.keys());
   const bd = boardData();
-  const sig = JSON.stringify({tc:[labels, ts.map(o=>o.count)], st:[stLabels, stLabels.map(s=>stMap.get(s))], bd:[bd.groups.map(g=>[g.label, Math.round(g.area)])]});
+  const sig = JSON.stringify({tc:[labels, ts.map(o=>o.count)], bd:[bd.groups.map(g=>[g.label, Math.round(g.area)])]});
   if(dashChartSig === sig) return;
   dashChartSig = sig;
   for(const k in charts){ if(charts[k]) charts[k].destroy(); }
@@ -2368,11 +2361,6 @@ function drawCharts(){
       const g = bd.groups[c.dataIndex];
       return ` ${c.label}: ${fmtMoney.format(c.raw)} م² (${g.pct.toFixed(1)}%) · ${fmtMoney.format(g.value)} ر.س`;
     }}}}}
-  });
-  charts.st = new Chart($('#chStatus'), {
-    type:'doughnut',
-    data:{labels:stLabels, datasets:[{data:stLabels.map(s=>stMap.get(s)), backgroundColor:stLabels.map(s=>statusColor(s)), borderWidth:2, borderColor:'#fff'}]},
-    options:{maintainAspectRatio:false, cutout:'62%', animation:{duration:250}, plugins:{legend:{position:'bottom', rtl:true, labels:{padding:12, usePointStyle:true, pointStyle:'circle'}}, tooltip:{rtl:true, callbacks:{label:c=>` ${c.label}: ${c.raw} قطعة`}}}}
   });
 }
 
