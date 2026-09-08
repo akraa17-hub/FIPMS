@@ -1753,7 +1753,16 @@ function getStatus(r){
 }
 function valOf(r, k){
   if(k === 'status') return getStatus(r);
+  if(k === 'transferPayment') return effTransfer(r);
   return r[k];
+}
+function effTransfer(r){
+  const t = r.transferPayment;
+  if(t != null && t !== '' && !isNaN(+t)) return +t;
+  const v = +r.value || 0;
+  if(!v) return '';
+  const f = +r.firstPayment || 0;
+  return Math.round((v - f)*100)/100;
 }
 function statusColor(name){
   const c = customStatuses.find(s=>s.name === name);
@@ -1957,7 +1966,7 @@ function badgeYN(v, okWord, noWord){
   return '<span class="badge b-slate">—</span>';
 }
 function cellHtml(r, col){
-  const k = col.k, v = r[k];
+  const k = col.k, v = valOf(r, k);
   if(k === 'landType') return badgeType(v);
   if(k === 'status') return statusBadge(getStatus(r));
   if(k === 'transferDate') return v ? `<span class="num">${esc(v)}</span>` : '—';
@@ -2380,8 +2389,12 @@ function openModal(rec){
     for(const c of COLS){
       const el = $(`#f_${c.k}`);
       if(!el) continue;
-      const v = rec[c.k];
-      if(c.k === 'area' || c.k === 'pricePerMeter' || c.k === 'value') el.value = v == null ? '' : v;
+      let v = rec[c.k];
+      if(c.k === 'transferPayment' && (v == null || v === '')){
+        const d = effTransfer(rec);
+        v = d === '' ? '' : d;
+      }
+      if(c.k === 'area' || c.k === 'pricePerMeter' || c.k === 'value' || c.k === 'firstPayment' || c.k === 'transferPayment') el.value = v == null ? '' : v;
       else el.value = v == null ? '' : v;
     }
   }
