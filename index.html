@@ -240,6 +240,12 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
 .buyers-total.over{color:var(--danger-txt);background:var(--danger-soft)}
 .c-buyers{font-size:.68rem;color:var(--muted);font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .c-buyers b{color:var(--sky-txt)}
+.stf-chips{display:flex;gap:6px;flex-wrap:wrap;padding:2px}
+.stf-chip{border:1.5px solid var(--border2);background:#fff;border-radius:99px;padding:4px 11px;font-size:.74rem;font-weight:800;color:var(--txt2);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.stf-chip:hover{border-color:var(--primary);color:var(--primary-d)}
+.stf-chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.stf-chip .cnt{background:rgba(0,0,0,.07);border-radius:99px;padding:0 6px;font-size:.66rem;font-weight:900}
+.stf-chip.on .cnt{background:rgba(255,255,255,.25)}
 
 /* ===== Filters panel & active chips ===== */
 .fwrap{border-bottom:1px solid var(--border)}
@@ -408,6 +414,9 @@ body.dense table.reg{font-size:.76rem}
 .preview-tbl th{position:sticky;top:0;background:#f8fafc;color:#334155;font-weight:800;font-size:.74rem;padding:10px 11px;border-bottom:1px solid var(--border);white-space:nowrap;text-align:end;z-index:2}
 .preview-tbl td{padding:8px 11px;border-bottom:1px solid #eef1f6;white-space:nowrap;text-align:end}
 .preview-tbl td.num{direction:ltr;font-variant-numeric:tabular-nums}
+.bloom-row td{background:#fffbeb !important}
+.bloom-lands{white-space:normal !important;max-width:300px}
+.bloom-cnt{background:linear-gradient(135deg,#b45309,#d97706);color:#fff;border-radius:99px;padding:1px 8px;font-size:.66rem;font-weight:800;white-space:nowrap;display:inline-block}
 .preview-tbl tbody tr:nth-child(even){background:#f9fafc}
 .preview-tbl .p-group td{background:#eef4ff;font-weight:800;color:#1e40af;padding:8px 12px;font-size:.8rem;border-top:2px solid #bfdbfe}
 .preview-tbl .p-group .g-meta{font-weight:500;color:#475569;font-size:.74rem;margin-inline-start:12px}
@@ -843,7 +852,7 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
               <div class="field"><label>نوع العميل</label><select id="fClientType"></select></div>
               <div class="field"><label>عن طريق</label><select id="fVia"></select></div>
               <div class="field"><label>نوع العقد</label><select id="fContractType"></select></div>
-              <div class="field"><label>الحالة</label><select id="fStatus"></select></div>
+              <div class="field" style="grid-column:1/-1"><label>الحالة (اختيار متعدد)</label><div class="stf-chips" id="fStatusChips"></div></div>
               <div class="field"><label>البلك</label><select id="fBlock"></select></div>
             </div>
             <div class="active-chips" id="activeChips"></div>
@@ -1013,6 +1022,7 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
                   <button class="mini-btn" data-preset="lands">إدارة الأراضي</button>
                   <button class="mini-btn" data-preset="deeds">الصكوك</button>
                   <button class="mini-btn" data-preset="sales">المبيعات والدفعات</button>
+                  <button class="mini-btn" data-preset="bloom">بلوم (دمج العقود)</button>
                   <button class="mini-btn" data-preset="full">الكامل</button>
                 </div>
                 <div class="hint" style="margin-bottom:9px">اسحب الشرائح لترتيب الأعمدة في التقرير — الأعمدة غير المحددة تظهر رمادية</div>
@@ -1030,6 +1040,7 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
                     <option value="">بدون تجميع</option>
                     <option value="block">حسب البلك</option>
                     <option value="landType">حسب نوع الأرض</option>
+                    <option value="contract">دمج حسب رقم العقد (بلوم)</option>
                   </select></div>
                   <div class="fld"><label>نطاق البيانات</label><select id="bScope">
                     <option value="all">كل السجلات</option>
@@ -1048,7 +1059,7 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
                     <select id="bfClientType"></select>
                     <select id="bfVia"></select>
                     <select id="bfContractType"></select>
-                    <select id="bfStatus"></select>
+                    <div class="stf-chips" id="bfStatusChips" style="max-width:100%"></div>
                     <select id="bfBlock"></select>
                     <button class="mini-btn" id="btnBFiltersClear">مسح</button>
                   </div>
@@ -1712,7 +1723,7 @@ const FORM_FIELD_TYPES = {
   clientName:{type:'text'}, clientType:{type:'select',opts:'clientType'}, via:{type:'select',opts:'via'},
   contractNo:{type:'text'}, contractType:{type:'select',opts:'contractType'},
   contractSigned:{type:'select',opts:'yn'}, addendum:{type:'select',opts:'ynNa'}, addendumSigned:{type:'select',opts:'ynNa'},
-  firstPayment:{type:'select',opts:'yn'}, transferPayment:{type:'select',opts:'yn'},
+  firstPayment:{type:'number'}, transferPayment:{type:'number'},
   deedNo:{type:'text'}, deedDate:{type:'date'}, deedInKindNo:{type:'text'}, deedInKindDate:{type:'date'},
   area:{type:'number'}, pricePerMeter:{type:'number'}, value:{type:'number'},
   transferDate:{type:'date'}, status:{type:'select',opts:'status'}
@@ -1786,12 +1797,20 @@ let storageOK = true;
 let charts = {};
 let editingId = null;
 let editingBuyers = [];
+let paymentTouched = false;
+function normalizePayments(r){
+  const o = Object.assign({}, r);
+  if(o.firstPayment === 'نعم' || o.firstPayment === 'لا') o.firstPayment = '';
+  if(o.transferPayment === 'نعم' || o.transferPayment === 'لا') o.transferPayment = '';
+  return o;
+}
 let valueTouched = false;
 
 const state = {
   view:'dashboard',
   search:'',
   filters:{landType:'',clientType:'',via:'',contractType:'',status:'',block:''},
+  statuses:new Set(),
   sortKey:'', sortDir:1,
   groupBy:'',
   page:1, perPage:20
@@ -1824,10 +1843,10 @@ function loadData(){
     if(s){
       const p = JSON.parse(s);
       const arr = Array.isArray(p) ? p : (p && Array.isArray(p.records) ? p.records : null);
-      if(arr) return arr.map(r=>Object.assign({status:''}, r));
+      if(arr) return arr.map(r=>normalizePayments(Object.assign({status:''}, r)));
     }
   }catch(e){ storageOK = false; }
-  return JSON.parse(JSON.stringify(DEFAULT_DATA)).map(r=>Object.assign({status:''}, r));
+  return JSON.parse(JSON.stringify(DEFAULT_DATA)).map(r=>normalizePayments(Object.assign({status:''}, r)));
 }
 function save(){
   if(cloudReady){ scheduleSync('lands'); lastSaved = new Date(); updateCloudBadge(); return; }
@@ -1878,7 +1897,7 @@ function filtered(){
     if(f.clientType && r.clientType !== f.clientType) return false;
     if(f.via && r.via !== f.via) return false;
     if(f.contractType && r.contractType !== f.contractType) return false;
-    if(f.status && getStatus(r) !== f.status) return false;
+    if(state.statuses.size && !state.statuses.has(getStatus(r))) return false;
     if(f.block && String(r.block) !== f.block) return false;
     if(q){
       const hay = [r.clientName, r.deedNo, r.deedInKindNo, r.contractNo, r.landNo, r.oldLandNo, r.block, r.landType, getStatus(r)].join(' ').toLowerCase();
@@ -1916,7 +1935,7 @@ function sorted(list){
   return list.slice().sort((a,b)=>{
     if(k === 'landNo') return compareLand(a.landNo, b.landNo) * state.sortDir;
     let va = valOf(a,k), vb = valOf(b,k);
-    if(['block','area','pricePerMeter','value'].includes(k)){
+    if(['block','area','pricePerMeter','value','firstPayment','transferPayment'].includes(k)){
       va = parseFloat(va)||0; vb = parseFloat(vb)||0;
     }else{
       va = String(va == null ? '' : va); vb = String(vb == null ? '' : vb);
@@ -1943,7 +1962,8 @@ function cellHtml(r, col){
   if(k === 'status') return statusBadge(getStatus(r));
   if(k === 'transferDate') return v ? `<span class="num">${esc(v)}</span>` : '—';
   if(k === 'contractType') return v === 'جديد' ? '<span class="badge b-teal">جديد</span>' : (v === 'قديم' ? '<span class="badge b-slate">قديم</span>' : '<span class="badge b-slate">—</span>');
-  if(['contractSigned','firstPayment','transferPayment'].includes(k)) return badgeYN(v);
+  if(k === 'contractSigned') return badgeYN(v);
+  if(k === 'firstPayment' || k === 'transferPayment') return (v != null && v !== '') ? `<span class="num">${money2(v)}</span>` : '—';
   if(['addendum','addendumSigned'].includes(k)) return badgeYN(v,'نعم','لا');
   if(k === 'area' || k === 'value') return `<span class="num">${money2(v)}</span>`;
   if(k === 'pricePerMeter') return `<span class="num">${num2(v)}</span>`;
@@ -1980,13 +2000,16 @@ function rowHtml(r){
   </div></td></tr>`;
 }
 function renderActiveChips(){
-  const labels = {landType:'نوع الأرض', clientType:'نوع العميل', via:'عن طريق', contractType:'نوع العقد', status:'الحالة', block:'البلك'};
+  const labels = {landType:'نوع الأرض', clientType:'نوع العميل', via:'عن طريق', contractType:'نوع العقد', block:'البلك'};
   const entries = Object.entries(state.filters).filter(([k,v])=>v);
-  const chips = entries.map(([k,v])=>`<span class="f-chip">${esc(labels[k] || k)}: ${esc(v)}<button data-fclear="${k}" title="إزالة">×</button></span>`).join('');
+  const chips = entries.map(([k,v])=>`<span class="f-chip">${esc(labels[k] || k)}: ${esc(v)}<button data-fclear="${k}" title="إزالة">×</button></span>`);
+  if(state.statuses.size){
+    chips.push(`<span class="f-chip">الحالة: ${[...state.statuses].map(esc).join('، ')}<button data-fclear="statuses" title="إزالة">×</button></span>`);
+  }
   const c = $('#activeChips');
-  if(c) c.innerHTML = chips;
+  if(c) c.innerHTML = chips.join('');
   const fc = $('#fCount');
-  if(fc) fc.textContent = entries.length ? entries.length : '';
+  if(fc) fc.textContent = entries.length + (state.statuses.size ? 1 : 0) || '';
 }
 function renderRegistry(){
   const list = filtered();
@@ -2056,6 +2079,30 @@ function renderPager(total){
     b.addEventListener('click', ()=>{ const v = +b.dataset.pg; if(!b.disabled){ state.page = v; renderRegistry(); } });
   });
 }
+function statusFilterOptions(){
+  const names = SYSTEM_STATUSES.map(s=>s.name);
+  for(const c of customStatuses) if(!names.includes(c.name)) names.push(c.name);
+  return names;
+}
+function renderStatusChips(containerId, selected, onChange){
+  const el = $('#' + containerId);
+  if(!el) return;
+  const isSet = selected instanceof Set;
+  const has = n => isSet ? selected.has(n) : (Array.isArray(selected) && selected.includes(n));
+  el.innerHTML = statusFilterOptions().map(n=>{
+    const cnt = records.filter(r=>getStatus(r) === n).length;
+    return `<span class="stf-chip${has(n) ? ' on' : ''}" data-stf="${esc(n)}">${esc(n)}<span class="cnt">${fmtInt.format(cnt)}</span></span>`;
+  }).join('');
+  el.onclick = e=>{
+    const ch = e.target.closest('[data-stf]');
+    if(!ch) return;
+    const n = ch.dataset.stf;
+    if(isSet){ if(selected.has(n)) selected.delete(n); else selected.add(n); }
+    else{ const i = selected.indexOf(n); if(i >= 0) selected.splice(i,1); else selected.push(n); }
+    renderStatusChips(containerId, selected, onChange);
+    if(onChange) onChange();
+  };
+}
 function refreshFilterOptions(){
   const uniq = k => Array.from(new Set(records.map(r=>r[k]).filter(v=>v != null && v !== ''))).sort((a,b)=>{
     const x = parseFloat(a), y = parseFloat(b);
@@ -2072,7 +2119,7 @@ function refreshFilterOptions(){
   setOpts($('#fVia'), uniq('via'), 'الكل');
   setOpts($('#fContractType'), uniq('contractType'), 'الكل');
   setOpts($('#fBlock'), uniq('block'), 'كل البلكات');
-  setOpts($('#fStatus'), statusList(), 'كل الحالات');
+  renderStatusChips('fStatusChips', state.statuses, ()=>{ state.page = 1; renderRegistry(); });
   const g = $('#fGroup');
   const gcur = g.value;
   g.innerHTML = `<option value="">بدون تجميع</option><option value="block" ${gcur === 'block' ? 'selected' : ''}>تجميع حسب البلك</option>`;
@@ -2339,14 +2386,24 @@ function openModal(rec){
     }
   }
   const area = $('#f_area'), ppm = $('#f_pricePerMeter'), val = $('#f_value');
+  paymentTouched = false;
+  const fp = $('#f_firstPayment'), tp = $('#f_transferPayment');
   function autoCalc(){
     if(valueTouched) return;
     const a = parseFloat(area.value), p = parseFloat(ppm.value);
     if(a > 0 && p > 0) val.value = Math.round(a*p*100)/100;
+    autoPay();
+  }
+  function autoPay(){
+    if(paymentTouched) return;
+    const v = parseFloat(val.value), f = parseFloat(fp.value);
+    if(!isNaN(f)) tp.value = (!isNaN(v) && v > 0) ? Math.round((v - f)*100)/100 : '';
   }
   area.addEventListener('input', autoCalc);
   ppm.addEventListener('input', autoCalc);
-  val.addEventListener('input', ()=>{ valueTouched = true; });
+  val.addEventListener('input', ()=>{ valueTouched = true; autoPay(); });
+  fp.addEventListener('input', autoPay);
+  tp.addEventListener('input', ()=>{ paymentTouched = true; });
   function updateStatusHint(){
     const hint = $('#f_status_hint');
     if(!hint) return;
@@ -2413,7 +2470,7 @@ function saveModal(){
   for(const c of COLS){
     const el = $(`#f_${c.k}`);
     let v = el ? el.value.trim() : '';
-    if(['area','pricePerMeter','value'].includes(c.k)){
+    if(['area','pricePerMeter','value','firstPayment','transferPayment'].includes(c.k)){
       v = v === '' ? null : parseFloat(v);
       if(v != null && isNaN(v)) v = null;
     }
@@ -2518,7 +2575,7 @@ function regTrackExcelStyle(k, v){
   return {fill:{fgColor:{rgb:lightenHex(color, .85)}}, font:{color:{rgb:'FF' + color.slice(1)}}};
 }
 function exportAllExcel(){
-  exportExcelRows(sorted(records), COLS, 'سجل الأراضي', 'سجل-الأراضي-الكامل', null, ['area','value']);
+  exportExcelRows(sorted(records), COLS, 'سجل الأراضي', 'سجل-الأراضي-الكامل', null, ['area','value','firstPayment','transferPayment']);
 }
 function exportTypeExcel(){
   const ts = typeSummary(records);
@@ -2565,7 +2622,7 @@ function exportRegistryPrintDoc(){
   const thead = '<tr>' + cols.map(c=>`<th>${esc(c.t)}</th>`).join('') + '</tr>';
   const body = list.map(r=>'<tr>' + cols.map(c=>{
     const v = valOf(r, c.k);
-    if(c.k === 'area' || c.k === 'value') return printCell(v == null ? '—' : fmtMoney.format(v), true);
+    if(c.k === 'area' || c.k === 'value' || c.k === 'firstPayment' || c.k === 'transferPayment') return printCell(v == null || v === '' ? '—' : fmtMoney.format(v), true);
     if(c.k === 'pricePerMeter') return printCell(v == null ? '—' : fmtNum.format(v), true);
     if(c.k === 'status') return printCell(v, false);
     return printCell(v, ['block','landNo','oldLandNo','deedNo','deedInKindNo'].includes(c.k));
@@ -2686,7 +2743,7 @@ function importJsonFile(file){
       if(!arr){ toast('الملف لا يحتوي على سجلات صالحة', 'err'); return; }
       const archIn = Array.isArray(p.archive) ? p.archive : [];
       if(!confirm(`سيتم استبدال السجلات الحالية (${records.length}) بـ ${arr.length} سجلاً${archIn.length ? ` واستعادة ${archIn.length} سجلاً من الأرشيف` : ''}. هل أنت متأكد؟`)) return;
-      const cleaned = arr.map((r,i)=>({id:(r.id || i+1), block:String(r.block||''), landNo:String(r.landNo||''), oldLandNo:String(r.oldLandNo||r.newLandNo||''), landType:String(r.landType||''), clientName:String(r.clientName||''), clientType:String(r.clientType||''), via:String(r.via||''), contractNo:String(r.contractNo||''), contractType:String(r.contractType||''), contractSigned:String(r.contractSigned||''), addendum:String(r.addendum||''), addendumSigned:String(r.addendumSigned||''), firstPayment:String(r.firstPayment||''), transferPayment:String(r.transferPayment||''), deedNo:String(r.deedNo||''), deedDate:String(r.deedDate||''), deedInKindNo:String(r.deedInKindNo||''), deedInKindDate:String(r.deedInKindDate||''), area:parseFloat(r.area)||null, pricePerMeter:parseFloat(r.pricePerMeter)||null, value:parseFloat(r.value)||null, transferDate:String(r.transferDate||''), status:String(r.status||'')}));
+      const cleaned = arr.map((r,i)=>normalizePayments({id:(r.id || i+1), block:String(r.block||''), landNo:String(r.landNo||''), oldLandNo:String(r.oldLandNo||r.newLandNo||''), landType:String(r.landType||''), clientName:String(r.clientName||''), clientType:String(r.clientType||''), via:String(r.via||''), contractNo:String(r.contractNo||''), contractType:String(r.contractType||''), contractSigned:String(r.contractSigned||''), addendum:String(r.addendum||''), addendumSigned:String(r.addendumSigned||''), firstPayment:String(r.firstPayment||''), transferPayment:String(r.transferPayment||''), deedNo:String(r.deedNo||''), deedDate:String(r.deedDate||''), deedInKindNo:String(r.deedInKindNo||''), deedInKindDate:String(r.deedInKindDate||''), area:parseFloat(r.area)||null, pricePerMeter:parseFloat(r.pricePerMeter)||null, value:parseFloat(r.value)||null, transferDate:String(r.transferDate||''), status:String(r.status||'')}));
       records = cleaned;
       archive = archIn.map(r=>({id:r.id, block:String(r.block||''), landNo:String(r.landNo||''), oldLandNo:String(r.oldLandNo||r.newLandNo||''), landType:String(r.landType||''), clientName:String(r.clientName||''), clientType:String(r.clientType||''), via:String(r.via||''), contractNo:String(r.contractNo||''), contractType:String(r.contractType||''), contractSigned:String(r.contractSigned||''), addendum:String(r.addendum||''), addendumSigned:String(r.addendumSigned||''), firstPayment:String(r.firstPayment||''), transferPayment:String(r.transferPayment||''), deedNo:String(r.deedNo||''), deedDate:String(r.deedDate||''), deedInKindNo:String(r.deedInKindNo||''), deedInKindDate:String(r.deedInKindDate||''), area:parseFloat(r.area)||null, pricePerMeter:parseFloat(r.pricePerMeter)||null, value:parseFloat(r.value)||null, transferDate:String(r.transferDate||''), status:String(r.status||'ملغي'), archivedAt:String(r.archivedAt||''), archivedReason:String(r.archivedReason||'إلغاء')}));
       if(Array.isArray(p.customStatuses)){
@@ -2817,32 +2874,38 @@ const PRESETS = [
   {name:'تقرير إدارة الأراضي', subtitle:'الأراضي والمساحات والقيم', keys:['block','landNo','oldLandNo','landType','area','pricePerMeter','value','transferDate','status']},
   {name:'تقرير الصكوك', subtitle:'متابعة الصكوك وتواريخ الإفراغ', keys:['block','landNo','landType','clientName','deedNo','deedDate','deedInKindNo','deedInKindDate','transferDate','status']},
   {name:'تقرير المبيعات والدفعات', subtitle:'البيع والدفعات لكل عميل', keys:['block','landNo','clientName','clientType','via','contractNo','firstPayment','transferPayment','area','pricePerMeter','value','transferDate','status']},
+  {name:'تقرير بلوم', subtitle:'دمج الأراضي حسب رقم العقد', groupBy:'contract', keys:['contractNo','contractType','block','landNo','landType','clientName','area','pricePerMeter','value','firstPayment','transferPayment','status']},
   {name:'التقرير الكامل', subtitle:'جميع الأعمدة الـ 23', keys:COLS.map(c=>c.k)}
 ];
-const PRESET_ALIAS = {lands:0, deeds:1, sales:2, full:3};
+const PRESET_ALIAS = {lands:0, deeds:1, sales:2, bloom:3, full:4};
 let templates = [];
 let tpl = null;
 let dragKey = null;
 
 function freshTpl(){
-  return {id:null, name:'', subtitle:'', layout:COLS.map(c=>({k:c.k, on:true})), groupBy:'', sortKey:'', sortDir:1, scope:'all', filters:{landType:'',clientType:'',via:'',contractType:'',status:'',block:''}};
+  return {id:null, name:'', subtitle:'', layout:COLS.map(c=>({k:c.k, on:true})), groupBy:'', sortKey:'', sortDir:1, scope:'all', filters:{landType:'',clientType:'',via:'',contractType:'',block:'', statuses:[]}};
 }
 function makeTplFromPreset(p, id){
   const set = new Set(p.keys);
-  return {id, name:p.name, subtitle:p.subtitle, layout:COLS.map(c=>({k:c.k, on:set.has(c.k)})), groupBy:'', sortKey:'', sortDir:1, scope:'all', filters:{landType:'',clientType:'',via:'',contractType:'',status:'',block:''}};
+  return {id, name:p.name, subtitle:p.subtitle, layout:COLS.map(c=>({k:c.k, on:set.has(c.k)})), groupBy:'', sortKey:'', sortDir:1, scope:'all', filters:{landType:'',clientType:'',via:'',contractType:'',block:'', statuses:[]}};
 }
 function normalizeTpl(t){
   const colsArr = Array.isArray(t.columns) ? t.columns : [];
   const raw = (t.layout || []).filter(x=>x && x.on).map(x=>x.k).concat(colsArr);
   const legacyOld = raw.includes('newLandNo');
   const keys = new Set(raw.map(k=>k === 'newLandNo' ? 'oldLandNo' : k).filter(k=>COLS.some(c=>c.k===k)));
-  const f = Object.assign({landType:'',clientType:'',via:'',contractType:'',status:'',block:''}, t.filters || {});
-  if(!f.status && f.transfer === 'نعم') f.status = 'تم الإفراغ';
+  const f = Object.assign({landType:'',clientType:'',via:'',contractType:'',block:'', statuses:[]}, t.filters || {});
+  if(f.status){
+    if(!Array.isArray(f.statuses) || !f.statuses.length) f.statuses = [f.status];
+    delete f.status;
+  }
+  if(!f.statuses.length && f.transfer === 'نعم') f.statuses = ['تم الإفراغ'];
   delete f.transfer;
+  if(!Array.isArray(f.statuses)) f.statuses = [];
   return {
     id:t.id, name:String(t.name || 'قالب'), subtitle:String(t.subtitle || ''),
     layout:COLS.map(c=>({k:c.k, on:keys.has(c.k) || (c.k === 'oldLandNo' && legacyOld)})),
-    groupBy:['','block','landType'].includes(t.groupBy) ? t.groupBy : '',
+    groupBy:['','block','landType','contract'].includes(t.groupBy) ? t.groupBy : '',
     sortKey:COLS.some(c=>c.k===t.sortKey) ? t.sortKey : '',
     sortDir:t.sortDir === -1 ? -1 : 1,
     scope:t.scope === 'filtered' ? 'filtered' : 'all',
@@ -2890,8 +2953,8 @@ function renderDesignerFields(){
   $('#bfClientType').value = f.clientType;
   $('#bfVia').value = f.via;
   $('#bfContractType').value = f.contractType;
-  $('#bfStatus').value = f.status;
   $('#bfBlock').value = f.block;
+  renderStatusChips('bfStatusChips', tpl.filters.statuses || [], ()=>{ renderPreview(); });
 }
 function renderColChips(){
   const wrap = $('#colChips');
@@ -2930,12 +2993,7 @@ function refreshBuilderFilterOptions(){
   fill('#bfVia','via','الكل');
   fill('#bfContractType','contractType','الكل');
   fill('#bfBlock','block','كل البلكات');
-  const tr = $('#bfStatus');
-  if(tr){
-    const cur = tpl.filters.status;
-    tr.innerHTML = '<option value="">كل الحالات</option>' + statusList().map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
-    if([...tr.options].some(o=>o.value === cur)) tr.value = cur;
-  }
+  renderStatusChips('bfStatusChips', tpl.filters.statuses || [], ()=>{ renderPreview(); });
 }
 function buildReportRows(){
   let list = tpl.scope === 'filtered' ? filtered() : records.slice();
@@ -2945,10 +3003,46 @@ function buildReportRows(){
     if(f.clientType && r.clientType !== f.clientType) return false;
     if(f.via && r.via !== f.via) return false;
     if(f.contractType && r.contractType !== f.contractType) return false;
-    if(f.status && getStatus(r) !== f.status) return false;
+    if(Array.isArray(f.statuses) && f.statuses.length && !f.statuses.includes(getStatus(r))) return false;
     if(f.block && String(r.block) !== f.block) return false;
     return true;
   });
+}
+function bloomRows(list){
+  const out = [];
+  const groups = new Map();
+  for(const r of list){
+    const cno = String(r.contractNo || '').trim();
+    if(!cno){ out.push(r); continue; }
+    const key = cno + '|' + getStatus(r);
+    if(!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(r);
+  }
+  const merged = [];
+  for(const g of groups.values()){
+    const base = g[0];
+    const area = g.reduce((s,r)=>s+(r.area||0),0);
+    const value = g.reduce((s,r)=>s+(r.value||0),0);
+    const fp = g.reduce((s,r)=>s+((+r.firstPayment)||0),0);
+    const tp = g.reduce((s,r)=>s+((+r.transferPayment)||0),0);
+    const blocks = Array.from(new Set(g.map(r=>String(r.block||'').trim()).filter(Boolean)));
+    const lands = g.map(r=>`${String(r.block||'—').trim()}/${String(r.landNo||'—').trim()}`);
+    merged.push(Object.assign({}, base, {
+      bloom:true, bloomCount:g.length,
+      block: blocks.join('، '),
+      landNo: lands.join(' · '),
+      area, value,
+      firstPayment: fp || '',
+      transferPayment: tp || '',
+      pricePerMeter: area ? Math.round(value/area*100)/100 : null
+    }));
+  }
+  merged.sort((a,b)=>{
+    const ca = String(a.contractNo || ''), cb = String(b.contractNo || '');
+    if(ca !== cb) return ca.localeCompare(cb, 'ar', {numeric:true});
+    return String(a.landNo).localeCompare(String(b.landNo), 'ar', {numeric:true});
+  });
+  return merged.concat(out);
 }
 function sortReportRows(list){
   const k = tpl.sortKey;
@@ -2956,7 +3050,7 @@ function sortReportRows(list){
   return list.slice().sort((a,b)=>{
     if(k === 'landNo') return compareLand(a.landNo, b.landNo) * tpl.sortDir;
     let va = valOf(a,k), vb = valOf(b,k);
-    if(['block','area','pricePerMeter','value'].includes(k)){
+    if(['block','area','pricePerMeter','value','firstPayment','transferPayment'].includes(k)){
       va = parseFloat(va)||0; vb = parseFloat(vb)||0;
     }else{
       va = String(va == null ? '' : va); vb = String(vb == null ? '' : vb);
@@ -2967,7 +3061,15 @@ function sortReportRows(list){
 }
 function previewRowHtml(r, cols){
   return '<tr>' + cols.map(c=>{
-    const cls = ['block','landNo','oldLandNo','deedNo','deedInKindNo','area','pricePerMeter','value','deedDate','deedInKindDate'].includes(c.k) ? 'num' : (c.k === 'clientName' ? 'c-client' : '');
+    const cls = ['block','landNo','oldLandNo','deedNo','deedInKindNo','area','pricePerMeter','value','firstPayment','transferPayment','deedDate','deedInKindDate'].includes(c.k) ? 'num' : (c.k === 'clientName' ? 'c-client' : '');
+    return `<td class="${cls}">${cellHtml(r, c)}</td>`;
+  }).join('') + '</tr>';
+}
+function bloomRowHtml(r, cols){
+  return '<tr class="bloom-row">' + cols.map(c=>{
+    if(c.k === 'landNo') return `<td class="num bloom-lands">${esc(r.landNo)} <span class="bloom-cnt">(${fmtInt.format(r.bloomCount)} أراضٍ)</span></td>`;
+    if(c.k === 'block') return `<td class="num bloom-lands">${esc(r.block)}</td>`;
+    const cls = ['oldLandNo','deedNo','deedInKindNo','area','pricePerMeter','value','firstPayment','transferPayment','deedDate','deedInKindDate'].includes(c.k) ? 'num' : (c.k === 'clientName' ? 'c-client' : '');
     return `<td class="${cls}">${cellHtml(r, c)}</td>`;
   }).join('') + '</tr>';
 }
@@ -2978,6 +3080,7 @@ function renderPreview(){
   if(!tpl) return;
   const cols = tplColumns().map(k=>COLS.find(c=>c.k===k));
   const rows = sortReportRows(buildReportRows());
+  const displayRows = tpl.groupBy === 'contract' ? bloomRows(rows) : rows;
   let html = '<table class="preview-tbl">';
   if(!cols.length){
     html += `<tbody>${builderEmptyRow(1, 'لم تختر أي أعمدة — حددها من لوحة المصمم')}</tbody>`;
@@ -3008,6 +3111,8 @@ function renderPreview(){
         const ta = g.reduce((s,r)=>s+(r.area||0),0), tv = g.reduce((s,r)=>s+(r.value||0),0);
         return `<tr class="p-group"><td colspan="${cols.length}">${badgeType(k)} <span class="g-meta">${g.length} قطعة · ${fmtMoney.format(ta)} م² · ${fmtMoney.format(tv)} ر.س</span></td></tr>` + g.map(r=>previewRowHtml(r, cols)).join('');
       }).join('');
+    }else if(tpl.groupBy === 'contract'){
+      body = displayRows.map(r=>r.bloom ? bloomRowHtml(r, cols) : previewRowHtml(r, cols)).join('');
     }else{
       body = rows.map(r=>previewRowHtml(r, cols)).join('');
     }
@@ -3079,6 +3184,7 @@ function applyPreset(idx){
   if(!p) return;
   const set = new Set(p.keys);
   tpl.layout = tpl.layout.map(it=>({k:it.k, on:set.has(it.k)}));
+  tpl.groupBy = p.groupBy || '';
   if(!tpl.name){ tpl.name = p.name; tpl.subtitle = p.subtitle; }
   renderColChips();
   renderDesignerFields();
@@ -3121,19 +3227,24 @@ function importTemplatesFile(file){
 function buildTplPrintDoc(){
   const cols = tplColumns().map(k=>COLS.find(c=>c.k===k));
   const rows = sortReportRows(buildReportRows());
+  const displayRows = tpl.groupBy === 'contract' ? bloomRows(rows) : rows;
   const thead = '<tr>' + cols.map(c=>`<th>${esc(c.t)}</th>`).join('') + '</tr>';
-  const body = rows.map(r=>'<tr>' + cols.map(c=>{
+  const body = displayRows.map(r=>'<tr>' + cols.map(c=>{
     const v = valOf(r, c.k);
-    if(c.k === 'area' || c.k === 'value') return printCell(v == null ? '—' : fmtMoney.format(v), true);
+    if(c.k === 'area' || c.k === 'value' || c.k === 'firstPayment' || c.k === 'transferPayment') return printCell(v == null || v === '' ? '—' : fmtMoney.format(v), true);
     if(c.k === 'pricePerMeter') return printCell(v == null ? '—' : fmtNum.format(v), true);
     return printCell(v, ['block','landNo','oldLandNo','deedNo','deedInKindNo'].includes(c.k));
   }).join('') + '</tr>').join('');
   const tArea = rows.reduce((s,r)=>s+(r.area||0),0);
   const tVal = rows.reduce((s,r)=>s+(r.value||0),0);
+  const tFP = rows.reduce((s,r)=>s+((+r.firstPayment)||0),0);
+  const tTP = rows.reduce((s,r)=>s+((+r.transferPayment)||0),0);
   const tfoot = '<tr>' + cols.map((c,i)=>{
     if(i === 0) return `<td style="text-align:end;font-weight:800">الإجمالي: ${rows.length} قطعة</td>`;
     if(c.k === 'area') return `<td class="num">${fmtMoney.format(tArea)}</td>`;
     if(c.k === 'value') return `<td class="num">${fmtMoney.format(tVal)}</td>`;
+    if(c.k === 'firstPayment') return `<td class="num">${fmtMoney.format(tFP)}</td>`;
+    if(c.k === 'transferPayment') return `<td class="num">${fmtMoney.format(tTP)}</td>`;
     return '<td></td>';
   }).join('') + '</tr>';
   return buildPrintDoc(tpl.name || 'تقرير مخصص', tpl.subtitle || `عدد القطع: ${rows.length}`, thead, body, tfoot);
@@ -3141,7 +3252,9 @@ function buildTplPrintDoc(){
 function exportBuilderExcel(){
   const cols = tplColumns().map(k=>COLS.find(c=>c.k===k));
   if(!cols.length){ toast('اختر الأعمدة أولاً', 'err'); return; }
-  exportExcelRows(sortReportRows(buildReportRows()), cols, (tpl.name || 'تقرير مخصص').slice(0,31), tpl.name || 'تقرير-مخصص', null, ['area','value']);
+  const rows = sortReportRows(buildReportRows());
+  const displayRows = tpl.groupBy === 'contract' ? bloomRows(rows) : rows;
+  exportExcelRows(displayRows, cols, (tpl.name || 'تقرير مخصص').slice(0,31), tpl.name || 'تقرير-مخصص', null, ['area','value','firstPayment','transferPayment']);
 }
 function exportBuilderPdf(){
   if(!checkLib('jspdf') || !checkLib('html2canvas')) return;
@@ -3242,7 +3355,7 @@ function exportArchiveExcel(){
   if(!archive.length){ toast('الأرشيف فارغ', 'warn'); return; }
   exportExcelRows(archive, [
     {k:'status',t:'الحالة'},{k:'block',t:'رقم البلك'},{k:'landNo',t:'رقم الأرض'},{k:'oldLandNo',t:'رقم الأرض قديم'},{k:'landType',t:'نوع الأرض'},{k:'clientName',t:'اسم العميل'},{k:'clientType',t:'نوع العميل'},{k:'via',t:'عن طريق'},{k:'contractNo',t:'رقم العقد'},{k:'contractType',t:'نوع العقد'},{k:'deedNo',t:'رقم الصك'},{k:'deedInKindNo',t:'ر. الصك العيني'},{k:'area',t:'المساحة (م²)'},{k:'pricePerMeter',t:'سعر المتر (ر.س)'},{k:'value',t:'القيمة (ر.س)'},{k:'transferDate',t:'تاريخ الإفراغ'},{k:'archivedAt',t:'تاريخ الأرشفة'},{k:'archivedReason',t:'سبب الأرشفة'}
-  ], 'الأرشيف', 'أرشيف-الأراضي', null, ['area','value']);
+  ], 'الأرشيف', 'أرشيف-الأراضي', null, ['area','value','firstPayment','transferPayment']);
 }
 function exportArchivePdf(){
   if(!checkLib('jspdf') || !checkLib('html2canvas')) return;
@@ -4226,7 +4339,7 @@ function deleteRegStatus(name){
 }
 
 /* ===== Cloud (Supabase multi-user) ===== */
-const DATA_VERSION = 3;
+const DATA_VERSION = 4;
 const CONN_KEY = 'fipms_conn_v1';
 const RECYCLE_KEY = 'fipms_recycle_v1';
 const CACHED_USER_KEY = 'fipms_cached_user_v1';
@@ -4561,7 +4674,7 @@ async function logoutCloud(){
   showLoginGate();
 }
 function rowToRecord(row){
-  return {id:row.id, block:row.block||'', landNo:row.land_no||'', oldLandNo:row.old_land_no||'', landType:row.land_type||'', clientName:row.client_name||'', clientType:row.client_type||'', via:row.via||'', contractNo:row.contract_no||'', contractType:row.contract_type||'', contractSigned:row.contract_signed||'', addendum:row.addendum||'', addendumSigned:row.addendum_signed||'', firstPayment:row.first_payment||'', transferPayment:row.transfer_payment||'', deedNo:row.deed_no||'', deedDate:row.deed_date||'', deedInKindNo:row.deed_in_kind_no||'', deedInKindDate:row.deed_in_kind_date||'', area:row.area, pricePerMeter:row.price_per_meter, value:row.value, transferDate:row.transfer_date||'', status:row.status||''};
+  return normalizePayments({id:row.id, block:row.block||'', landNo:row.land_no||'', oldLandNo:row.old_land_no||'', landType:row.land_type||'', clientName:row.client_name||'', clientType:row.client_type||'', via:row.via||'', contractNo:row.contract_no||'', contractType:row.contract_type||'', contractSigned:row.contract_signed||'', addendum:row.addendum||'', addendumSigned:row.addendum_signed||'', firstPayment:row.first_payment||'', transferPayment:row.transfer_payment||'', deedNo:row.deed_no||'', deedDate:row.deed_date||'', deedInKindNo:row.deed_in_kind_no||'', deedInKindDate:row.deed_in_kind_date||'', area:row.area, pricePerMeter:row.price_per_meter, value:row.value, transferDate:row.transfer_date||'', status:row.status||''});
 }
 function recordToRow(r){
   return {id:r.id, block:r.block, land_no:r.landNo, old_land_no:r.oldLandNo, land_type:r.landType, client_name:r.clientName, client_type:r.clientType, via:r.via, contract_no:r.contractNo, contract_type:r.contractType, contract_signed:r.contractSigned, addendum:r.addendum, addendum_signed:r.addendumSigned, first_payment:r.firstPayment, transfer_payment:r.transferPayment, deed_no:r.deedNo, deed_date:r.deedDate, deed_in_kind_no:r.deedInKindNo, deed_in_kind_date:r.deedInKindDate, area:r.area, price_per_meter:r.pricePerMeter, value:r.value, transfer_date:r.transferDate, status:r.status, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''};
@@ -4769,7 +4882,8 @@ async function runCloudMigrations(fromVer, settingsMap){
   let v = fromVer;
   const steps = [
     {to:2, run:()=>{}},
-    {to:3, run:()=>{}}
+    {to:3, run:()=>{}},
+    {to:4, run:()=>{ records = records.map(normalizePayments); if(cloudReady && sbClient) syncStore('lands'); }}
   ];
   for(const st of steps){
     if(v < st.to){
@@ -4834,8 +4948,8 @@ function readLocalSnapshot(){
   const out = {records:[], archive:[], taxLog:[], regLog:[], templates:null, customStatuses:null, taxTrackStatuses:null, regTrackStatuses:null, taxPrefs:null, regPrefs:null};
   const get = k => { try{ const s = localStorage.getItem(k); return s ? JSON.parse(s) : null; }catch(e){ return null; } };
   const r = get(STORAGE_KEY);
-  if(Array.isArray(r)) out.records = r.map(x=>Object.assign({status:''}, x));
-  else if(r && Array.isArray(r.records)) out.records = r.records.map(x=>Object.assign({status:''}, x));
+  if(Array.isArray(r)) out.records = r.map(x=>normalizePayments(Object.assign({status:''}, x)));
+  else if(r && Array.isArray(r.records)) out.records = r.records.map(x=>normalizePayments(Object.assign({status:''}, x)));
   const a = get(ARCHIVE_KEY); if(Array.isArray(a)) out.archive = a;
   const t = get(TAX_LOG_KEY); if(Array.isArray(t)) out.taxLog = t;
   const g = get(REG_LOG_KEY); if(Array.isArray(g)) out.regLog = g;
@@ -6233,7 +6347,7 @@ function bindEvents(){
   $('#regSearch').addEventListener('input', e=>{ state.search = e.target.value; state.page = 1; renderRegistry(); if(tpl && tpl.scope === 'filtered') renderPreview(); });
   $('#fwrap').addEventListener('change', e=>{
     const id = e.target.id;
-    const map = {fLandType:'landType', fClientType:'clientType', fVia:'via', fContractType:'contractType', fStatus:'status', fBlock:'block'};
+    const map = {fLandType:'landType', fClientType:'clientType', fVia:'via', fContractType:'contractType', fBlock:'block'};
     if(map[id]){ state.filters[map[id]] = e.target.value; state.page = 1; renderRegistry(); }
     if(id === 'fGroup'){ state.groupBy = e.target.value; state.page = 1; renderRegistry(); }
     if(tpl && tpl.scope === 'filtered') renderPreview();
@@ -6250,7 +6364,14 @@ function bindEvents(){
   $('#activeChips').addEventListener('click', e=>{
     const b = e.target.closest('[data-fclear]');
     if(!b) return;
-    const selIds = {landType:'fLandType', clientType:'fClientType', via:'fVia', contractType:'fContractType', status:'fStatus', block:'fBlock'};
+    const selIds = {landType:'fLandType', clientType:'fClientType', via:'fVia', contractType:'fContractType', block:'fBlock'};
+    if(b.dataset.fclear === 'statuses'){
+      state.statuses = new Set();
+      renderStatusChips('fStatusChips', state.statuses, ()=>{ state.page = 1; renderRegistry(); });
+      state.page = 1;
+      renderRegistry();
+      return;
+    }
     state.filters[b.dataset.fclear] = '';
     const sel = $('#' + selIds[b.dataset.fclear]);
     if(sel) sel.value = '';
@@ -6260,10 +6381,11 @@ function bindEvents(){
   });
   $('#btnClearFilters').addEventListener('click', ()=>{
     state.filters = {landType:'',clientType:'',via:'',contractType:'',status:'',block:''};
+    state.statuses = new Set();
     state.search = ''; state.page = 1; state.sortKey = ''; state.sortDir = 1; state.groupBy = '';
     $('#regSearch').value = '';
     $('#fLandType').value = ''; $('#fClientType').value = ''; $('#fVia').value = '';
-    $('#fContractType').value = ''; $('#fStatus').value = ''; $('#fBlock').value = '';
+    $('#fContractType').value = ''; $('#fBlock').value = '';
     refreshFilterOptions();
     renderRegistry();
     if(tpl && tpl.scope === 'filtered') renderPreview();
@@ -6333,7 +6455,7 @@ function bindEvents(){
     try{ localStorage.setItem('fipms_density_v1', dense ? '1' : '0'); }catch(e){}
   });
 
-  $('#btnRegXlsx').addEventListener('click', ()=>exportExcelRows(sorted(filtered()), COLS, 'سجل الأراضي', 'سجل-الأراضي-المفلتر', null, ['area','value']));
+  $('#btnRegXlsx').addEventListener('click', ()=>exportExcelRows(sorted(filtered()), COLS, 'سجل الأراضي', 'سجل-الأراضي-المفلتر', null, ['area','value','firstPayment','transferPayment']));
   $('#btnRegPdf').addEventListener('click', ()=>{
     if(!checkLib('jspdf') || !checkLib('html2canvas')) return;
     const doc = exportRegistryPrintDoc();
@@ -6461,11 +6583,11 @@ function bindEvents(){
   $('#bSortDir').addEventListener('change', e=>{ tpl.sortDir = +e.target.value; renderPreview(); });
   $('#bScope').addEventListener('change', e=>{ tpl.scope = e.target.value; renderPreview(); });
   $('#view-builder').addEventListener('change', e=>{
-    const map = {bfLandType:'landType', bfClientType:'clientType', bfVia:'via', bfContractType:'contractType', bfStatus:'status', bfBlock:'block'};
+    const map = {bfLandType:'landType', bfClientType:'clientType', bfVia:'via', bfContractType:'contractType', bfBlock:'block'};
     if(map[e.target.id]){ tpl.filters[map[e.target.id]] = e.target.value; renderPreview(); }
   });
   $('#btnBFiltersClear').addEventListener('click', ()=>{
-    tpl.filters = {landType:'',clientType:'',via:'',contractType:'',status:'',block:''};
+    tpl.filters = {landType:'',clientType:'',via:'',contractType:'',block:'', statuses:[]};
     refreshBuilderFilterOptions();
     renderDesignerFields();
     renderPreview();
