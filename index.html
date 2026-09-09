@@ -153,15 +153,15 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .board-card{grid-column:span 2}
 .board-body{display:grid;grid-template-columns:1fr 1.35fr;gap:14px;padding:16px 20px;align-items:center}
 .board-donut .chart-box{height:255px}
-.board-rows{display:flex;flex-direction:column;gap:9px}
-.brow{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:11px;padding:9px 13px;background:#fbfcfe}
-.brow .b-dot{width:12px;height:12px;border-radius:4px;flex:none}
-.brow .b-name{flex:1;font-weight:800;font-size:.86rem;min-width:108px}
-.brow .b-metric{font-size:.7rem;color:var(--muted);text-align:start;min-width:62px;line-height:1.35}
-.brow .b-metric b{display:block;font-size:.88rem;color:var(--text);font-weight:900}
-.brow .b-val{font-size:.7rem;color:var(--muted);min-width:104px;text-align:end}
-.brow .b-val b{display:block;font-size:.95rem;color:var(--gold-txt);font-weight:900;direction:ltr;text-align:end}
-.b-pct{background:var(--primary-soft);color:var(--primary-d);border-radius:99px;padding:2px 9px;font-size:.7rem;font-weight:900;white-space:nowrap}
+.board-rows{display:flex;flex-direction:column;gap:11px}
+.brow{display:grid;grid-template-columns:12px minmax(96px,1.25fr) 56px 138px 64px 142px;gap:18px;align-items:center;border:1px solid var(--border);border-radius:12px;padding:11px 16px;background:#fbfcfe}
+.brow .b-dot{width:12px;height:12px;border-radius:4px}
+.brow .b-name{font-weight:800;font-size:.86rem;min-width:0}
+.brow .b-metric{font-size:.7rem;color:var(--muted);text-align:end;line-height:1.4}
+.brow .b-metric b{display:block;font-size:.9rem;color:var(--text);font-weight:900}
+.brow .b-val{font-size:.7rem;color:var(--muted);text-align:end}
+.brow .b-val b{display:block;font-size:.96rem;color:var(--gold-txt);font-weight:900;direction:ltr}
+.b-pct{background:var(--primary-soft);color:var(--primary-d);border-radius:99px;padding:3px 10px;font-size:.7rem;font-weight:900;white-space:nowrap;text-align:center}
 .board-totals{border-top:2px dashed var(--border);margin:0 20px;padding:12px 0 16px;display:flex;gap:24px;flex-wrap:wrap}
 .bt-item{display:flex;flex-direction:column}
 .bt-item .bt-lbl{font-size:.72rem;color:var(--muted);font-weight:700}
@@ -171,7 +171,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .board-tog .scen-mode-btn{padding:6px 12px;font-size:.72rem}
 .board-hint{font-size:.7rem;color:var(--muted)}
 @media(max-width:1024px){ .board-card{grid-column:span 1} }
-@media(max-width:640px){ .board-body{grid-template-columns:1fr} .brow{flex-wrap:wrap} }
+@media(max-width:640px){ .board-body{grid-template-columns:1fr} .brow{display:flex;flex-wrap:wrap;gap:9px 16px} .brow .b-name{min-width:calc(100% - 40px)} }
 .chart-box{position:relative;height:270px}
 .nav-badge{background:rgba(56,189,248,.2);color:#7dd3fc;border:1px solid rgba(56,189,248,.35);font-size:.68rem;font-weight:800;padding:1px 9px;border-radius:99px;margin-inline-start:auto}
 .nav-item.active .nav-badge{background:var(--primary);color:#fff;border-color:transparent}
@@ -262,7 +262,18 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
 .buyers-total.over{color:var(--danger-txt);background:var(--danger-soft)}
 .c-buyers{font-size:.68rem;color:var(--muted);font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .c-buyers b{color:var(--sky-txt)}
-.stf-chips{display:flex;gap:6px;flex-wrap:wrap;padding:2px}
+.cols-add{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.cols-add input[type="text"],.cols-add select{border:1px solid var(--border2);border-radius:9px;padding:7px 11px;font-size:.82rem;outline:none;background:#fff}
+.cols-add input[type="text"]{flex:1.2;min-width:150px}
+.cols-add input:focus,.cols-add select:focus{border-color:var(--primary)}
+.cols-list{display:flex;flex-direction:column;gap:7px;max-height:420px;overflow:auto;padding:3px}
+.cols-row{display:flex;align-items:center;gap:9px;border:1px solid var(--border);border-radius:10px;padding:7px 12px;background:#fbfcfe;flex-wrap:wrap}
+.cols-row .cr-name{flex:1.3;min-width:130px;border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-size:.82rem;outline:none;background:#fff}
+.cols-row .cr-type{font-size:.68rem;font-weight:800;color:var(--muted);min-width:52px;text-align:center}
+.cols-row .cr-lock{font-size:.66rem;font-weight:800;color:var(--gold-txt)}
+.cols-row .mini-btn{white-space:nowrap}
+.cols-row.hidden-row{opacity:.55}
+.cols-row.custom-row{border-color:var(--gold);background:var(--gold-soft)}
 .stf-chip{border:1.5px solid var(--border2);background:#fff;border-radius:99px;padding:4px 11px;font-size:.74rem;font-weight:800;color:var(--txt2);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
 .stf-chip:hover{border-color:var(--primary);color:var(--primary-d)}
 .stf-chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
@@ -780,6 +791,10 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
               الإعدادات والنسخ الاحتياطي
             </button>
+            <button class="dd-item" id="uMenuEditName">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              تعديل الاسم المعروض
+            </button>
             <button class="dd-item" id="uMenuChangePw" style="display:none">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               تعيين كلمة المرور
@@ -805,7 +820,7 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
         <div class="charts">
           <div class="card board-card">
             <div class="card-h">
-              <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>نظرة مجلس الإدارة<span class="sub">المساحات وقيم المبيعات</span></h3>
+              <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>مؤشرات أداء المخطط<span class="sub">المساحات وقيم المبيعات</span></h3>
               <div class="board-tog" id="boardTogWrap" style="display:none">
                 <button type="button" class="scen-mode-btn active" data-bmode="base">بالأسعار المدرجة</button>
                 <button type="button" class="scen-mode-btn" data-bmode="scen">بأسعار السيناريو</button>
@@ -1267,6 +1282,7 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
           <button class="tab-pill active" role="tab" id="stab-cloud" aria-selected="true" aria-controls="panel-set-cloud"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98A6.5 6.5 0 1 0 5.64 16.6"/><path d="M12 13v9"/><path d="m8 17 4-4 4 4"/></svg>الحساب والاتصال <span class="tab-badge" id="cloudAccBadge">محلي</span></button>
           <button class="tab-pill" role="tab" id="stab-users" aria-selected="false" aria-controls="panel-set-users"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>المستخدمون والصلاحيات</button>
           <button class="tab-pill" role="tab" id="stab-data" aria-selected="false" aria-controls="panel-set-data"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>البيانات والنسخ الاحتياطي</button>
+          <button class="tab-pill" role="tab" id="stab-cols" aria-selected="false" aria-controls="panel-set-cols"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M9 4v16"/></svg>الأعمدة</button>
           <button class="tab-pill" role="tab" id="stab-recycle" aria-selected="false" aria-controls="panel-set-recycle"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>سلة المحذوفات <span class="tab-badge" id="recycleAccCount"></span></button>
           <button class="tab-pill" role="tab" id="stab-statuses" aria-selected="false" aria-controls="panel-set-statuses"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z"/></svg>الحالات المخصصة <span class="tab-badge" id="statusesCount"></span></button>
         </div>
@@ -1350,6 +1366,31 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
               </div>
             </div>
           </div>
+        </div>
+        <div class="tab-panel" id="panel-set-cols" role="tabpanel" aria-labelledby="stab-cols">
+        <div class="card">
+          <div class="card-h">
+            <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M9 4v16"/></svg>إدارة الأعمدة</h3>
+            <div class="report-actions">
+              <button class="btn btn-ok btn-sm" id="btnColsSave"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/></svg>حفظ التغييرات</button>
+            </div>
+          </div>
+          <div class="card-b">
+            <div class="hint" style="margin-bottom:12px">الأعمدة النظامية: أعد التسمية أو أخفِها (البيانات تبقى محفوظة) — الأعمدة المخصصة: أضفها بأنواع (نص/رقم/تاريخ/قائمة) ورتبها وحذفها بحرية. تنعكس التغييرات على السجل والنموذج والتقارير والتصدير.</div>
+            <div class="cols-add">
+              <input type="text" id="ncName" placeholder="اسم العمود الجديد">
+              <select id="ncType">
+                <option value="text">نص</option>
+                <option value="number">رقم</option>
+                <option value="date">تاريخ</option>
+                <option value="select">قائمة خيارات</option>
+              </select>
+              <input type="text" id="ncOpts" placeholder="خيارات القائمة مفصولة بـ ، (اختياري)">
+              <button class="btn btn-soft btn-sm" id="btnAddCol">إضافة عمود مخصص</button>
+            </div>
+            <div id="colsManager"></div>
+          </div>
+        </div>
         </div>
         <div class="tab-panel" id="panel-set-recycle" role="tabpanel" aria-labelledby="stab-recycle">
         <div class="card">
@@ -1726,6 +1767,94 @@ const COLS = [
 ];
 const ESSENTIAL = ['block','landNo','oldLandNo','landType','clientName','clientType','contractNo','deedNo','deedInKindNo','area','pricePerMeter','value','transferDate','status'];
 
+/* ===== Dynamic columns ===== */
+const COL_CFG_KEY = 'fipms_columns_cfg_v1';
+const CUSTOM_VALS_KEY = 'fipms_custom_vals_v1';
+const COL_CFG_CLOUD = 'columns_cfg';
+const CUSTOM_VALS_CLOUD = 'land_custom_cols';
+let colCfg = {cols:[], updatedAt:''};
+let customVals = {};
+function loadColCfg(){
+  try{ const s = localStorage.getItem(COL_CFG_KEY); if(s){ const p = JSON.parse(s); if(p && Array.isArray(p.cols)) return p; } }catch(e){}
+  return {cols:[], updatedAt:''};
+}
+function saveColCfg(){ try{ localStorage.setItem(COL_CFG_KEY, JSON.stringify(colCfg)); }catch(e){} }
+function loadCustomVals(){
+  try{ const s = localStorage.getItem(CUSTOM_VALS_KEY); if(s){ const p = JSON.parse(s); if(p && typeof p === 'object' && !Array.isArray(p)) return p; } }catch(e){}
+  return {};
+}
+function saveCustomVals(){ try{ localStorage.setItem(CUSTOM_VALS_KEY, JSON.stringify(customVals)); }catch(e){} }
+function sysColByKey(k){ return COLS.find(c=>c.k===k) || null; }
+function customColDefs(){ return colCfg.cols.filter(c=>String(c.k||'').startsWith('c_')); }
+function colDef(k){
+  const s = sysColByKey(k);
+  if(s){ const o = colCfg.cols.find(c=>c.k===k); return {k:s.k, t:(o && o.t) ? o.t : s.t, type:'sys', hidden: !!(o && o.hidden)}; }
+  const c = colCfg.cols.find(x=>x.k===k);
+  return c ? {k:c.k, t:c.t || c.k, type:c.type || 'text', opts:Array.isArray(c.opts) ? c.opts : [], hidden:!!c.hidden} : null;
+}
+function activeColumns(){
+  const out = [];
+  for(const s of COLS){
+    const o = colCfg.cols.find(c=>c.k===s.k);
+    if(o && o.hidden) continue;
+    out.push({k:s.k, t:(o && o.t) ? o.t : s.t, type:'sys'});
+  }
+  const customs = customColDefs().filter(c=>!c.hidden).sort((a,b)=>((a.order==null?999:a.order) - (b.order==null?999:b.order)) || String(a.k).localeCompare(String(b.k)));
+  for(const c of customs) out.push({k:c.k, t:c.t || c.k, type:c.type || 'text', opts:Array.isArray(c.opts) ? c.opts : []});
+  return out;
+}
+function allColumnKeys(){ return COLS.map(c=>c.k).concat(customColDefs().map(c=>c.k)); }
+function colByKey(k){ const d = colDef(k); return d ? d : null; }
+async function colCfgCloudSave(){
+  if(!sbClient || !cloudReady) return;
+  try{
+    const {data} = await sbClient.from('app_settings').select('value').eq('key', COL_CFG_CLOUD).maybeSingle();
+    let merged = {cols:[], updatedAt:''};
+    if(data && data.value && Array.isArray(data.value.cols)) merged = data.value;
+    const map = new Map();
+    for(const c of merged.cols) map.set(c.k, c);
+    for(const c of colCfg.cols) map.set(c.k, c);
+    const cols = [...map.values()];
+    await sbClient.from('app_settings').upsert({key:COL_CFG_CLOUD, value:{cols, updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''});
+  }catch(e){}
+}
+function colCfgMergeFromCloud(v){
+  if(v && Array.isArray(v.cols)){
+    const map = new Map();
+    for(const c of colCfg.cols) map.set(c.k, c);
+    for(const c of v.cols) if(c && c.k){ const ex = map.get(c.k); if(!ex || String(v.updatedAt||'') >= String(colCfg.updatedAt||'')) map.set(c.k, c); }
+    colCfg.cols = [...map.values()];
+    colCfg.updatedAt = v.updatedAt || new Date().toISOString();
+    saveColCfg();
+  }
+}
+async function customValsCloudSave(){
+  if(!sbClient || !cloudReady) return;
+  try{
+    const {data} = await sbClient.from('app_settings').select('value').eq('key', CUSTOM_VALS_CLOUD).maybeSingle();
+    let items = [];
+    if(data && data.value && Array.isArray(data.value.items)) items = data.value.items;
+    const merged = new Map();
+    for(const it of items){ if(it && it.landId != null) merged.set(it.landId, it); }
+    const validIds = new Set([...records.map(r=>r.id), ...archive.map(a=>a.id)]);
+    for(const id of Object.keys(customVals)){
+      if(validIds.has(+id)) merged.set(+id, {landId:+id, vals:customVals[id], updatedAt:new Date().toISOString()});
+    }
+    for(const key of [...merged.keys()]) if(!validIds.has(key)) merged.delete(key);
+    await sbClient.from('app_settings').upsert({key:CUSTOM_VALS_CLOUD, value:{items:[...merged.values()], updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''});
+  }catch(e){}
+}
+function customValsMergeFromCloud(items){
+  let changed = false;
+  for(const it of items){
+    if(it && it.landId != null && it.vals && typeof it.vals === 'object'){
+      const ex = customVals[it.landId];
+      if(!ex || JSON.stringify(ex) !== JSON.stringify(it.vals)){ customVals[it.landId] = it.vals; changed = true; }
+    }
+  }
+  if(changed) saveCustomVals();
+}
+
 const OPTS = {
   landType:['صناعي','سكن عمال','تجاري','زراعي','سكني','أخرى'],
   clientType:['تطبيق','كاش','تحويل بنكي'],
@@ -1779,6 +1908,10 @@ function getStatus(r){
 function valOf(r, k){
   if(k === 'status') return getStatus(r);
   if(k === 'transferPayment') return effTransfer(r);
+  if(String(k).startsWith('c_')){
+    const rec = customVals[r.id];
+    return rec ? rec[k] : undefined;
+  }
   return r[k];
 }
 function effTransfer(r){
@@ -1971,7 +2104,8 @@ function sorted(list){
   return list.slice().sort((a,b)=>{
     if(k === 'landNo') return compareLand(a.landNo, b.landNo) * state.sortDir;
     let va = valOf(a,k), vb = valOf(b,k);
-    if(['block','area','pricePerMeter','value','firstPayment','transferPayment'].includes(k)){
+    const cd = colByKey(k);
+    if(['block','area','pricePerMeter','value','firstPayment','transferPayment'].includes(k) || (cd && cd.type === 'number')){
       va = parseFloat(va)||0; vb = parseFloat(vb)||0;
     }else{
       va = String(va == null ? '' : va); vb = String(vb == null ? '' : vb);
@@ -1994,6 +2128,12 @@ function badgeYN(v, okWord, noWord){
 }
 function cellHtml(r, col){
   const k = col.k, v = valOf(r, k);
+  if(String(k).startsWith('c_')){
+    const t = colDef(k);
+    if(t && t.type === 'number') return (v != null && v !== '') ? `<span class="num">${fmtNum.format(v)}</span>` : '—';
+    if(t && t.type === 'date') return v ? `<span class="num">${esc(v)}</span>` : '—';
+    return v ? esc(v) : '—';
+  }
   if(k === 'landType') return badgeType(v);
   if(k === 'status') return statusBadge(getStatus(r));
   if(k === 'transferDate') return v ? `<span class="num">${esc(v)}</span>` : '—';
@@ -2017,15 +2157,18 @@ function cellHtml(r, col){
 
 /* ===== Registry table ===== */
 function buildThead(allSel){
-  return '<tr><th class="s0" style="cursor:default;text-align:center;width:40px"><input type="checkbox" id="thSelAll" ' + (allSel ? 'checked' : '') + ' title="تحديد الكل"></th>' + COLS.map(c=>{
+  const cols = activeColumns();
+  return '<tr><th class="s0" style="cursor:default;text-align:center;width:40px"><input type="checkbox" id="thSelAll" ' + (allSel ? 'checked' : '') + ' title="تحديد الكل"></th>' + cols.map(c=>{
     const cls = (c.k === 'block' ? 's1' : c.k === 'landNo' ? 's2' : '') + (state.sortKey === c.k ? ' sorted' : '');
     return `<th class="${cls}" data-key="${c.k}" title="ترتيب حسب ${esc(c.t)}">${esc(c.t)}${state.sortKey === c.k ? `<span class="srt">${state.sortDir === 1 ? '▲' : '▼'}</span>` : ''}</th>`;
   }).join('') + '<th class="sa" style="cursor:default;text-align:center">إجراءات</th></tr>';
 }
 function rowHtml(r){
-  return `<tr data-id="${r.id}"><td class="s0" style="text-align:center"><input type="checkbox" class="row-sel" data-sid="${r.id}" ${taxSel.has(r.id) ? 'checked' : ''}></td>` + COLS.map(c=>{
+  const cols = activeColumns();
+  return `<tr data-id="${r.id}"><td class="s0" style="text-align:center"><input type="checkbox" class="row-sel" data-sid="${r.id}" ${taxSel.has(r.id) ? 'checked' : ''}></td>` + cols.map(c=>{
     const sticky = c.k === 'block' ? 's1' : c.k === 'landNo' ? 's2' : '';
-    const cls = sticky + (c.k === 'clientName' ? ' c-client' : (['landNo','oldLandNo','deedNo','deedInKindNo','area','pricePerMeter','value','deedDate','deedInKindDate'].includes(c.k) ? ' num' : ''));
+    const numT = c.type === 'number' || ['landNo','oldLandNo','deedNo','deedInKindNo','area','pricePerMeter','value','firstPayment','transferPayment','deedDate','deedInKindDate'].includes(c.k);
+    const cls = sticky + (c.k === 'clientName' ? ' c-client' : (numT ? ' num' : ''));
     return `<td class="${cls}">${cellHtml(r, c)}</td>`;
   }).join('') + `<td class="sa"><div class="row-actions">
     ${can('issue_tax') ? `<button class="btn btn-soft btn-xs" data-act="tax" data-id="${r.id}" title="إصدار ضريبة تصرفات"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></svg></button>` : ''}
@@ -2064,7 +2207,7 @@ function renderRegistry(){
       const g = groups.get(k);
       const ta = g.reduce((s,r)=>s+(r.area||0),0);
       const tv = g.reduce((s,r)=>s+(r.value||0),0);
-      parts.push(`<tr class="group-row"><td colspan="${COLS.length + 2}">▼ البلك ${esc(k)} <span class="g-meta">${g.length} قطعة · المساحة ${fmtMoney.format(ta)} م² · القيمة ${fmtMoney.format(tv)} ر.س</span></td></tr>`);
+      parts.push(`<tr class="group-row"><td colspan="${activeColumns().length + 2}">▼ البلك ${esc(k)} <span class="g-meta">${g.length} قطعة · المساحة ${fmtMoney.format(ta)} م² · القيمة ${fmtMoney.format(tv)} ر.س</span></td></tr>`);
       for(const r of g) parts.push(rowHtml(r));
     }
     bodyHtml = parts.join('') || emptyRow();
@@ -2090,7 +2233,7 @@ function renderRegistry(){
   renderActiveChips();
 }
 function emptyRow(){
-  return `<tr><td colspan="${COLS.length + 2}"><div class="empty-state"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><h4>لا توجد نتائج</h4><p>جرّب تعديل البحث أو الفلاتر</p></div></td></tr>`;
+  return `<tr><td colspan="${activeColumns().length + 2}"><div class="empty-state"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><h4>لا توجد نتائج</h4><p>جرّب تعديل البحث أو الفلاتر</p></div></td></tr>`;
 }
 function renderPager(total){
   const el = $('#pager');
@@ -2225,10 +2368,7 @@ function renderDashboard(){
     {lbl:'إجمالي القطع', val:fmtInt.format(records.length), sub:'قطعة أرض', ico:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>', cls:'c-blue'},
     {lbl:'إجمالي المساحة', val:fmtMoney.format(records.reduce((s,r)=>s+(r.area||0),0)), sub:'متر مربع', ico:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 3 21"/><path d="M21 3h-6M21 3v6"/><path d="M3 21h6M3 21v-6"/></svg>', cls:'c-teal'},
     {lbl:'إجمالي القيمة', val:fmtMoney.format(records.reduce((s,r)=>s+(r.value||0),0)), sub:'ريال سعودي', ico:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>', cls:'c-amber'},
-    {lbl:'متوسط سعر المتر', val:fmtNum.format(avgPpm(records)), sub:'ر.س / م²', ico:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m5 16 4-6 4 3 5-8"/></svg>', cls:'c-violet'},
-    {lbl:'العملاء الفريدون', val:fmtInt.format(new Set(records.map(r=>r.clientName).filter(Boolean)).size), sub:'عميل / جهة', ico:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>', cls:'c-rose'},
-    {lbl:'المفرغ من القطع', val:fmtInt.format(records.filter(r=>r.transferDate).length), sub:`بقيمة ${fmtMoney.format(records.filter(r=>r.transferDate).reduce((s,r)=>s+(r.value||0),0))} ر.س`, ico:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>', cls:'c-ok'},
-    {lbl:'متاحة للبيع', val:fmtInt.format(records.filter(r=>getStatus(r) === 'متاحة').length), sub:`محجوز ${fmtInt.format(records.filter(r=>getStatus(r) === 'محجوزة').length)} · بالأرشيف ${archive.length}`, ico:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>', cls:'c-sky'}
+    {lbl:'متوسط سعر المتر', val:fmtNum.format(avgPpm(records)), sub:'ر.س / م²', ico:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m5 16 4-6 4 3 5-8"/></svg>', cls:'c-violet'}
   ];
   $('#kpis').innerHTML = kpis.map(k=>`<div class="kpi"><div class="kpi-ico ${k.cls}">${k.ico}</div><div><div class="kpi-lbl">${k.lbl}</div><div class="kpi-val">${k.val}</div><div class="kpi-sub">${k.sub}</div></div></div>`).join('');
 
@@ -2476,7 +2616,7 @@ function renderBackup(){
 
 /* ===== Form modal ===== */
 function fieldHtml(key){
-  const col = COLS.find(c=>c.k === key);
+  const col = colByKey(key) || COLS.find(c=>c.k === key);
   const spec = FORM_FIELD_TYPES[key];
   const label = col.t + (['landType','area','pricePerMeter'].includes(key) ? ' <span class="req">*</span>' : '');
   let input;
@@ -2493,10 +2633,20 @@ function fieldHtml(key){
   }
   return `<div class="fld"><label>${label}</label>${input}</div>`;
 }
+function customFieldHtml(c){
+  let input;
+  if(c.type === 'number') input = `<input type="number" step="any" id="f_${c.k}" data-key="${c.k}">`;
+  else if(c.type === 'date') input = `<input type="date" id="f_${c.k}" data-key="${c.k}">`;
+  else if(c.type === 'select') input = `<select id="f_${c.k}" data-key="${c.k}"><option value="">—</option>${(c.opts||[]).map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('')}</select>`;
+  else input = `<input type="text" id="f_${c.k}" data-key="${c.k}">`;
+  return `<div class="fld"><label>${esc(c.t)}</label>${input}</div>`;
+}
 function openModal(rec){
   editingId = rec ? rec.id : null;
   valueTouched = false;
   editingBuyers = rec && Array.isArray(rec.buyers) ? rec.buyers.map(b=>({id:b.id || (Date.now()+Math.random()), name:b.name||'', type:b.type||'', sharePct:b.sharePct||''})) : [];
+  const modalCustomCols = customColDefs().filter(c=>!c.hidden);
+  const customFs = modalCustomCols.length ? `<fieldset class="fset"><legend>أعمدة مخصصة</legend><div class="fgrid">${modalCustomCols.map(customFieldHtml).join('')}</div></fieldset>` : '';
   $('#modalTitleTxt').textContent = rec ? `تعديل — بلك ${rec.block || '—'} / أرض ${rec.landNo || '—'}` : 'إضافة أرض جديدة';
   $('#modalBody').innerHTML = FORM_GROUPS.map(g=>`
     <fieldset class="fset">
@@ -2504,7 +2654,7 @@ function openModal(rec){
       <div class="fgrid">${g.keys.map(fieldHtml).join('')}</div>
     </fieldset>
     <div class="hint" style="margin-top:-12px">* القيمة تُحسب تلقائياً = المساحة × سعر المتر، ويمكنك تعديلها يدوياً عند الحاجة.</div>
-  `).join('') + `
+  `).join('') + customFs + `
     <fieldset class="fset">
       <legend>الشركاء في القطعة (اختياري)</legend>
       <div class="buyers-hint">أضف سطراً لكل شريك — المشتري الرئيسي أعلاه يأخذ النسبة المتبقية تلقائياً (100% − مجموع الشركاء)</div>
@@ -2526,6 +2676,12 @@ function openModal(rec){
       }
       if(c.k === 'area' || c.k === 'pricePerMeter' || c.k === 'value' || c.k === 'firstPayment' || c.k === 'transferPayment') el.value = v == null ? '' : v;
       else el.value = v == null ? '' : v;
+    }
+    for(const c of modalCustomCols){
+      const el = $(`#f_${c.k}`);
+      if(!el) continue;
+      const recVals = customVals[rec.id];
+      el.value = (recVals && recVals[c.k] != null) ? recVals[c.k] : '';
     }
   }
   const area = $('#f_area'), ppm = $('#f_pricePerMeter'), val = $('#f_value');
@@ -2637,6 +2793,7 @@ function saveModal(){
   if(buyersSum > 100){ toast('مجموع نسب الشركاء يتجاوز 100% — عدّل النسب', 'err'); return; }
   out.buyers = buyers;
 
+  let rid = editingId;
   if(editingId != null){
     const i = records.findIndex(r=>r.id === editingId);
     if(i >= 0){ records[i] = Object.assign({}, records[i], out); }
@@ -2644,8 +2801,19 @@ function saveModal(){
   }else{
     const nid = records.length ? Math.max(...records.map(r=>r.id||0)) + 1 : 1;
     records.push(Object.assign({id:nid}, out));
+    rid = nid;
     toast('تمت إضافة الأرض بنجاح');
   }
+  const custVals = {};
+  for(const c of customColDefs().filter(c=>!c.hidden)){
+    const el = $(`#f_${c.k}`);
+    let v = el ? el.value.trim() : '';
+    if(c.type === 'number'){ v = v === '' ? '' : parseFloat(v); if(v !== '' && isNaN(v)) v = ''; }
+    custVals[c.k] = v;
+  }
+  if(Object.keys(custVals).some(k=>custVals[k] !== '')) customVals[rid] = custVals; else delete customVals[rid];
+  saveCustomVals();
+  if(cloudReady) customValsCloudSave();
   save();
   if(cloudReady) buyersCloudSave();
   closeModal();
@@ -2721,7 +2889,7 @@ function regTrackExcelStyle(k, v){
   return {fill:{fgColor:{rgb:lightenHex(color, .85)}}, font:{color:{rgb:'FF' + color.slice(1)}}};
 }
 function exportAllExcel(){
-  exportExcelRows(sorted(records), COLS, 'سجل الأراضي', 'سجل-الأراضي-الكامل', null, ['area','value','firstPayment','transferPayment']);
+  exportExcelRows(sorted(records), activeColumns(), 'سجل الأراضي', 'سجل-الأراضي-الكامل', null, ['area','value','firstPayment','transferPayment']);
 }
 function exportTypeExcel(){
   const ts = typeSummary(records);
@@ -2764,7 +2932,7 @@ function printCell(v, num){
 }
 function exportRegistryPrintDoc(){
   const list = sorted(filtered());
-  const cols = ESSENTIAL.map(k=>COLS.find(c=>c.k===k));
+  const cols = ESSENTIAL.map(k=>colByKey(k)).filter(Boolean);
   const thead = '<tr>' + cols.map(c=>`<th>${esc(c.t)}</th>`).join('') + '</tr>';
   const body = list.map(r=>'<tr>' + cols.map(c=>{
     const v = valOf(r, c.k);
@@ -2937,8 +3105,9 @@ function importJsonFile(file){
 /* ===== Excel import ===== */
 function downloadTemplate(){
   if(!checkLib('xlsx')) return;
-  const ws = XLSX.utils.aoa_to_sheet([COLS.map(c=>c.t)]);
-  ws['!cols'] = COLS.map(c=>({wch:Math.min(28, Math.max(12, c.t.length+2))}));
+  const tplCols = activeColumns();
+  const ws = XLSX.utils.aoa_to_sheet([tplCols.map(c=>c.t)]);
+  ws['!cols'] = tplCols.map(c=>({wch:Math.min(28, Math.max(12, c.t.length+2))}));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'قالب الاستيراد');
   XLSX.writeFile(wb, `قالب-استيراد-الأراضي.xlsx`);
@@ -2968,7 +3137,7 @@ function importXlsxFile(file){
       if(!aoa.length){ toast('الملف فارغ', 'err'); return; }
       const hdr = aoa[0].map(h=>String(h).trim());
       const idx = {};
-      for(const c of COLS){
+      for(const c of activeColumns()){
         const i = hdr.indexOf(c.t);
         if(i >= 0) idx[c.k] = i;
       }
@@ -2990,8 +3159,9 @@ function importXlsxFile(file){
         const ppm = parseFloat(String(row[idx.pricePerMeter] ?? '').replace(/,/g,'')) || null;
         const val = parseFloat(String(row[idx.value] ?? '').replace(/,/g,'')) || null;
         if(area == null && ppm == null && val == null) continue;
+        const rid = baseId + added++;
         records.push({
-          id: baseId + added++,
+          id: rid,
           block:get('block'), landNo:get('landNo'), oldLandNo:get('oldLandNo'), landType:get('landType'),
           clientName:get('clientName'), clientType:get('clientType'), via:get('via'),
           contractNo:get('contractNo'), contractType:get('contractType'), contractSigned:get('contractSigned'),
@@ -3001,9 +3171,15 @@ function importXlsxFile(file){
           transferDate:excelDate(row[idx.transferDate]),
           status:statusList().includes(get('status')) ? get('status') : ''
         });
+        for(const c of customColDefs().filter(c=>!c.hidden)){
+          const v = get(c.k);
+          if(v !== ''){ customVals[rid] = customVals[rid] || {}; customVals[rid][c.k] = c.type === 'number' ? (parseFloat(v.replace(/,/g,''))||'') : v; }
+        }
       }
       if(!added){ toast('لم يتم العثور على سجلات جديدة في الملف', 'warn'); return; }
       save();
+      saveCustomVals();
+      if(cloudReady) customValsCloudSave();
       renderAll();
       toast(`تم استيراد ${added} سجلاً بنجاح`);
     }catch(err){
@@ -3021,7 +3197,7 @@ const PRESETS = [
   {name:'تقرير الصكوك', subtitle:'متابعة الصكوك وتواريخ الإفراغ', keys:['block','landNo','landType','clientName','deedNo','deedDate','deedInKindNo','deedInKindDate','transferDate','status']},
   {name:'تقرير المبيعات والدفعات', subtitle:'البيع والدفعات لكل عميل', keys:['block','landNo','clientName','clientType','via','contractNo','firstPayment','transferPayment','area','pricePerMeter','value','transferDate','status']},
   {name:'تقرير بلوم', subtitle:'دمج الأراضي حسب رقم العقد', groupBy:'contract', keys:['contractNo','contractType','block','landNo','landType','clientName','area','pricePerMeter','value','firstPayment','transferPayment','status']},
-  {name:'التقرير الكامل', subtitle:'جميع الأعمدة الـ 23', keys:COLS.map(c=>c.k)}
+  {name:'التقرير الكامل', subtitle:'جميع الأعمدة', keys:allColumnKeys()}
 ];
 const PRESET_ALIAS = {lands:0, deeds:1, sales:2, bloom:3, full:4};
 let templates = [];
@@ -3029,17 +3205,17 @@ let tpl = null;
 let dragKey = null;
 
 function freshTpl(){
-  return {id:null, name:'', subtitle:'', layout:COLS.map(c=>({k:c.k, on:true})), groupBy:'', sortKey:'', sortDir:1, scope:'all', filters:{landType:'',clientType:'',via:'',contractType:'',block:'', statuses:[]}};
+  return {id:null, name:'', subtitle:'', layout:allColumnKeys().map(k=>({k, on:true})), groupBy:'', sortKey:'', sortDir:1, scope:'all', filters:{landType:'',clientType:'',via:'',contractType:'',block:'', statuses:[]}};
 }
 function makeTplFromPreset(p, id){
   const set = new Set(p.keys);
-  return {id, name:p.name, subtitle:p.subtitle, layout:COLS.map(c=>({k:c.k, on:set.has(c.k)})), groupBy:'', sortKey:'', sortDir:1, scope:'all', filters:{landType:'',clientType:'',via:'',contractType:'',block:'', statuses:[]}};
+  return {id, name:p.name, subtitle:p.subtitle, layout:allColumnKeys().map(k=>({k, on:set.has(k)})), groupBy:'', sortKey:'', sortDir:1, scope:'all', filters:{landType:'',clientType:'',via:'',contractType:'',block:'', statuses:[]}};
 }
 function normalizeTpl(t){
   const colsArr = Array.isArray(t.columns) ? t.columns : [];
   const raw = (t.layout || []).filter(x=>x && x.on).map(x=>x.k).concat(colsArr);
   const legacyOld = raw.includes('newLandNo');
-  const keys = new Set(raw.map(k=>k === 'newLandNo' ? 'oldLandNo' : k).filter(k=>COLS.some(c=>c.k===k)));
+  const keys = new Set(raw.map(k=>k === 'newLandNo' ? 'oldLandNo' : k).filter(k=>allColumnKeys().includes(k)));
   const f = Object.assign({landType:'',clientType:'',via:'',contractType:'',block:'', statuses:[]}, t.filters || {});
   if(f.status){
     if(!Array.isArray(f.statuses) || !f.statuses.length) f.statuses = [f.status];
@@ -3050,7 +3226,7 @@ function normalizeTpl(t){
   if(!Array.isArray(f.statuses)) f.statuses = [];
   return {
     id:t.id, name:String(t.name || 'قالب'), subtitle:String(t.subtitle || ''),
-    layout:COLS.map(c=>({k:c.k, on:keys.has(c.k) || (c.k === 'oldLandNo' && legacyOld)})),
+    layout:allColumnKeys().map(k=>({k, on:keys.has(k) || (k === 'oldLandNo' && legacyOld)})),
     groupBy:['','block','landType','contract'].includes(t.groupBy) ? t.groupBy : '',
     sortKey:COLS.some(c=>c.k===t.sortKey) ? t.sortKey : '',
     sortDir:t.sortDir === -1 ? -1 : 1,
@@ -3079,7 +3255,7 @@ function saveTemplates(){
   try{ localStorage.setItem(TPL_KEY, JSON.stringify(templates)); }catch(e){}
 }
 function tplColumns(){ return tpl.layout.filter(x=>x.on).map(x=>x.k); }
-function colLabel(k){ const c = COLS.find(c=>c.k===k); return c ? c.t : k; }
+function colLabel(k){ const c = colByKey(k); return c ? c.t : k; }
 
 function renderTplSelect(){
   const sel = $('#tplSelect');
@@ -3093,7 +3269,7 @@ function renderDesignerFields(){
   $('#bGroup').value = tpl.groupBy;
   $('#bScope').value = tpl.scope;
   $('#bSortDir').value = String(tpl.sortDir);
-  $('#bSort').innerHTML = '<option value="">افتراضي (البلك ثم الأرض)</option>' + COLS.map(c=>`<option value="${c.k}" ${c.k === tpl.sortKey ? 'selected' : ''}>${esc(c.t)}</option>`).join('');
+  $('#bSort').innerHTML = '<option value="">افتراضي (البلك ثم الأرض)</option>' + activeColumns().map(c=>`<option value="${c.k}" ${c.k === tpl.sortKey ? 'selected' : ''}>${esc(c.t)}</option>`).join('');
   const f = tpl.filters;
   $('#bfLandType').value = f.landType;
   $('#bfClientType').value = f.clientType;
@@ -3200,7 +3376,8 @@ function sortReportRows(list){
   return list.slice().sort((a,b)=>{
     if(k === 'landNo') return compareLand(a.landNo, b.landNo) * tpl.sortDir;
     let va = valOf(a,k), vb = valOf(b,k);
-    if(['block','area','pricePerMeter','value','firstPayment','transferPayment'].includes(k)){
+    const cd = colByKey(k);
+    if(['block','area','pricePerMeter','value','firstPayment','transferPayment'].includes(k) || (cd && cd.type === 'number')){
       va = parseFloat(va)||0; vb = parseFloat(vb)||0;
     }else{
       va = String(va == null ? '' : va); vb = String(vb == null ? '' : vb);
@@ -3228,7 +3405,7 @@ function builderEmptyRow(colspan, msg){
 }
 function renderPreview(){
   if(!tpl) return;
-  const cols = tplColumns().map(k=>COLS.find(c=>c.k===k));
+  const cols = tplColumns().map(k=>colByKey(k)).filter(Boolean);
   const rows = sortReportRows(buildReportRows());
   const displayRows = tpl.groupBy === 'contract' ? bloomRows(rows) : rows;
   let html = '<table class="preview-tbl">';
@@ -3281,8 +3458,14 @@ function renderPreview(){
   $('#bPreviewTitle').textContent = tpl.name || 'معاينة التقرير';
   $('#bPreviewCount').textContent = cols.length ? `(${rows.length} قطعة · ${cols.length} عموداً)` : '';
 }
+function syncTplLayout(){
+  const keys = allColumnKeys();
+  const map = new Map(tpl.layout.map(x=>[x.k, x.on]));
+  tpl.layout = keys.map(k=>({k, on: map.has(k) ? map.get(k) : false}));
+}
 function renderBuilder(){
   renderTplSelect();
+  syncTplLayout();
   renderColChips();
   refreshBuilderFilterOptions();
   renderDesignerFields();
@@ -3375,7 +3558,7 @@ function importTemplatesFile(file){
   reader.readAsText(file);
 }
 function buildTplPrintDoc(){
-  const cols = tplColumns().map(k=>COLS.find(c=>c.k===k));
+  const cols = tplColumns().map(k=>colByKey(k)).filter(Boolean);
   const rows = sortReportRows(buildReportRows());
   const displayRows = tpl.groupBy === 'contract' ? bloomRows(rows) : rows;
   const thead = '<tr>' + cols.map(c=>`<th>${esc(c.t)}</th>`).join('') + '</tr>';
@@ -3400,7 +3583,7 @@ function buildTplPrintDoc(){
   return buildPrintDoc(tpl.name || 'تقرير مخصص', tpl.subtitle || `عدد القطع: ${rows.length}`, thead, body, tfoot);
 }
 function exportBuilderExcel(){
-  const cols = tplColumns().map(k=>COLS.find(c=>c.k===k));
+  const cols = tplColumns().map(k=>colByKey(k)).filter(Boolean);
   if(!cols.length){ toast('اختر الأعمدة أولاً', 'err'); return; }
   const rows = sortReportRows(buildReportRows());
   const displayRows = tpl.groupBy === 'contract' ? bloomRows(rows) : rows;
@@ -3783,7 +3966,7 @@ function renderTaxPlots(){
   }).join('') || '<div class="empty-state"><h4>لا توجد قطع في الطلب</h4><p>اختر قطعاً من السجل أو أضفها من القائمة أدناه</p></div>';
 }
 function renderTaxChips(){
-  $('#taxColChips').innerHTML = TAX_EXTRA_POOL.map(k=>`<button class="mini-btn ${taxPrefs.extraCols.includes(k) ? 'on' : ''}" data-tk="${k}">${esc(colLabel(k))}</button>`).join('');
+  $('#taxColChips').innerHTML = TAX_EXTRA_POOL.concat(customColDefs().filter(c=>!c.hidden).map(c=>c.k)).map(k=>`<button class="mini-btn ${taxPrefs.extraCols.includes(k) ? 'on' : ''}" data-tk="${k}">${esc(colLabel(k))}</button>`).join('');
 }
 function renderTaxAddSelect(){
   const cur = new Set(taxItems.map(r=>r.id));
@@ -4222,7 +4405,7 @@ function renderRegPlots(){
   }).join('') || '<div class="empty-state"><h4>لا توجد قطع في الطلب</h4><p>اختر قطعاً من السجل أو أضفها من القائمة أدناه</p></div>';
 }
 function renderRegChips(){
-  $('#regColChips').innerHTML = REG_EXTRA_POOL.map(k=>`<button class="mini-btn ${regPrefs.extraCols.includes(k) ? 'on' : ''}" data-rk="${k}">${esc(colLabel(k))}</button>`).join('');
+  $('#regColChips').innerHTML = REG_EXTRA_POOL.concat(customColDefs().filter(c=>!c.hidden).map(c=>c.k)).map(k=>`<button class="mini-btn ${regPrefs.extraCols.includes(k) ? 'on' : ''}" data-rk="${k}">${esc(colLabel(k))}</button>`).join('');
 }
 function renderRegAddSelect(){
   const cur = new Set(regItems.map(r=>r.id));
@@ -4665,21 +4848,23 @@ function updateUserChip(){
   if(!av) return;
   if(cloudReady && cloudUser){
     const email = cloudUser.email || '';
-    const initial = (email[0] || '؟').toUpperCase();
+    const name = displayNameFor(email);
+    const initial = (name[0] || email[0] || '؟').toUpperCase();
     av.textContent = initial;
     av.classList.remove('local');
-    nm.textContent = email;
+    nm.textContent = name || email;
     rl.textContent = cloudUser.role || '';
     rl.style.color = regTrackColor && cloudUser.role === 'مالك' ? '#b45309' : 'var(--muted)';
     dot.className = 'u-dot on';
-    head.textContent = 'مسجل باسم: ' + email + (cloudHealth ? (cloudHealth.ok ? ' · الاتصال سليم' : ' · تعذر الاتصال') : '');
+    head.textContent = 'مسجل باسم: ' + (name || email) + (name && name !== email ? ' (' + email + ')' : '') + (cloudHealth ? (cloudHealth.ok ? ' · الاتصال سليم' : ' · تعذر الاتصال') : '');
     $('#uMenuLogout').style.display = '';
     $('#uMenuLogin').style.display = 'none';
     $('#uMenuChangePw').style.display = '';
   }else{
     av.textContent = '؟';
     av.classList.add('local');
-    nm.textContent = 'وضع محلي';
+    const ln = myName();
+    nm.textContent = ln || 'وضع محلي';
     rl.textContent = 'غير مسجل';
     rl.style.color = 'var(--muted)';
     dot.className = 'u-dot';
@@ -4839,6 +5024,9 @@ function applySettingsBlobs(map){
   if(map.scen_lib && Array.isArray(map.scen_lib.items)) scenMergeFromCloud(map.scen_lib.items);
   if(Object.prototype.hasOwnProperty.call(map, 'scen_default')) scenApplyDefault(map.scen_default);
   if(map.land_buyers && Array.isArray(map.land_buyers.items)) buyersMergeFromCloud(map.land_buyers.items);
+  if(map.user_names) userNamesMergeFromCloud(map.user_names);
+  if(map.columns_cfg) colCfgMergeFromCloud(map.columns_cfg);
+  if(map.land_custom_cols && Array.isArray(map.land_custom_cols.items)) customValsMergeFromCloud(map.land_custom_cols.items);
   const ver = map.dataVersion;
   if(typeof ver === 'number' && ver < DATA_VERSION) runCloudMigrations(ver, map);
   else if(typeof ver === 'number') localStorage.setItem('fipms_data_version_v1', String(ver));
@@ -5226,9 +5414,9 @@ async function openUsersModal(){
       <button class="btn btn-soft btn-xs" id="btnCopyCreds">نسخ بيانات الدخول</button>
     </div>` : ''}
     ${fallbackNote}
-    <div style="overflow:auto;max-height:300px"><table class="rpt"><thead><tr><th>البريد</th><th>الدور</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+    <div style="overflow:auto;max-height:300px"><table class="rpt"><thead><tr><th>المستخدم</th><th>الدور</th><th>الحالة</th><th>إجراءات</th></tr></thead>
     <tbody>${list.length ? list.map(u=>`<tr>
-      <td>${esc(u.email || '')}</td>
+      <td>${esc(displayNameFor(u.email || '') || '')}${displayNameFor(u.email||'') !== (u.email||'') ? `<div class="hint" style="direction:ltr;text-align:start">${esc(u.email || '')}</div>` : ''}</td>
       <td><select class="b-filter-sel" data-uemail="${esc(u.email||'')}">${['مالك','مشرف','محرر','مطالع','بدون دور'].map(r=>`<option value="${r}" ${r === u.role ? 'selected' : ''}>${r}</option>`).join('')}</select></td>
       <td>${u.fallback ? '<span class="badge b-slate">غير معروف</span>' : (u.banned ? '<span class="badge b-danger">موقوف</span>' : '<span class="badge b-ok">نشط</span>')}</td>
       <td><div class="tax-log-actions">
@@ -5575,6 +5763,87 @@ async function scenCloudRefresh(){
     const {data:dd} = await sbClient.from('app_settings').select('value').eq('key','scen_default').maybeSingle();
     if(dd && dd.value !== undefined) scenApplyDefault(dd.value);
   }catch(e){}
+}
+
+function renderColumnsManager(){
+  const el = $('#colsManager');
+  if(!el) return;
+  const sysRows = COLS.map(s=>{
+    const o = colCfg.cols.find(c=>c.k===s.k);
+    return `<div class="cols-row${o && o.hidden ? ' hidden-row' : ''}" data-ck="${s.k}">
+      <input type="text" class="cr-name" value="${esc((o && o.t) ? o.t : s.t)}" data-crname="${s.k}" placeholder="${esc(s.t)}">
+      <span class="cr-type">نظامي</span>
+      <span class="cr-lock">🔒 البيانات محفوظة</span>
+      <button class="mini-btn ${o && o.hidden ? 'on' : ''}" data-crtog="${s.k}">${o && o.hidden ? 'إظهار' : 'إخفاء'}</button>
+    </div>`;
+  }).join('');
+  const customs = customColDefs().slice().sort((a,b)=>(a.order==null?999:a.order)-(b.order==null?999:b.order));
+  const cusRows = customs.map((c,i)=>{
+    return `<div class="cols-row custom-row" data-ck="${c.k}">
+      <input type="text" class="cr-name" value="${esc(c.t)}" data-crname="${c.k}">
+      <span class="cr-type">${c.type === 'number' ? 'رقم' : c.type === 'date' ? 'تاريخ' : c.type === 'select' ? 'قائمة' : 'نص'}</span>
+      <button class="mini-btn" data-crmv="${i}" ${i === 0 ? 'disabled' : ''}>▲</button>
+      <button class="mini-btn" data-crmv="${i}" data-dir="1" ${i === customs.length - 1 ? 'disabled' : ''}>▼</button>
+      <button class="btn btn-danger btn-xs" data-crdel="${c.k}">حذف</button>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div class="cols-list">${sysRows}${cusRows}</div>`;
+}
+function saveColumnsCfg(){
+  if(!can('manage_settings')){ toast('ليست لديك صلاحية إدارة الأعمدة', 'err'); return; }
+  colCfg.cols = colCfg.cols.filter(c=>String(c.k).startsWith('c_'));
+  colCfg.updatedAt = new Date().toISOString();
+  saveColCfg();
+  if(cloudReady) colCfgCloudSave();
+  renderAll();
+  renderColumnsManager();
+  toast('تم حفظ تغييرات الأعمدة وانعكست على النظام');
+}
+
+/* ===== User display names ===== */
+const USER_NAMES_KEY = 'user_names';
+const MY_NAME_KEY = 'fipms_my_name_v1';
+const USER_NAMES_LOCAL_KEY = 'fipms_user_names_v1';
+let userNames = {};
+function loadUserNames(){
+  try{ const s = localStorage.getItem(USER_NAMES_LOCAL_KEY); if(s){ const p = JSON.parse(s); if(p && typeof p === 'object') return p; } }catch(e){}
+  return {};
+}
+function saveUserNamesLocal(){ try{ localStorage.setItem(USER_NAMES_LOCAL_KEY, JSON.stringify(userNames)); }catch(e){} }
+function displayNameFor(email){
+  const n = userNames[email];
+  return n ? String(n) : (email || '');
+}
+function myName(){
+  if(cloudReady && cloudUser) return displayNameFor(cloudUser.email);
+  try{ return localStorage.getItem(MY_NAME_KEY) || ''; }catch(e){ return ''; }
+}
+function setMyName(name){
+  const v = String(name).trim().slice(0,60);
+  if(cloudReady && cloudUser){
+    userNames[cloudUser.email] = v;
+    saveUserNamesLocal();
+    userNamesCloudSave();
+  }else{
+    try{ localStorage.setItem(MY_NAME_KEY, v); }catch(e){}
+  }
+  updateUserChip();
+}
+async function userNamesCloudSave(){
+  if(!sbClient || !cloudReady) return;
+  try{
+    const {data} = await sbClient.from('app_settings').select('value').eq('key', USER_NAMES_KEY).maybeSingle();
+    let names = {};
+    if(data && data.value && typeof data.value.names === 'object') names = Object.assign({}, data.value.names);
+    for(const k in userNames) if(userNames[k]) names[k] = userNames[k];
+    await sbClient.from('app_settings').upsert({key:USER_NAMES_KEY, value:{names, updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''});
+  }catch(e){}
+}
+function userNamesMergeFromCloud(v){
+  if(v && typeof v.names === 'object'){
+    userNames = Object.assign({}, userNames, v.names);
+    saveUserNamesLocal();
+  }
 }
 
 /* ===== Land buyers (شركاء القطعة) ===== */
@@ -6471,7 +6740,7 @@ function switchView(name){
   if(name === 'archive') renderArchive();
   if(name === 'scenarios') renderScenarios();
   if(name === 'reports') renderReports();
-  if(name === 'backup'){ renderBackup(); renderStatusManager(); renderRegStatusManager(); renderTaxStatusManager(); renderCloudCard(); renderRecycle(); renderUsersGroup(); updateAccBadges(); }
+  if(name === 'backup'){ renderBackup(); renderStatusManager(); renderRegStatusManager(); renderTaxStatusManager(); renderCloudCard(); renderRecycle(); renderUsersGroup(); renderColumnsManager(); updateAccBadges(); }
 }
 function renderAll(){
   renderDashboard();
@@ -6897,6 +7166,65 @@ function bindEvents(){
     renderBoardCard();
   });
 
+  /* ===== Columns manager events ===== */
+  $('#colsManager').addEventListener('input', e=>{
+    const inp = e.target.closest('input[data-crname]');
+    if(!inp) return;
+    const k = inp.dataset.crname;
+    let entry = colCfg.cols.find(c=>c.k===k);
+    if(!entry){ entry = {k, t:inp.value, hidden:false}; colCfg.cols.push(entry); }
+    else entry.t = inp.value;
+    if(sysColByKey(k) && !inp.value.trim()) entry.t = '';
+  });
+  $('#colsManager').addEventListener('click', e=>{
+    const tog = e.target.closest('[data-crtog]');
+    if(tog){
+      const k = tog.dataset.crtog;
+      let entry = colCfg.cols.find(c=>c.k===k);
+      if(!entry){ entry = {k, t:sysColByKey(k).t, hidden:true}; colCfg.cols.push(entry); }
+      else entry.hidden = !entry.hidden;
+      renderColumnsManager();
+      return;
+    }
+    const mv = e.target.closest('[data-crmv]');
+    if(mv){
+      const customs = customColDefs().slice().sort((a,b)=>(a.order==null?999:a.order)-(b.order==null?999:b.order));
+      const i = +mv.dataset.crmv;
+      const j = mv.dataset.dir ? i + 1 : i - 1;
+      if(j >= 0 && j < customs.length){
+        const a = customs[i].order==null?999:customs[i].order, b = customs[j].order==null?999:customs[j].order;
+        customs[i].order = b; customs[j].order = a;
+      }
+      renderColumnsManager();
+      return;
+    }
+    const del = e.target.closest('[data-crdel]');
+    if(del){
+      const k = del.dataset.crdel;
+      const c = colCfg.cols.find(x=>x.k===k);
+      if(c && confirm(`حذف العمود المخصص «${c.t}» وقيمه نهائياً؟`)){
+        colCfg.cols = colCfg.cols.filter(x=>x.k!==k);
+        for(const id in customVals) delete customVals[id][k];
+        saveCustomVals();
+        if(cloudReady) customValsCloudSave();
+        renderColumnsManager();
+      }
+    }
+  });
+  $('#btnAddCol').addEventListener('click', ()=>{
+    if(!can('manage_settings')){ toast('ليست لديك صلاحية إدارة الأعمدة', 'err'); return; }
+    const name = $('#ncName').value.trim();
+    if(!name){ toast('اكتب اسم العمود', 'warn'); return; }
+    const type = $('#ncType').value;
+    const opts = $('#ncOpts').value.split(/[،,]/).map(s=>s.trim()).filter(Boolean);
+    const k = 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+    const maxOrder = customColDefs().reduce((m,c)=>Math.max(m, c.order==null?0:c.order), 0);
+    colCfg.cols.push({k, t:name, type, opts, hidden:false, order:maxOrder+1});
+    $('#ncName').value = ''; $('#ncOpts').value = '';
+    renderColumnsManager();
+  });
+  $('#btnColsSave').addEventListener('click', saveColumnsCfg);
+
   /* ===== Tab groups ===== */
   initTabGroup({barId:'reportsTabbar', prefix:'rtab-', panelPrefix:'', storageKey:'fipms_report_tab', defaultKey:'summ', hashNs:'reports'});
   initTabGroup({barId:'settingsTabbar', prefix:'stab-', panelPrefix:'set-', storageKey:'fipms_settings_tab', defaultKey:'cloud', hashNs:'settings'});
@@ -6919,6 +7247,14 @@ function bindEvents(){
   });
   $('#uMenuSettings').addEventListener('click', ()=>{ closeDdMenus(); switchView('backup'); });
   $('#uMenuChangePw').addEventListener('click', ()=>{ closeDdMenus(); changeOwnPassword(); });
+  $('#uMenuEditName').addEventListener('click', ()=>{
+    closeDdMenus();
+    const cur = myName();
+    const nm = prompt('اكتب اسمك المعروض (يظهر لفريقك في النظام):', cur);
+    if(nm === null) return;
+    setMyName(nm);
+    toast('تم حفظ اسمك المعروض');
+  });
   $('#uMenuLogout').addEventListener('click', ()=>{ closeDdMenus(); logoutCloud(); });
   $('#uMenuLogin').addEventListener('click', ()=>{
     closeDdMenus();
@@ -7418,6 +7754,9 @@ loadTemplates();
 scenarios = loadScenarios();
 scenDefaultId = loadScenDefaultLocal();
 scenTombstones = loadScenTombstones();
+userNames = loadUserNames();
+colCfg = loadColCfg();
+customVals = loadCustomVals();
 bindEvents();
 refreshFilterOptions();
 renderAll();
