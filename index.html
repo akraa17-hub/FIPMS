@@ -175,16 +175,18 @@ body.sidebar-collapsed .nav-item[data-tip]:hover::after{opacity:1}
 .charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px;margin-bottom:20px}
 .board-card{grid-column:span 2}
 .board-body{display:grid;grid-template-columns:1fr 1.35fr;gap:14px;padding:16px 20px;align-items:center}
-.board-donut .chart-box{height:255px}
-.board-rows{display:flex;flex-direction:column;gap:11px}
-.brow{display:grid;grid-template-columns:12px minmax(96px,1.25fr) 56px 138px 64px 142px;gap:18px;align-items:center;border:1px solid var(--border);border-radius:12px;padding:11px 16px;background:#fbfcfe}
+.board-donut{min-width:0}
+.board-donut .chart-box{max-width:100%;height:255px}
+.board-rows{display:flex;flex-direction:column;gap:11px;min-width:0}
+.brow{display:grid;grid-template-columns:12px minmax(70px,1.4fr) minmax(34px,auto) minmax(80px,auto) minmax(46px,auto) minmax(96px,auto);gap:12px;align-items:center;border:1px solid var(--border);border-radius:12px;padding:11px 14px;background:#fbfcfe;min-width:0}
 .brow .b-dot{width:12px;height:12px;border-radius:4px}
-.brow .b-name{font-weight:800;font-size:.86rem;min-width:0}
-.brow .b-metric{font-size:.7rem;color:var(--muted);text-align:end;line-height:1.4}
+.brow .b-name{font-weight:800;font-size:.86rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow .b-metric{font-size:.7rem;color:var(--muted);text-align:end;line-height:1.4;white-space:nowrap}
 .brow .b-metric b{display:block;font-size:.9rem;color:var(--text);font-weight:900}
-.brow .b-val{font-size:.7rem;color:var(--muted);text-align:end}
+.brow .b-val{font-size:.7rem;color:var(--muted);text-align:end;white-space:nowrap}
 .brow .b-val b{display:block;font-size:.96rem;color:var(--gold-txt);font-weight:900;direction:ltr}
 .b-pct{background:var(--primary-soft);color:var(--primary-d);border-radius:99px;padding:3px 10px;font-size:.7rem;font-weight:900;white-space:nowrap;text-align:center}
+@media(max-width:1100px){ .board-body{grid-template-columns:1fr} }
 .board-totals{border-top:2px dashed var(--border);margin:0 20px;padding:12px 0 16px;display:flex;gap:24px;flex-wrap:wrap}
 .bt-item{display:flex;flex-direction:column}
 .bt-item .bt-lbl{font-size:.72rem;color:var(--muted);font-weight:700}
@@ -1778,8 +1780,14 @@ const COL_CFG_KEY = 'fipms_columns_cfg_v1';
 const CUSTOM_VALS_KEY = 'fipms_custom_vals_v1';
 const COL_CFG_CLOUD = 'columns_cfg';
 const CUSTOM_VALS_CLOUD = 'land_custom_cols';
+const CUSTOM_VALS_TOMB_KEY = 'fipms_custom_vals_tomb_v1';
 let colCfg = {cols:[], updatedAt:''};
 let customVals = {};
+let customValsTombstones = [];
+function loadCustomValsTombstones(){
+  try{ const s = localStorage.getItem(CUSTOM_VALS_TOMB_KEY); if(s){ const p = JSON.parse(s); if(Array.isArray(p)) return p; } }catch(e){}
+  return [];
+}
 function loadColCfg(){
   try{ const s = localStorage.getItem(COL_CFG_KEY); if(s){ const p = JSON.parse(s); if(p && Array.isArray(p.cols)) return p; } }catch(e){}
   return {cols:[], updatedAt:''};
@@ -1846,14 +1854,17 @@ async function customValsCloudSave(){
     for(const id of Object.keys(customVals)){
       if(validIds.has(+id)) merged.set(+id, {landId:+id, vals:customVals[id], updatedAt:new Date().toISOString()});
     }
+    for(const id of customValsTombstones) merged.delete(id);
     for(const key of [...merged.keys()]) if(!validIds.has(key)) merged.delete(key);
     await sbClient.from('app_settings').upsert({key:CUSTOM_VALS_CLOUD, value:{items:[...merged.values()], updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''});
+    customValsTombstones = [];
+    try{ localStorage.setItem(CUSTOM_VALS_TOMB_KEY, '[]'); }catch(e){}
   }catch(e){}
 }
 function customValsMergeFromCloud(items){
   let changed = false;
   for(const it of items){
-    if(it && it.landId != null && it.vals && typeof it.vals === 'object'){
+    if(it && it.landId != null && it.vals && typeof it.vals === 'object' && !customValsTombstones.includes(+it.landId)){
       const ex = customVals[it.landId];
       if(!ex || JSON.stringify(ex) !== JSON.stringify(it.vals)){ customVals[it.landId] = it.vals; changed = true; }
     }
@@ -2179,7 +2190,7 @@ function rowHtml(r){
     ${can('issue_tax') ? `<button class="btn btn-soft btn-xs" data-act="tax" data-id="${r.id}" title="إصدار ضريبة تصرفات"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></svg></button>` : ''}
     ${can('issue_reg') ? `<button class="btn btn-soft btn-xs" data-act="reg" data-id="${r.id}" title="طلب تسجيل عيني"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></svg></button>` : ''}
     ${can('edit_records') ? `<button class="btn btn-soft btn-xs" data-act="edit" data-id="${r.id}" title="تعديل"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>` : ''}
-    ${can('archive_records') ? `<button class="btn btn-danger btn-xs" data-act="cancel" data-id="${r.id}" title="إلغاء ونقل للأرشيف — تصبح القطعة متاحة مجدداً"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7 18.3 18.3"/></svg></button>` : ''}
+    ${can('archive_records') ? `<button class="btn btn-danger btn-xs" data-act="cancel" data-id="${r.id}" title="إلغاء — تُحفظ بياناتها بالأرشيف وتعود متاحة في السجل"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7 18.3 18.3"/></svg></button>` : ''}
     ${can('delete_records') ? `<button class="btn btn-danger btn-xs" data-act="del" data-id="${r.id}" title="حذف (سلة المحذوفات)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>` : ''}
   </div></td></tr>`;
 }
@@ -3580,29 +3591,51 @@ function updateArchBadge(){
 function cancelRecord(id){
   const r = records.find(x=>x.id === id);
   if(!r) return;
-  if(!confirm(`إلغاء القطعة — بلك ${r.block || '—'} / أرض ${r.landNo || '—'}؟\n\nستُنقل ببياناتها كاملة إلى الأرشيف، وتُنشأ قطعة جديدة «متاحة» للبيع بنفس الرقم.`)) return;
-  archive.push(Object.assign({}, r, {status:'ملغي', archivedAt:todayStr(), archivedReason:'إلغاء'}));
+  if(!confirm(`إلغاء القطعة — بلك ${r.block || '—'} / أرض ${r.landNo || '—'}؟\n\nستُحفظ نسخة كاملة من بياناتها في الأرشيف، وتعود القطعة في السجل «متاحة» بأرقامها الأساسية (بدون العميل والعقد والصكوك).`)) return;
+  archive.push(Object.assign({}, r, {status:'ملغي', archivedAt:todayStr(), archivedReason:'إلغاء', _customVals: customVals[id] || null}));
   saveArchive();
-  const nid = Math.max(0, ...records.map(x=>x.id||0)) + 1;
-  records = records.filter(x=>x.id !== id);
-  records.push({id:nid, block:r.block, landNo:r.landNo, oldLandNo:r.oldLandNo, landType:r.landType, clientName:'', clientType:'', via:'', contractNo:'', contractType:'', contractSigned:'', addendum:'', addendumSigned:'', firstPayment:'', transferPayment:'', deedNo:'', deedDate:'', deedInKindNo:'', deedInKindDate:'', area:r.area, pricePerMeter:r.pricePerMeter, value:r.value, transferDate:'', status:''});
+  const i = records.findIndex(x=>x.id === id);
+  if(i >= 0){
+    records[i] = Object.assign({}, records[i], {
+      clientName:'', clientType:'', via:'', contractNo:'', contractType:'', contractSigned:'', addendum:'', addendumSigned:'',
+      firstPayment:'', transferPayment:'', deedNo:'', deedDate:'', deedInKindNo:'', deedInKindDate:'', transferDate:'', status:'',
+      buyers:[]
+    });
+  }
+  delete customVals[id];
+  customValsTombstones.push(id);
+  try{ localStorage.setItem(CUSTOM_VALS_TOMB_KEY, JSON.stringify(customValsTombstones)); }catch(e){}
+  saveCustomVals();
+  if(cloudReady) customValsCloudSave();
+  buyersTombstones.push(id);
+  try{ localStorage.setItem(BUYERS_TOMB_KEY, JSON.stringify(buyersTombstones)); }catch(e){}
   save();
+  if(cloudReady) buyersCloudSave();
   renderAll();
-  toast('تم نقل القطعة للأرشيف وإتاحتها للبيع مجدداً', 'warn');
+  toast('تم أرشفة بيانات القطعة وعادت «متاحة» في السجل', 'warn');
 }
 function restoreFromArchive(aid){
   const a = archive.find(x=>x.id === aid);
   if(!a) return;
-  if(!confirm(`استعادة القطعة — بلك ${a.block || '—'} / أرض ${a.landNo || '—'}؟\n\nستُعاد للسجل الأساسي وستُحذف النسخة «المتاحة» الحالية لنفس القطعة إن وُجدت.`)) return;
-  records = records.filter(r=> !(String(r.block) === String(a.block) && String(r.landNo) === String(a.landNo)));
-  const nid = Math.max(0, ...records.map(x=>x.id||0)) + 1;
-  const restored = Object.assign({}, a, {id:nid, status:''});
+  if(!confirm(`استعادة القطعة — بلك ${a.block || '—'} / أرض ${a.landNo || '—'}؟\n\nستعود ببياناتها الكاملة إلى السجل مكانها.`)) return;
+  const restored = Object.assign({}, a, {status:''});
   delete restored.archivedAt;
   delete restored.archivedReason;
-  records.push(restored);
+  if(a._customVals){ customVals[a.id] = a._customVals; }
+  delete restored._customVals;
+  saveCustomVals();
+  if(cloudReady) customValsCloudSave();
+  const i = records.findIndex(r=>r.id === a.id);
+  if(i >= 0) records[i] = restored;
+  else{
+    const j = records.findIndex(r=>String(r.block) === String(a.block) && String(r.landNo) === String(a.landNo));
+    if(j >= 0) records[j] = restored;
+    else records.push(restored);
+  }
   archive = archive.filter(x=>x.id !== aid);
   save();
   saveArchive();
+  if(cloudReady) buyersCloudSave();
   renderAll();
   toast('تمت استعادة القطعة من الأرشيف');
 }
@@ -5818,6 +5851,12 @@ function userNamesMergeFromCloud(v){
 
 /* ===== Land buyers (شركاء القطعة) ===== */
 const BUYERS_KEY = 'land_buyers';
+const BUYERS_TOMB_KEY = 'fipms_buyers_tomb_v1';
+let buyersTombstones = [];
+function loadBuyersTombstones(){
+  try{ const s = localStorage.getItem(BUYERS_TOMB_KEY); if(s){ const p = JSON.parse(s); if(Array.isArray(p)) return p; } }catch(e){}
+  return [];
+}
 async function buyersCloudSave(){
   if(!sbClient || !cloudReady) return;
   try{
@@ -5828,10 +5867,17 @@ async function buyersCloudSave(){
     for(const it of items){ if(it && it.landId != null) merged.set(it.landId, it); }
     for(const r of records){
       if(Array.isArray(r.buyers) && r.buyers.length) merged.set(r.id, {landId:r.id, buyers:r.buyers, updatedAt:new Date().toISOString()});
+      else if(merged.has(r.id)){
+        const arch = archive.find(a=>a.id === r.id);
+        if(!arch || !Array.isArray(arch.buyers) || !arch.buyers.length) merged.delete(r.id);
+      }
     }
+    for(const id of buyersTombstones) merged.delete(id);
     const validIds = new Set([...records.map(r=>r.id), ...archive.map(a=>a.id)]);
     for(const key of [...merged.keys()]) if(!validIds.has(key)) merged.delete(key);
     await sbClient.from('app_settings').upsert({key:BUYERS_KEY, value:{items:[...merged.values()], updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''});
+    buyersTombstones = [];
+    try{ localStorage.setItem(BUYERS_TOMB_KEY, '[]'); }catch(e){}
   }catch(e){}
 }
 function buyersMergeFromCloud(items){
@@ -5839,6 +5885,7 @@ function buyersMergeFromCloud(items){
   for(const it of items){ if(it && it.landId != null && Array.isArray(it.buyers)) map.set(it.landId, it.buyers); }
   let changed = false;
   for(const r of records){
+    if(buyersTombstones.includes(r.id)) continue;
     const b = map.get(r.id);
     if(b && JSON.stringify(r.buyers || []) !== JSON.stringify(b)){ r.buyers = b.map(x=>({id:x.id || (Date.now()+Math.random()), name:x.name||'', type:x.type||'', sharePct:x.sharePct||''})); changed = true; }
   }
@@ -7737,6 +7784,8 @@ scenTombstones = loadScenTombstones();
 userNames = loadUserNames();
 colCfg = loadColCfg();
 customVals = loadCustomVals();
+buyersTombstones = loadBuyersTombstones();
+customValsTombstones = loadCustomValsTombstones();
 bindEvents();
 refreshFilterOptions();
 renderAll();
