@@ -299,6 +299,13 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
 .cols-row .mini-btn{white-space:nowrap}
 .cols-row.hidden-row{opacity:.55}
 .cols-row.custom-row{border-color:var(--gold);background:var(--gold-soft)}
+.dup-group{border:1px solid var(--border);border-radius:10px;padding:9px 13px;margin-bottom:9px;background:#fbfcfe}
+.dup-grouplbl{font-size:.7rem;font-weight:800;color:var(--danger-txt);margin-bottom:6px}
+.dup-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px dashed var(--border2);flex-wrap:wrap}
+.dup-row:first-of-type{border-top:none}
+.dup-info{flex:1;display:flex;gap:10px;align-items:center;min-width:200px;font-size:.8rem;flex-wrap:wrap}
+.dup-info b{font-weight:900}
+.dup-info span{color:var(--muted);font-size:.74rem}
 .stf-chip{border:1.5px solid var(--border2);background:#fff;border-radius:99px;padding:4px 11px;font-size:.74rem;font-weight:800;color:var(--txt2);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
 .stf-chip:hover{border-color:var(--primary);color:var(--primary-d)}
 .stf-chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
@@ -1374,6 +1381,16 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
               </div>
             </div>
           </div>
+          <div class="card" style="margin-top:16px">
+            <div class="card-h">
+              <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><rect x="3" y="2" width="4" height="4" rx="1"/><rect x="13" y="2" width="4" height="4" rx="1"/><path d="M3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6"/><path d="M8 10v6M12 10v6M16 10v6"/></svg>تكرارات القطع <span class="sub" id="dupCount"></span></h3>
+              <div class="report-actions">
+                <button class="btn btn-soft btn-sm" id="btnScanDups">فحص التكرارات</button>
+                <button class="btn btn-danger btn-sm" id="btnDupCleanAvail" style="display:none">حذف كل المكررات غير المتاحة</button>
+              </div>
+            </div>
+            <div class="card-b" id="dupPanel"><div class="hint">اضغط «فحص التكرارات» لرصد القطع المكررة (نفس البلك ورقم الأرض).</div></div>
+          </div>
         </div>
         <div class="tab-panel" id="panel-set-cols" role="tabpanel" aria-labelledby="stab-cols">
         <div class="card">
@@ -2192,6 +2209,7 @@ function rowHtml(r){
     ${can('edit_records') ? `<button class="btn btn-soft btn-xs" data-act="edit" data-id="${r.id}" title="تعديل"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>` : ''}
     ${can('archive_records') ? `<button class="btn btn-danger btn-xs" data-act="cancel" data-id="${r.id}" title="إلغاء — تُحفظ بياناتها بالأرشيف وتعود متاحة في السجل"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7 18.3 18.3"/></svg></button>` : ''}
     ${can('delete_records') ? `<button class="btn btn-danger btn-xs" data-act="del" data-id="${r.id}" title="حذف (سلة المحذوفات)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>` : ''}
+    ${can('delete_records') ? `<button class="btn btn-danger btn-xs" data-act="harddel" data-id="${r.id}" title="حذف نهائي — لا يمر بالسلة"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>` : ''}
   </div></td></tr>`;
 }
 function renderActiveChips(){
@@ -2789,6 +2807,7 @@ function saveModal(){
     if(i >= 0){ records[i] = Object.assign({}, records[i], out); }
     toast('تم تحديث السجل بنجاح');
   }else{
+    if(!duplicateWarn(out)) return;
     const nid = records.length ? Math.max(...records.map(r=>r.id||0)) + 1 : 1;
     records.push(Object.assign({id:nid}, out));
     rid = nid;
@@ -3162,7 +3181,8 @@ function importXlsxFile(file){
       saveCustomVals();
       if(cloudReady) customValsCloudSave();
       renderAll();
-      toast(`تم استيراد ${added} سجلاً بنجاح`);
+      const dupCount = duplicateGroups().reduce((s,g)=>s+g.length-1,0);
+      toast(`تم استيراد ${added} سجلاً بنجاح` + (dupCount ? ` — تنبيه: ${dupCount} قطعة مكررة (بلك ورقم أرض مكرران)، راجعها من أداة معالجة التكرارات` : ''), dupCount ? 'warn' : undefined);
     }catch(err){
       toast('فشل استيراد الملف: ' + err.message, 'err');
     }
@@ -3588,6 +3608,69 @@ function updateArchBadge(){
   const el = $('#archCount');
   if(el){ el.style.display = archive.length ? '' : 'none'; el.textContent = archive.length; }
 }
+/* ===== Duplicates & hard delete ===== */
+function duplicateGroups(){
+  const map = new Map();
+  for(const r of records){
+    const key = String(r.block||'').trim() + '|' + String(r.landNo||'').trim();
+    if(!key || key === '|') continue;
+    if(!map.has(key)) map.set(key, []);
+    map.get(key).push(r);
+  }
+  return [...map.values()].filter(g=>g.length > 1);
+}
+function hasDuplicates(){ return duplicateGroups().length > 0; }
+async function hardDeleteLand(id, skipConfirm){
+  const r = records.find(x=>x.id === id);
+  if(!r) return;
+  if(!skipConfirm && !confirm(`حذف نهائي لا رجعة فيه — بلك ${r.block || '—'} / أرض ${r.landNo || '—'}${r.clientName ? ' — ' + r.clientName : ''}؟`)) return;
+  if(!can('delete_records')){ toast('ليست لديك صلاحية الحذف', 'err'); return; }
+  if(cloudReady && sbClient){
+    try{
+      const {error} = await sbClient.from('lands').delete().eq('id', id);
+      if(error) throw new Error(error.message || 'خطأ غير معروف');
+    }catch(e){ toast('فشل الحذف النهائي سحابياً: ' + e.message, 'err'); return; }
+  }
+  records = records.filter(x=>x.id !== id);
+  delete customVals[id];
+  customValsTombstones.push(id);
+  try{ localStorage.setItem(CUSTOM_VALS_TOMB_KEY, JSON.stringify(customValsTombstones)); }catch(e){}
+  saveCustomVals();
+  if(cloudReady) customValsCloudSave();
+  buyersTombstones.push(id);
+  try{ localStorage.setItem(BUYERS_TOMB_KEY, JSON.stringify(buyersTombstones)); }catch(e){}
+  if(cloudReady) buyersCloudSave();
+  if(cloudReady){ const m = cloudSnap.lands; if(m) m.delete(id); }
+  save();
+  renderAll();
+  renderDupPanel();
+  toast('حُذفت القطعة نهائياً', 'warn');
+}
+function renderDupPanel(){
+  const el = $('#dupPanel'), cnt = $('#dupCount');
+  const groups = duplicateGroups();
+  if(cnt) cnt.textContent = groups.length ? `(${groups.length} تكرار)` : '';
+  const cleanBtn = $('#btnDupCleanAvail');
+  if(cleanBtn) cleanBtn.style.display = groups.length ? '' : 'none';
+  if(!el) return;
+  if(!groups.length){ el.innerHTML = '<div class="hint">لا توجد قطع مكررة — السجل نظيف.</div>'; return; }
+  el.innerHTML = groups.map(g=>{
+    const rows = g.map(r=>`
+      <div class="dup-row">
+        <div class="dup-info"><b>${esc(r.block||'—')} / ${esc(r.landNo||'—')}</b><span>${esc(r.clientName||'بدون عميل')} · ${esc(getStatus(r))} · ${fmtMoney.format(r.value||0)} ر.س</span></div>
+        <button class="btn btn-danger btn-xs" data-hdel="${r.id}">حذف نهائي</button>
+      </div>`).join('');
+    return `<div class="dup-group"><div class="dup-grouplbl">${g.length} قطع مكررة</div>${rows}</div>`;
+  }).join('');
+}
+function duplicateWarn(out){
+  const key = String(out.block||'').trim() + '|' + String(out.landNo||'').trim();
+  if(!key || key === '|') return true;
+  const dup = records.some(r=>String(r.block||'').trim() + '|' + String(r.landNo||'').trim() === key);
+  if(dup) return confirm('تنبيه: يوجد بالفعل قطعة بنفس البلك ورقم الأرض — متابعة الإضافة؟');
+  return true;
+}
+
 function cancelRecord(id){
   const r = records.find(x=>x.id === id);
   if(!r) return;
@@ -6757,7 +6840,7 @@ function switchView(name){
   if(name === 'archive') renderArchive();
   if(name === 'scenarios') renderScenarios();
   if(name === 'reports') renderReports();
-  if(name === 'backup'){ renderBackup(); renderStatusManager(); renderRegStatusManager(); renderTaxStatusManager(); renderCloudCard(); renderRecycle(); renderUsersGroup(); renderColumnsManager(); updateAccBadges(); }
+  if(name === 'backup'){ renderBackup(); renderStatusManager(); renderRegStatusManager(); renderTaxStatusManager(); renderCloudCard(); renderRecycle(); renderUsersGroup(); renderColumnsManager(); renderDupPanel(); updateAccBadges(); }
 }
 function renderAll(){
   renderDashboard();
@@ -6898,6 +6981,8 @@ function bindEvents(){
           renderAll();
           toast('نُقلت القطعة إلى سلة المحذوفات', 'warn');
         }
+      }else if(btn.dataset.act === 'harddel'){
+        hardDeleteLand(id);
       }
       return;
     }
@@ -7251,6 +7336,25 @@ function bindEvents(){
     renderColumnsManager();
   });
   $('#btnColsSave').addEventListener('click', saveColumnsCfg);
+
+  /* ===== Duplicates events ===== */
+  $('#btnScanDups').addEventListener('click', renderDupPanel);
+  $('#dupPanel').addEventListener('click', e=>{
+    const b = e.target.closest('button[data-hdel]');
+    if(b){ hardDeleteLand(+b.dataset.hdel); }
+  });
+  $('#btnDupCleanAvail').addEventListener('click', ()=>{
+    if(!can('delete_records')){ toast('ليست لديك صلاحية الحذف', 'err'); return; }
+    const groups = duplicateGroups();
+    let targets = [];
+    for(const g of groups){
+      if(g.some(r=>getStatus(r) === 'متاحة')) targets.push(...g.filter(r=>getStatus(r) !== 'متاحة'));
+    }
+    if(!targets.length){ toast('لا توجد مكررات غير متاحة بجانب قطعة متاحة', 'warn'); return; }
+    if(!confirm(`سيتم حذف ${targets.length} قطعة مكررة نهائياً (غير المتاحة) مع إبقاء القطعة المتاحة لكل مجموعة؟ لا رجعة في الحذف.`)) return;
+    for(const r of targets) hardDeleteLand(r.id, true);
+    toast('تمت معالجة المكررات', 'warn');
+  });
 
   /* ===== Tab groups ===== */
   initTabGroup({barId:'reportsTabbar', prefix:'rtab-', panelPrefix:'', storageKey:'fipms_report_tab', defaultKey:'summ', hashNs:'reports'});
