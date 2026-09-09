@@ -176,7 +176,7 @@ body.sidebar-collapsed .nav-item[data-tip]:hover::after{opacity:1}
 .board-card{grid-column:span 2}
 .board-body{display:grid;grid-template-columns:1fr 1.35fr;gap:14px;padding:16px 20px;align-items:center}
 .board-donut{min-width:0}
-.board-donut .chart-box{max-width:100%;height:255px}
+.board-donut .chart-box{max-width:100%;height:300px}
 .board-rows{display:flex;flex-direction:column;gap:11px;min-width:0}
 .brow{display:grid;grid-template-columns:12px minmax(70px,1.4fr) minmax(34px,auto) minmax(80px,auto) minmax(46px,auto) minmax(96px,auto);gap:12px;align-items:center;border:1px solid var(--border);border-radius:12px;padding:11px 14px;background:#fbfcfe;min-width:0}
 .brow .b-dot{width:12px;height:12px;border-radius:4px}
@@ -873,7 +873,7 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef4ff}
           </div>
           <div class="card">
             <div class="card-h"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z"/></svg>توزيع القطع حسب نوع الأرض<span class="sub">العدد</span></h3></div>
-            <div class="card-b"><div class="chart-box"><canvas id="chTypeCount"></canvas></div></div>
+            <div class="card-b"><div class="chart-box" style="height:290px"><canvas id="chTypeCount"></canvas></div></div>
           </div>
         </div>
         <div class="card" id="dashTypeCard">
@@ -2525,6 +2525,21 @@ function renderBoardCard(){
     <div class="bt-item"><span class="bt-lbl">متوسط سعر المتر للمخطط</span><span class="bt-val">${fmtNum.format(d.avgPpm)} <span>ر.س/م²</span></span></div>
     ${d.useScen ? `<div class="bt-item"><span class="bt-lbl">بأسعار السيناريو</span><span class="bt-val" style="font-size:.95rem;color:var(--text)">${esc(d.scName)}</span></div>` : ''}`;
 }
+function donutLegendOpts(){
+  const trunc = t=>{ const s = String(t == null ? '' : t); return s.length > 16 ? s.slice(0,15).trim() + '…' : s; };
+  return {
+    position:'bottom', rtl:true,
+    labels:{
+      padding:8, usePointStyle:true, pointStyle:'circle', boxWidth:9, boxHeight:9, pointStyleWidth:7,
+      font:{size:11},
+      generateLabels(chart){
+        const orig = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+        return orig.map(l=>Object.assign({}, l, {text:trunc(l.text)}));
+      }
+    }
+  };
+}
+const donutCore = {cutout:'66%', borderWidth:1.5, borderRadius:4};
 function drawCharts(){
   const ts = typeSummary(records);
   const labels = ts.map(o=>o.type);
@@ -2544,13 +2559,13 @@ function drawCharts(){
 
   charts.tc = new Chart($('#chTypeCount'), {
     type:'doughnut',
-    data:{labels, datasets:[{data:ts.map(o=>o.count), backgroundColor:colors, borderWidth:2, borderColor:'#fff'}]},
-    options:{maintainAspectRatio:false, cutout:'62%', animation:{duration:250}, plugins:{legend:{position:'bottom', rtl:true, labels:{padding:12, usePointStyle:true, pointStyle:'circle'}}, tooltip:{rtl:true, callbacks:{label:c=>` ${c.label}: ${c.raw} قطعة`}}}}
+    data:{labels, datasets:[{data:ts.map(o=>o.count), backgroundColor:colors, ...donutCore}]},
+    options:{maintainAspectRatio:false, layout:{padding:6}, animation:{duration:250}, plugins:{legend:donutLegendOpts(), tooltip:{rtl:true, callbacks:{label:c=>` ${c.label}: ${c.raw} قطعة`}}}}
   });
   charts.board = new Chart($('#chBoard'), {
     type:'doughnut',
-    data:{labels:bd.groups.map(g=>g.label), datasets:[{data:bd.groups.map(g=>Math.round(g.area)), backgroundColor:bd.groups.map(g=>g.color), borderWidth:2, borderColor:'#fff'}]},
-    options:{maintainAspectRatio:false, cutout:'64%', animation:{duration:250}, plugins:{legend:{position:'bottom', rtl:true, labels:{padding:12, usePointStyle:true, pointStyle:'circle'}}, tooltip:{rtl:true, callbacks:{label:c=>{
+    data:{labels:bd.groups.map(g=>g.label), datasets:[{data:bd.groups.map(g=>Math.round(g.area)), backgroundColor:bd.groups.map(g=>g.color), ...donutCore}]},
+    options:{maintainAspectRatio:false, layout:{padding:6}, animation:{duration:250}, plugins:{legend:donutLegendOpts(), tooltip:{rtl:true, callbacks:{label:c=>{
       const g = bd.groups[c.dataIndex];
       return ` ${c.label}: ${fmtMoney.format(c.raw)} م² (${g.pct.toFixed(1)}%) · ${fmtMoney.format(g.value)} ر.س`;
     }}}}}
@@ -6233,8 +6248,8 @@ function drawScenCharts(){
   if(byT.length){
     scenCharts.ty = new Chart($('#scChType'), {
       type:'doughnut',
-      data:{labels:byT.map(o=>o.type), datasets:[{data:byT.map(o=>o.val), backgroundColor:byT.map(o=>o.col), borderWidth:2, borderColor:'#fff'}]},
-      options:{maintainAspectRatio:false, cutout:'60%', animation:{duration:200}, plugins:{legend:{position:'bottom', rtl:true, labels:{padding:12, usePointStyle:true, pointStyle:'circle'}}, tooltip:{rtl:true, callbacks:{label:ctx=>` ${ctx.label}: ${fmtMoney.format(ctx.raw)} ر.س`}}}}
+      data:{labels:byT.map(o=>o.type), datasets:[{data:byT.map(o=>o.val), backgroundColor:byT.map(o=>o.col), ...donutCore}]},
+      options:{maintainAspectRatio:false, layout:{padding:6}, animation:{duration:200}, plugins:{legend:donutLegendOpts(), tooltip:{rtl:true, callbacks:{label:ctx=>` ${ctx.label}: ${fmtMoney.format(ctx.raw)} ر.س`}}}}
     });
   }
   if(bl.length){
