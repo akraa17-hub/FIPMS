@@ -2526,20 +2526,16 @@ function renderBoardCard(){
     ${d.useScen ? `<div class="bt-item"><span class="bt-lbl">بأسعار السيناريو</span><span class="bt-val" style="font-size:.95rem;color:var(--text)">${esc(d.scName)}</span></div>` : ''}`;
 }
 function donutLegendOpts(){
-  const trunc = t=>{ const s = String(t == null ? '' : t); return s.length > 16 ? s.slice(0,15).trim() + '…' : s; };
   return {
     position:'bottom', rtl:true,
-    labels:{
-      padding:8, boxWidth:11, boxHeight:11,
-      font:{size:11},
-      generateLabels(chart){
-        const orig = Chart.defaults.plugins.legend.labels.generateLabels(chart);
-        return orig.map(l=>Object.assign({}, l, {text:trunc(l.text)}));
-      }
-    }
+    labels:{ padding:8, boxWidth:11, boxHeight:11, font:{size:11} }
   };
 }
-const donutCore = {cutout:'66%', borderWidth:1.5, borderRadius:4};
+function truncLabel(t){
+  const s = String(t == null ? '' : t);
+  return s.length > 16 ? s.slice(0,15).trim() + '…' : s;
+}
+const donutCore = {cutout:'66%', borderWidth:1.5, borderRadius:2, spacing:1};
 function drawCharts(){
   const ts = typeSummary(records);
   const labels = ts.map(o=>o.type);
@@ -2557,18 +2553,23 @@ function drawCharts(){
   Chart.defaults.font.family = "'Tajawal','Segoe UI',sans-serif";
   Chart.defaults.font.size = 12;
 
+  const fullT = ts.map(o=>o.type);
   charts.tc = new Chart($('#chTypeCount'), {
     type:'doughnut',
-    data:{labels, datasets:[{data:ts.map(o=>o.count), backgroundColor:colors, ...donutCore}]},
-    options:{maintainAspectRatio:false, layout:{padding:6}, animation:{duration:250}, plugins:{legend:donutLegendOpts(), tooltip:{rtl:true, callbacks:{label:c=>` ${c.label}: ${c.raw} قطعة`}}}}
+    data:{labels:fullT.map(truncLabel), datasets:[{data:ts.map(o=>o.count), backgroundColor:colors, ...donutCore}]},
+    options:{maintainAspectRatio:false, layout:{padding:6}, animation:{duration:250}, plugins:{legend:donutLegendOpts(), tooltip:{rtl:true, callbacks:{title:items=>fullT[items[0].dataIndex], label:c=>` ${c.raw} قطعة`}}}}
   });
+  const fullBoard = bd.groups.map(g=>g.label);
   charts.board = new Chart($('#chBoard'), {
     type:'doughnut',
-    data:{labels:bd.groups.map(g=>g.label), datasets:[{data:bd.groups.map(g=>Math.round(g.area)), backgroundColor:bd.groups.map(g=>g.color), ...donutCore}]},
-    options:{maintainAspectRatio:false, layout:{padding:6}, animation:{duration:250}, plugins:{legend:donutLegendOpts(), tooltip:{rtl:true, callbacks:{label:c=>{
-      const g = bd.groups[c.dataIndex];
-      return ` ${c.label}: ${fmtMoney.format(c.raw)} م² (${g.pct.toFixed(1)}%) · ${fmtMoney.format(g.value)} ر.س`;
-    }}}}}
+    data:{labels:fullBoard.map(truncLabel), datasets:[{data:bd.groups.map(g=>Math.round(g.area)), backgroundColor:bd.groups.map(g=>g.color), ...donutCore}]},
+    options:{maintainAspectRatio:false, layout:{padding:6}, animation:{duration:250}, plugins:{legend:donutLegendOpts(), tooltip:{rtl:true, callbacks:{
+      title:items=>fullBoard[items[0].dataIndex],
+      label:c=>{
+        const g = bd.groups[c.dataIndex];
+        return ` ${fmtMoney.format(c.raw)} م² (${g.pct.toFixed(1)}%) · ${fmtMoney.format(g.value)} ر.س`;
+      }
+    }}}}
   });
 }
 
@@ -6246,10 +6247,11 @@ function drawScenCharts(){
   scenCharts = {};
   try{ Chart.defaults.font.family = "'Tajawal','Segoe UI',sans-serif"; }catch(e){}
   if(byT.length){
+    const fullTy = byT.map(o=>o.type);
     scenCharts.ty = new Chart($('#scChType'), {
       type:'doughnut',
-      data:{labels:byT.map(o=>o.type), datasets:[{data:byT.map(o=>o.val), backgroundColor:byT.map(o=>o.col), ...donutCore}]},
-      options:{maintainAspectRatio:false, layout:{padding:6}, animation:{duration:200}, plugins:{legend:donutLegendOpts(), tooltip:{rtl:true, callbacks:{label:ctx=>` ${ctx.label}: ${fmtMoney.format(ctx.raw)} ر.س`}}}}
+      data:{labels:fullTy.map(truncLabel), datasets:[{data:byT.map(o=>o.val), backgroundColor:byT.map(o=>o.col), ...donutCore}]},
+      options:{maintainAspectRatio:false, layout:{padding:6}, animation:{duration:200}, plugins:{legend:donutLegendOpts(), tooltip:{rtl:true, callbacks:{title:items=>fullTy[items[0].dataIndex], label:ctx=>` ${fmtMoney.format(ctx.raw)} ر.س`}}}}
     });
   }
   if(bl.length){
