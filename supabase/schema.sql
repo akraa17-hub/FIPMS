@@ -58,6 +58,49 @@ create table if not exists public.reg_log (
   updated_by text default ''
 );
 
+-- مدفوعات (سجل دفعات فعلية — اختياري، البيع المباشر مسموح بلا دفعة أولى)
+create table if not exists public.payments (
+  id bigint primary key,
+  land_id bigint default 0,
+  land_no text default '',
+  block text default '',
+  client_name text default '',
+  contract_no text default '',
+  payment_no text default '',
+  payment_date text default '',
+  due_amount double precision,
+  paid_amount double precision,
+  method text default '',
+  bank text default '',
+  reference text default '',
+  status text default '',
+  notes text default '',
+  deleted_at timestamptz,
+  updated_at timestamptz default now(),
+  updated_by text default ''
+);
+
+-- حجوزات (سجل حجز مؤقت — اختياري)
+create table if not exists public.reservations (
+  id bigint primary key,
+  land_id bigint default 0,
+  land_no text default '',
+  block text default '',
+  client_name text default '',
+  request_date text default '',
+  reserve_date text default '',
+  duration_days double precision,
+  land_value double precision,
+  deposit double precision,
+  status text default '',
+  expiry_date text default '',
+  action_required text default '',
+  notes text default '',
+  deleted_at timestamptz,
+  updated_at timestamptz default now(),
+  updated_by text default ''
+);
+
 create table if not exists public.app_settings (
   key text primary key,
   value jsonb not null default '{}'::jsonb,
@@ -111,6 +154,8 @@ alter table public.lands        enable row level security;
 alter table public.archive      enable row level security;
 alter table public.tax_log      enable row level security;
 alter table public.reg_log      enable row level security;
+alter table public.payments     enable row level security;
+alter table public.reservations enable row level security;
 alter table public.app_settings enable row level security;
 alter table public.roles        enable row level security;
 alter table public.user_roles   enable row level security;
@@ -171,6 +216,34 @@ drop policy if exists reg_delete on public.reg_log;
 create policy reg_delete on public.reg_log for delete
   using (public.has_perm('recycle') or public.has_perm('reset_data'));
 
+-- payments
+drop policy if exists payments_select on public.payments;
+create policy payments_select on public.payments for select
+  using (public.has_perm('view') and (deleted_at is null or public.has_perm('recycle')));
+drop policy if exists payments_insert on public.payments;
+create policy payments_insert on public.payments for insert
+  with check (public.has_perm('edit_records'));
+drop policy if exists payments_update on public.payments;
+create policy payments_update on public.payments for update
+  using (public.has_perm('edit_records') or public.has_perm('recycle'));
+drop policy if exists payments_delete on public.payments;
+create policy payments_delete on public.payments for delete
+  using (public.has_perm('recycle') or public.has_perm('reset_data'));
+
+-- reservations
+drop policy if exists reservations_select on public.reservations;
+create policy reservations_select on public.reservations for select
+  using (public.has_perm('view') and (deleted_at is null or public.has_perm('recycle')));
+drop policy if exists reservations_insert on public.reservations;
+create policy reservations_insert on public.reservations for insert
+  with check (public.has_perm('edit_records'));
+drop policy if exists reservations_update on public.reservations;
+create policy reservations_update on public.reservations for update
+  using (public.has_perm('edit_records') or public.has_perm('recycle'));
+drop policy if exists reservations_delete on public.reservations;
+create policy reservations_delete on public.reservations for delete
+  using (public.has_perm('recycle') or public.has_perm('reset_data'));
+
 -- app_settings
 drop policy if exists settings_select on public.app_settings;
 create policy settings_select on public.app_settings for select
@@ -228,6 +301,16 @@ end $$;
 do $$
 begin
   alter publication supabase_realtime add table public.reg_log;
+exception when duplicate_object then null;
+end $$;
+do $$
+begin
+  alter publication supabase_realtime add table public.payments;
+exception when duplicate_object then null;
+end $$;
+do $$
+begin
+  alter publication supabase_realtime add table public.reservations;
 exception when duplicate_object then null;
 end $$;
 do $$
