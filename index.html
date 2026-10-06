@@ -20,14 +20,14 @@
   --text:#0f172a; --muted:#64748b; --faint:#94a3b8;
   --navy:#122732; --navy2:#0e2029; --navy3:#1c3a48;
   --primary:#122732; --primary-d:#0c1c24; --primary-soft:#e4edf1;
-  --sky:#0ea5e9; --sky-soft:#e0f2fe; --sky-txt:#075985;
-  --amber:#f59e0b; --amber-soft:#fef3c7; --amber-txt:#92400e;
+  --sky:#2f5a6e; --sky-soft:#e4edf1; --sky-txt:#122732;
+  --amber:#A7813E; --amber-soft:#f6efe3; --amber-txt:#8a682f;
   --gold:#A7813E; --gold-soft:#f6efe3; --gold-txt:#8a682f;
-  --violet:#8b5cf6; --violet-soft:#ede9fe; --violet-txt:#5b21b6;
-  --teal:#0d9488; --teal-soft:#ccfbf1; --teal-txt:#115e59;
-  --ok:#10b981; --ok-soft:#d1fae5; --ok-txt:#065f46;
-  --danger:#ef4444; --danger-soft:#fee2e2; --danger-txt:#991b1b;
-  --rose:#f43f5e;
+  --violet:#25495a; --violet-soft:#e4edf1; --violet-txt:#122732;
+  --teal:#1c3a48; --teal-soft:#e4edf1; --teal-txt:#122732;
+  --ok:#10b981; --ok-soft:#f6efe3; --ok-txt:#8a682f;
+  --danger:#ef4444; --danger-soft:#e4edf1; --danger-txt:#6b5024;
+  --rose:#6b5024;
   --radius:14px; --radius-sm:9px;
   --shadow:0 1px 2px rgba(15,23,42,.05),0 4px 14px rgba(15,23,42,.06);
   --shadow-lg:0 12px 40px rgba(15,23,42,.18);
@@ -131,7 +131,7 @@ body.sidebar-collapsed .nav-item[data-tip]:hover::after{opacity:1}
 .btn-ghost{background:transparent;color:var(--muted)}
 .btn-ghost:hover{background:var(--bg);color:var(--text)}
 .btn-danger{background:var(--danger-soft);color:var(--danger-txt)}
-.btn-danger:hover{background:#fecaca}
+.btn-danger:hover{background:#d7e0e5}
 .btn-ok{background:var(--ok);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,.35)}
 .btn-ok:hover{background:#059669}
 .btn-sm{padding:6px 11px;font-size:.8rem;border-radius:9px;gap:6px}
@@ -162,14 +162,14 @@ body.sidebar-collapsed .nav-item[data-tip]:hover::after{opacity:1}
 .kpi-lbl{font-size:.76rem;color:var(--muted);font-weight:500}
 .kpi-val{font-size:1.3rem;font-weight:800;letter-spacing:-.4px;direction:ltr;text-align:end}
 .kpi-sub{font-size:.72rem;color:var(--faint)}
-.c-blue{background:linear-gradient(135deg,#3b82f6,#122732);color:#122732}
-.c-teal{background:linear-gradient(135deg,#14b8a6,#0d9488);color:#0d9488}
-.c-amber{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#A7813E}
-.c-violet{background:linear-gradient(135deg,#a78bfa,#8b5cf6);color:#7c3aed}
-.c-rose{background:linear-gradient(135deg,#fb7185,#f43f5e);color:#e11d48}
-.c-slate{background:linear-gradient(135deg,#64748b,#475569);color:#475569}
-.c-ok{background:linear-gradient(135deg,#34d399,#10b981);color:#059669}
-.c-sky{background:linear-gradient(135deg,#A7813E,#0ea5e9);color:#0284c7}
+.c-blue{background:linear-gradient(135deg,#25495a,#122732);color:#122732}
+.c-teal{background:linear-gradient(135deg,#d9b878,#A7813E);color:#8a682f}
+.c-amber{background:linear-gradient(135deg,#c9a86a,#A7813E);color:#8a682f}
+.c-violet{background:linear-gradient(135deg,#2f5a6e,#1c3a48);color:#122732}
+.c-rose{background:linear-gradient(135deg,#8a682f,#6b5024);color:#6b5024}
+.c-slate{background:linear-gradient(135deg,#94a3b8,#64748b);color:#475569}
+.c-ok{background:linear-gradient(135deg,#d9b878,#c9a86a);color:#8a682f}
+.c-sky{background:linear-gradient(135deg,#c9a86a,#A7813E);color:#8a682f}
 
 /* ===== Charts ===== */
 .charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px;margin-bottom:20px}
@@ -228,8 +228,8 @@ table.reg .row-actions{display:flex;gap:5px;justify-content:flex-end}
 .b-teal{background:var(--teal-soft);color:var(--teal-txt)}
 .b-ok{background:var(--ok-soft);color:var(--ok-txt)}
 .b-danger{background:var(--danger-soft);color:var(--danger-txt)}
-.b-slate{background:#eef1f6;color:#475569}
-.b-rose{background:#ffe4e6;color:#9f1239}
+.b-slate{background:#e4edf1;color:#122732}
+.b-rose{background:#f6efe3;color:#8a682f}
 
 /* ===== Filters bar ===== */
 .fbar{display:flex;gap:10px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--border);align-items:center}
@@ -422,21 +422,21 @@ body.dense table.reg{font-size:.76rem}
 .print-doc th{background:#f1f5f9;border:1px solid #cbd5e1;padding:7px 8px;font-weight:800;color:#334155}
 .print-doc td{border:1px solid #cbd5e1;padding:6px 8px;text-align:end}
 .print-doc td.num{direction:ltr}
-.pd-band{background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;border-radius:14px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.pd-band{background:linear-gradient(135deg,#122732,#1c3a48);color:#fff;border-radius:14px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
 .pd-band h2{color:#fff;font-size:1.3rem;font-weight:900}
 .pd-band .pd-no{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);padding:5px 14px;border-radius:99px;font-size:.82rem;font-weight:800}
 .pd-meta{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:14px;font-size:.82rem;color:#334155;font-weight:700}
 .pd-meta .pd-item{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9px;padding:5px 12px}
 .pd-status{display:inline-flex;align-items:center;gap:6px;border-radius:9px;padding:5px 12px;font-weight:800}
 .pd-table{width:100%;border-collapse:collapse;font-size:.76rem}
-.pd-table th{background:#0f766e;color:#fff;border:1px solid #0d9488;padding:9px 10px;font-weight:800;font-size:.74rem}
+.pd-table th{background:#1c3a48;color:#fff;border:1px solid #122732;padding:9px 10px;font-weight:800;font-size:.74rem}
 .pd-table td{border:1px solid #cbd5e1;padding:7px 10px;text-align:end}
 .pd-table td.num{direction:ltr;font-variant-numeric:tabular-nums}
 .pd-table tbody tr:nth-child(even) td{background:#f0fdfa}
-.pd-table tfoot td{background:#ccfbf1;font-weight:800;color:#115e59;border:1px solid #99f6e4}
-.pd-notes{background:#f6efe3;border:1px solid #fde68a;border-radius:11px;padding:11px 14px;margin-bottom:14px;font-size:.8rem}
-.pd-notes b{color:#92400e;display:block;margin-bottom:6px;font-size:.82rem}
-.pd-note{padding:3px 0;color:#78350f;border-bottom:1px dashed #fde68a}
+.pd-table tfoot td{background:#e4edf1;font-weight:800;color:#122732;border:1px solid #c9d6de}
+.pd-notes{background:#f6efe3;border:1px solid #d9b878;border-radius:11px;padding:11px 14px;margin-bottom:14px;font-size:.8rem}
+.pd-notes b{color:#8a682f;display:block;margin-bottom:6px;font-size:.82rem}
+.pd-note{padding:3px 0;color:#8a682f;border-bottom:1px dashed #d9b878}
 .pd-note:last-child{border-bottom:none}
 .pd-note-at{color:#a16207;font-size:.7rem}
 .pd-credit{margin-top:14px;text-align:center;color:#94a3b8;font-size:.72rem;border-top:1px solid #e2e8f0;padding-top:10px}
@@ -447,7 +447,7 @@ body.dense table.reg{font-size:.76rem}
 .pd-tax .pd-notes{background:#eff6ff;border-color:#c9d6de}
 .pd-tax .pd-notes b{color:#122732}
 .pd-tax .pd-note{color:#122732;border-bottom-color:#c9d6de}
-.pd-tax .pd-note-at{color:#3b82f6}
+.pd-tax .pd-note-at{color:#A7813E}
 .pd-navy .pd-band{background:linear-gradient(135deg,#0f172a,#1e3a5f)}
 .pd-navy .pd-table th{background:#1e3a5f;border-color:#0f172a}
 .pd-navy .pd-table tbody tr:nth-child(even) td{background:#f1f5f9}
@@ -487,8 +487,8 @@ body.dense table.reg{font-size:.76rem}
 .preview-tbl .p-group .g-meta{font-weight:500;color:#475569;font-size:.74rem;margin-inline-start:12px}
 .preview-tbl tfoot td{position:sticky;bottom:0;background:#eef2f6;font-weight:800;color:#122732;padding:10px 11px;border-top:2px solid #c9d6de}
 .ops-tbl tfoot td{position:static}
-.ops-tbl tfoot tr.tr-row td{background:#d1fae5;color:#065f46;border-top:1px solid #a7f3d0}
-.ops-summary{margin:14px 18px 16px;background:#d1fae5;border:1px solid #a7f3d0;border-radius:12px;padding:12px 16px;display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;font-weight:800;color:#065f46}
+.ops-tbl tfoot tr.tr-row td{background:#f6efe3;color:#8a682f;border-top:1px solid #d9b878}
+.ops-summary{margin:14px 18px 16px;background:#f6efe3;border:1px solid #d9b878;border-radius:12px;padding:12px 16px;display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;font-weight:800;color:#8a682f}
 .ops-summary .num{direction:ltr;display:inline-block;font-variant-numeric:tabular-nums}
 
 /* ===== Status manager ===== */
@@ -528,7 +528,7 @@ body.dense table.reg{font-size:.76rem}
 .track-note-input-row input{flex:1;border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-size:.8rem;outline:none;background:#fff}
 
 /* ===== Scenarios (gold) ===== */
-.scen-banner{background:linear-gradient(135deg,#8a682f,#A7813E,#f59e0b);color:#fff;border-radius:14px;padding:13px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;box-shadow:0 6px 18px rgba(180,83,9,.25)}
+.scen-banner{background:linear-gradient(135deg,#8a682f,#A7813E,#A7813E);color:#fff;border-radius:14px;padding:13px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;box-shadow:0 6px 18px rgba(180,83,9,.25)}
 .scen-banner .scen-banner-txt{font-size:1.02rem;font-weight:900;display:flex;align-items:center;gap:9px}
 .scen-banner span{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);padding:4px 13px;border-radius:99px;font-size:.76rem;font-weight:800}
 .scen-grid{display:grid;grid-template-columns:330px 1fr;gap:14px;align-items:start}
@@ -578,12 +578,12 @@ body.dense table.reg{font-size:.76rem}
 @media(max-width:640px){ .pr-avg-banner{gap:9px;padding:13px 15px} .pr-avg-val{font-size:1.35rem} }
 .pd-groups{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .pd-groups .prg{flex:1;min-width:190px}
-.prg.sold{background:#ecfdf5;border-color:#a7f3d0}
-.prg.sold .ico{background:linear-gradient(135deg,#34d399,#10b981)}
-.prg.resv{background:#f6efe3;border-color:#fde68a}
-.prg.resv .ico{background:linear-gradient(135deg,#fbbf24,#f59e0b)}
-.prg.avail{background:linear-gradient(135deg,#f0fdf4,#f6efe3);border-color:#86efac}
-.prg.avail .ico{background:linear-gradient(135deg,#4ade80,#A7813E)}
+.prg.sold{background:#ecfdf5;border-color:#d9b878}
+.prg.sold .ico{background:linear-gradient(135deg,#c9a86a,#8a682f)}
+.prg.resv{background:#f6efe3;border-color:#d9b878}
+.prg.resv .ico{background:linear-gradient(135deg,#d9b878,#A7813E)}
+.prg.avail{background:linear-gradient(135deg,#e4edf1,#f6efe3);border-color:#86efac}
+.prg.avail .ico{background:linear-gradient(135deg,#c9a86a,#A7813E)}
 .prg.other{background:#f8fafc;border-color:#e2e8f0}
 .prg.other .ico{background:linear-gradient(135deg,#64748b,#475569)}
 .prg.total{background:linear-gradient(135deg,#8a682f,#A7813E);border-color:#8a682f;color:#fff}
@@ -595,9 +595,9 @@ table.plr th{position:sticky;top:0;background:#f8fafc;color:#334155;font-weight:
 table.plr td{padding:9px 12px;border-bottom:1px solid #eef1f6;white-space:nowrap;text-align:end;line-height:1.6}
 table.plr td.num{direction:ltr;font-variant-numeric:tabular-nums;font-weight:600}
 table.plr td.st-cell{font-weight:800;text-align:center;white-space:nowrap;border-radius:0}
-table.plr td.cell-sold{background:#e0f2fe;color:#075985}
-table.plr td.cell-resv{background:#fef3c7;color:#92400e}
-table.plr td.cell-avail{background:#dcfce7;color:#166534}
+table.plr td.cell-sold{background:#e4edf1;color:#122732}
+table.plr td.cell-resv{background:#f6efe3;color:#8a682f}
+table.plr td.cell-avail{background:#e4edf1;color:#122732}
 table.plr td.cell-other{background:#eef1f6;color:#475569}
 .scen-mark{color:#8a682f;font-size:.78rem;margin-inline-start:2px;display:inline-block}
 table.plr tbody tr:nth-child(even) td:not(.st-cell){background:#f9fafc}
@@ -609,8 +609,8 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef2f6}
 .btn-gold:hover{filter:brightness(1.1)}
 .gold-kpi .kpi-ico{background:linear-gradient(135deg,#8a682f,#A7813E);color:#fff}
 .kpi .kpi-delta{margin-top:4px;font-size:.72rem;font-weight:900;display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px}
-.kpi .kpi-delta.up{background:#d1fae5;color:#065f46}
-.kpi .kpi-delta.down{background:#fee2e2;color:#991b1b}
+.kpi .kpi-delta.up{background:#f6efe3;color:#8a682f}
+.kpi .kpi-delta.down{background:#e4edf1;color:#122732}
 .scen-charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .chart-box{height:280px;position:relative}
 .sc-lib{display:flex;flex-direction:column;gap:9px}
@@ -631,11 +631,11 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef2f6}
 .sc-compare h4{font-size:.82rem;font-weight:900;color:var(--gold-txt);margin-bottom:8px}
 .scen-tbl-scope{font-size:.78rem;color:var(--txt3);margin-bottom:8px;line-height:1.7}
 .pd-gold .pd-band{background:linear-gradient(135deg,#8a682f,#A7813E)}
-.pd-gold .pd-table th{background:#f59e0b;border-color:#8a682f;color:#fff}
+.pd-gold .pd-table th{background:#A7813E;border-color:#8a682f;color:#fff}
 .pd-gold .pd-table tbody tr:nth-child(even) td{background:#f6efe3}
-.pd-gold .pd-table tfoot td{background:#fde68a;color:#78350f;border-color:#f59e0b}
-.pd-sec-h{margin:16px 0 10px;font-size:.9rem;font-weight:900;color:#92400e;display:flex;align-items:center;gap:9px}
-.pd-sec-h::after{content:'';flex:1;height:1px;background:#fde68a}
+.pd-gold .pd-table tfoot td{background:#d9b878;color:#8a682f;border-color:#A7813E}
+.pd-sec-h{margin:16px 0 10px;font-size:.9rem;font-weight:900;color:#8a682f;display:flex;align-items:center;gap:9px}
+.pd-sec-h::after{content:'';flex:1;height:1px;background:#d9b878}
 .pd-board-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
 .pd-board-bars{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px}
 .pd-board-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -643,8 +643,8 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef2f6}
 .pd-board-kpis .kpi:hover{transform:none;box-shadow:none}
 .pd-charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
 .pd-chart img{width:100%;border-radius:12px;border:1px solid var(--border2);background:#fff}
-.scen-plan{border:2px solid #f59e0b;background:linear-gradient(180deg,#f6efe3,#ffffff);box-shadow:0 6px 18px rgba(180,83,9,.14);margin-bottom:14px}
-.scen-plan .card-h h3{color:#92400e}
+.scen-plan{border:2px solid #A7813E;background:linear-gradient(180deg,#f6efe3,#ffffff);box-shadow:0 6px 18px rgba(180,83,9,.14);margin-bottom:14px}
+.scen-plan .card-h h3{color:#8a682f}
 .scen-plan-metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}
 .spm{background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 12px;text-align:center;min-width:0}
 .spm .spm-lbl{font-size:.7rem;font-weight:800;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -663,7 +663,7 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef2f6}
 .spb-legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-inline-end:5px;vertical-align:-1px}
 .tbl .tr-scope td{background:var(--gold-soft);color:var(--gold-txt);font-weight:900}
 .tbl .tr-rest td{background:#f8fafc;color:var(--txt2)}
-.tbl .tr-plan td{background:#fde68a;color:#78350f;font-weight:900}
+.tbl .tr-plan td{background:#d9b878;color:#8a682f;font-weight:900}
 .sc-plan-chip{background:linear-gradient(135deg,#8a682f,#A7813E);color:#fff;border-radius:6px;padding:1px 8px;font-weight:900}
 @media(max-width:1024px){ .scen-grid{grid-template-columns:1fr} .scen-side{position:static} .scen-charts{grid-template-columns:1fr} .scen-plan-metrics{grid-template-columns:repeat(2,1fr)} .spb-row{flex-wrap:wrap} .spb-val{width:100%} }
 
@@ -741,6 +741,11 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef2f6}
   .content{padding:16px 14px 50px}
   .topbar{padding:11px 14px}
 }
+.pv-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.pv-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:10px 14px;background:#fff;font-size:.84rem}
+.pv-lbl{color:var(--muted);font-weight:700;flex:none}
+.pv-val{color:var(--text);font-weight:600;text-align:end;direction:ltr;word-break:break-word}
+@media(max-width:640px){.pv-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1734,6 +1739,19 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef2f6}
   </div>
 </div>
 
+<div class="modal-overlay" id="previewOverlay">
+  <div class="modal" style="max-width:760px">
+    <div class="modal-h">
+      <h3><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span id="previewTitle">معاينة التفاصيل</span></h3>
+      <button class="x-btn" id="previewClose"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-b" id="previewBody" style="max-height:70vh;overflow:auto"></div>
+    <div class="modal-f">
+      <button class="btn btn-soft" id="btnPreviewClose">إغلاق</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="regTrackOverlay">
   <div class="modal" style="max-width:760px">
     <div class="modal-h">
@@ -1888,7 +1906,7 @@ const DEFAULT_DATA = [];
 
 const STORAGE_KEY = 'lands_system_v2';
 const MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-const TYPE_COLORS = {'صناعي':'#0ea5e9','سكن عمال':'#f59e0b','تجاري':'#8b5cf6','زراعي':'#10b981','سكني':'#f43f5e'};
+const TYPE_COLORS = {'صناعي':'#122732','سكن عمال':'#A7813E','تجاري':'#25495a','زراعي':'#c9a86a','سكني':'#2f5a6e'};
 const TYPE_BADGE = {'صناعي':'b-sky','سكن عمال':'b-amber','تجاري':'b-violet','زراعي':'b-ok','سكني':'b-rose'};
 
 const COLS = [
@@ -2044,12 +2062,12 @@ const FORM_FIELD_TYPES = {
 };
 
 const SYSTEM_STATUSES = [
-  {name:'متاحة', color:'#0ea5e9'},
-  {name:'محجوزة', color:'#f59e0b'},
-  {name:'تم الإفراغ', color:'#10b981'},
-  {name:'ملغي', color:'#f43f5e'}
+  {name:'متاحة', color:'#2f5a6e'},
+  {name:'محجوزة', color:'#A7813E'},
+  {name:'تم الإفراغ', color:'#c9a86a'},
+  {name:'ملغي', color:'#6b5024'}
 ];
-const STATUS_PALETTE = ['#8b5cf6','#0d9488','#64748b','#3b82f6','#A7813E','#06b6d4','#a855f7','#f43f5e'];
+const STATUS_PALETTE = ['#122732','#2f5a6e','#1c3a48','#25495a','#A7813E','#c9a86a','#8a682f','#6b5024'];
 const STATUSES_KEY = 'lands_statuses_v1';
 const ARCHIVE_KEY = 'lands_archive_v2';
 let customStatuses = [];
@@ -2205,7 +2223,7 @@ function toast(msg, type){
   const el = document.createElement('div');
   el.className = 'toast t-' + (type || 'ok');
   const ico = type === 'err' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>'
-    : type === 'warn' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><path d="M12 9v4M12 17h.01"/></svg>'
+    : type === 'warn' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d9b878" stroke-width="2" stroke-linecap="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><path d="M12 9v4M12 17h.01"/></svg>'
     : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
   el.innerHTML = ico + '<span>' + esc(msg) + '</span>';
   w.appendChild(el);
@@ -2277,7 +2295,8 @@ function sorted(list){
 /* ===== Badges / cells ===== */
 function badgeType(t){
   if(!t) return '<span class="badge b-slate">—</span>';
-  return `<span class="badge ${TYPE_BADGE[t] || 'b-slate'}">${esc(t)}</span>`;
+  const color = TYPE_COLORS[t] || '#94a3b8';
+  return `<span class="badge" style="background:${rgba(color,.14)};color:${color}"><span class="b-dot" style="background:${color}"></span>${esc(t)}</span>`;
 }
 function badgeYN(v, okWord, noWord){
   if(v === 'نعم') return `<span class="badge b-ok"><span class="b-dot"></span>${okWord || 'نعم'}</span>`;
@@ -2315,21 +2334,28 @@ function cellHtml(r, col){
 }
 
 /* ===== Registry table ===== */
+function registryCols(){
+  const keys = ['block','landNo','area','pricePerMeter','value'];
+  const cols = keys.map(k=>{ const d = colByKey(k); return {k, t: d ? d.t : k, type:'sys'}; });
+  cols.push({k:'status', t:'الحالة', type:'sys'});
+  return cols;
+}
 function buildThead(allSel){
-  const cols = activeColumns();
+  const cols = registryCols();
   return '<tr><th class="s0" style="cursor:default;text-align:center;width:40px"><input type="checkbox" id="thSelAll" ' + (allSel ? 'checked' : '') + ' title="تحديد الكل"></th>' + cols.map(c=>{
     const cls = (c.k === 'block' ? 's1' : c.k === 'landNo' ? 's2' : '') + (state.sortKey === c.k ? ' sorted' : '');
     return `<th class="${cls}" data-key="${c.k}" title="ترتيب حسب ${esc(c.t)}">${esc(c.t)}${state.sortKey === c.k ? `<span class="srt">${state.sortDir === 1 ? '▲' : '▼'}</span>` : ''}</th>`;
   }).join('') + '<th class="sa" style="cursor:default;text-align:center">إجراءات</th></tr>';
 }
 function rowHtml(r){
-  const cols = activeColumns();
+  const cols = registryCols();
   return `<tr data-id="${r.id}"><td class="s0" style="text-align:center"><input type="checkbox" class="row-sel" data-sid="${r.id}" ${taxSel.has(r.id) ? 'checked' : ''}></td>` + cols.map(c=>{
     const sticky = c.k === 'block' ? 's1' : c.k === 'landNo' ? 's2' : '';
     const numT = c.type === 'number' || ['landNo','oldLandNo','deedNo','deedInKindNo','area','pricePerMeter','value','firstPayment','transferPayment','deedDate','deedInKindDate'].includes(c.k);
     const cls = sticky + (c.k === 'clientName' ? ' c-client' : (numT ? ' num' : ''));
     return `<td class="${cls}">${cellHtml(r, c)}</td>`;
   }).join('') + `<td class="sa"><div class="row-actions">
+    ${can('view') ? `<button class="btn btn-soft btn-xs" data-act="preview" data-id="${r.id}" title="معاينة التفاصيل"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></button>` : ''}
     ${can('issue_tax') ? `<button class="btn btn-soft btn-xs" data-act="tax" data-id="${r.id}" title="إصدار ضريبة تصرفات"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></svg></button>` : ''}
     ${can('issue_reg') ? `<button class="btn btn-soft btn-xs" data-act="reg" data-id="${r.id}" title="طلب تسجيل عيني"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></svg></button>` : ''}
     ${can('edit_records') ? `<button class="btn btn-soft btn-xs" data-act="pay" data-id="${r.id}" title="تسجيل دفعة"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg></button>` : ''}
@@ -2369,7 +2395,7 @@ function renderRegistry(){
       const g = groups.get(k);
       const ta = g.reduce((s,r)=>s+(r.area||0),0);
       const tv = g.reduce((s,r)=>s+(r.value||0),0);
-      parts.push(`<tr class="group-row"><td colspan="${activeColumns().length + 2}">▼ البلك ${esc(k)} <span class="g-meta">${g.length} قطعة · المساحة ${fmtMoney.format(ta)} م² · القيمة ${fmtMoney.format(tv)} ر.س</span></td></tr>`);
+      parts.push(`<tr class="group-row"><td colspan="${registryCols().length + 2}">▼ البلك ${esc(k)} <span class="g-meta">${g.length} قطعة · المساحة ${fmtMoney.format(ta)} م² · القيمة ${fmtMoney.format(tv)} ر.س</span></td></tr>`);
       for(const r of g) parts.push(rowHtml(r));
     }
     bodyHtml = parts.join('') || emptyRow();
@@ -2387,7 +2413,7 @@ function renderRegistry(){
   const tFe = list.filter(r=>getStatus(r) === 'تم الإفراغ').length;
   const allSel = list.length > 0 && list.every(r=>taxSel.has(r.id));
   const html = `<table class="reg"><thead>${buildThead(allSel)}</thead><tbody>${bodyHtml}</tbody>
-  <tfoot><tr class="tbl-foot"><td colspan="4">الإجمالي: ${list.length} قطعة</td><td colspan="4">متاح ${tAv} · محجوز ${tRe} · تم الإفراغ ${tFe}</td><td colspan="11"></td><td class="num">${fmtMoney.format(tArea)} م²</td><td></td><td class="num">${fmtMoney.format(tVal)} ر.س</td><td></td><td></td><td></td></tr></tfoot></table>`;
+  <tfoot><tr class="tbl-foot"><td colspan="3">الإجمالي: ${list.length} قطعة · متاح ${tAv} · محجوز ${tRe} · مفرغ ${tFe}</td><td class="num">${fmtMoney.format(tArea)} م²</td><td></td><td class="num">${fmtMoney.format(tVal)} ر.س</td><td colspan="2"></td></tr></tfoot></table>`;
   $('#regTblWrap').innerHTML = html;
   $('#regCount').textContent = `(${list.length} قطعة)`;
   renderPager(list.length);
@@ -2395,7 +2421,7 @@ function renderRegistry(){
   renderActiveChips();
 }
 function emptyRow(){
-  return `<tr><td colspan="${activeColumns().length + 2}"><div class="empty-state"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><h4>لا توجد نتائج</h4><p>جرّب تعديل البحث أو الفلاتر</p></div></td></tr>`;
+  return `<tr><td colspan="${registryCols().length + 2}"><div class="empty-state"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><h4>لا توجد نتائج</h4><p>جرّب تعديل البحث أو الفلاتر</p></div></td></tr>`;
 }
 function renderPager(total){
   const el = $('#pager');
@@ -2599,11 +2625,11 @@ function boardData(){
   const useScen = boardPriceMode === 'scen' && !!sc;
   const sim = useScen ? scenSimulate(sc) : null;
   const groups = [
-    {key:'freed', label:'الإفراغات', color:'#10b981', count:0, area:0, value:0},
-    {key:'cash', label:'محجوز كاش', color:'#f59e0b', count:0, area:0, value:0},
-    {key:'app', label:'محجوز تطبيق', color:'#3b82f6', count:0, area:0, value:0},
-    {key:'avail', label:'متاح', color:'#0ea5e9', count:0, area:0, value:0},
-    {key:'other', label:'أخرى', color:'#94a3b8', count:0, area:0, value:0}
+    {key:'freed', label:'الإفراغات', color:'#c9a86a', count:0, area:0, value:0},
+    {key:'cash', label:'محجوز كاش', color:'#A7813E', count:0, area:0, value:0},
+    {key:'app', label:'محجوز تطبيق', color:'#8a682f', count:0, area:0, value:0},
+    {key:'avail', label:'متاح', color:'#122732', count:0, area:0, value:0},
+    {key:'other', label:'أخرى', color:'#5b6b7c', count:0, area:0, value:0}
   ];
   const byKey = {freed:groups[0], cash:groups[1], app:groups[2], avail:groups[3], other:groups[4]};
   for(const r of records){
@@ -3984,9 +4010,9 @@ const TAX_LOG_KEY = 'lands_tax_log_v2';
 const TAX_PREFS_KEY = 'lands_tax_prefs_v1';
 const TAX_TRACK_STATUSES_KEY = 'lands_tax_statuses_v1';
 const TAX_SYSTEM_TRACK = [
-  {name:'تم الطلب من بلوم', color:'#f59e0b'},
-  {name:'تم اصدار الضريبة', color:'#3b82f6'},
-  {name:'تم سداد الضريبة', color:'#10b981'}
+  {name:'تم الطلب من بلوم', color:'#A7813E'},
+  {name:'تم اصدار الضريبة', color:'#2f5a6e'},
+  {name:'تم سداد الضريبة', color:'#c9a86a'}
 ];
 const TAX_EXTRA_POOL = ['block','landType','oldLandNo','clientName','clientType','via','contractNo','contractType','contractSigned','addendum','addendumSigned','firstPayment','transferPayment','transferDate','status'];
 let taxLog = [];
@@ -4133,7 +4159,7 @@ function buildTaxPrintDoc(meta, plots, extraCols){
   const tVal = rows.reduce((s,r)=>s+(r.value||0),0);
   const tTax = rows.reduce((s,r)=>s+(r.tax||0),0);
   const allDone = plots.length > 0 && plots.every(p=>(p.trackStatus || 'تم الطلب من بلوم') === 'تم سداد الضريبة');
-  const tfoot = `<tr><td colspan="4" style="text-align:end;font-weight:800">الإجمالي — ${rows.length} قطعة · المساحة ${fmtMoney.format(tArea)} م²</td><td class="num">${fmtMoney.format(tArea)}</td><td></td><td class="num">${fmtMoney.format(tVal)}</td><td class="num">${fmtMoney.format(tTax)}</td>${cols.slice(9, -1).map(()=>'<td></td>').join('')}<td style="text-align:center;font-weight:800">${allDone ? '<span style="color:#065f46">مكتمل</span>' : ''}</td></tr>`;
+  const tfoot = `<tr><td colspan="4" style="text-align:end;font-weight:800">الإجمالي — ${rows.length} قطعة · المساحة ${fmtMoney.format(tArea)} م²</td><td class="num">${fmtMoney.format(tArea)}</td><td></td><td class="num">${fmtMoney.format(tVal)}</td><td class="num">${fmtMoney.format(tTax)}</td>${cols.slice(9, -1).map(()=>'<td></td>').join('')}<td style="text-align:center;font-weight:800">${allDone ? '<span style="color:#8a682f">مكتمل</span>' : ''}</td></tr>`;
   const general = Array.isArray(meta.notes) && meta.notes.length ? meta.notes.map(n=>`<div class="pd-note">• ${esc(n.text || '')} <span class="pd-note-at">(${esc(n.at || '')})</span></div>`).join('') : '';
   const plotNotes = plots.filter(p=>(p.notes||[]).length).map(p=>`<div class="pd-note"><b>قطعة ${esc(p.landNo || '—')}:</b> ${(p.notes||[]).map(n=>esc(n.text || '') + ' <span class="pd-note-at">(' + esc(n.at || '') + ')</span>').join(' · ')}</div>`).join('');
   let notesHtml = '';
@@ -4481,9 +4507,9 @@ const REG_LOG_KEY = 'lands_reg_log_v1';
 const REG_PREFS_KEY = 'lands_reg_prefs_v1';
 const REG_STATUSES_KEY = 'lands_reg_statuses_v1';
 const REG_SYSTEM_TRACK = [
-  {name:'تم الطلب', color:'#f59e0b'},
-  {name:'تم رفع الطلب بالموقع', color:'#3b82f6'},
-  {name:'تم صدور الصك العيني', color:'#10b981'}
+  {name:'تم الطلب', color:'#A7813E'},
+  {name:'تم رفع الطلب بالموقع', color:'#2f5a6e'},
+  {name:'تم صدور الصك العيني', color:'#c9a86a'}
 ];
 const REG_EXTRA_POOL = ['block','landType','oldLandNo','clientName','clientType','via','contractNo','contractType','contractSigned','addendum','addendumSigned','firstPayment','transferPayment','transferDate','status','area','pricePerMeter','value'];
 let regLog = [];
@@ -4584,7 +4610,7 @@ function buildRegPrintDoc(meta, plots, extraCols){
     return printCell(v, true);
   }).join('') + '</tr>').join('');
   const allDone = plots.length > 0 && plots.every(p=>(p.trackStatus || 'تم الطلب') === 'تم صدور الصك العيني');
-  const tfoot = `<tr><td colspan="${Math.max(1, cols.length - 1)}" style="text-align:end;font-weight:800">الإجمالي — ${rows.length} قطعة</td><td style="text-align:center;font-weight:800">${allDone ? '<span style="color:#065f46">مكتمل</span>' : ''}</td></tr>`;
+  const tfoot = `<tr><td colspan="${Math.max(1, cols.length - 1)}" style="text-align:end;font-weight:800">الإجمالي — ${rows.length} قطعة</td><td style="text-align:center;font-weight:800">${allDone ? '<span style="color:#8a682f">مكتمل</span>' : ''}</td></tr>`;
   const general = Array.isArray(meta.notes) && meta.notes.length ? meta.notes.map(n=>`<div class="pd-note">• ${esc(n.text || '')} <span class="pd-note-at">(${esc(n.at || '')})</span></div>`).join('') : '';
   const plotNotes = plots.filter(p=>(p.notes||[]).length).map(p=>`<div class="pd-note"><b>قطعة ${esc(p.landNo || '—')}:</b> ${(p.notes||[]).map(n=>esc(n.text || '') + ' <span class="pd-note-at">(' + esc(n.at || '') + ')</span>').join(' · ')}</div>`).join('');
   let notesHtml = '';
@@ -4987,7 +5013,66 @@ function rowToReservation(row){
   return {id:row.id, landId:row.land_id||0, landNo:row.land_no||'', block:row.block||'', clientName:row.client_name||'', requestDate:row.request_date||'', reserveDate:row.reserve_date||'', durationDays:row.duration_days, landValue:row.land_value, deposit:row.deposit, status:row.status||'', expiryDate:row.expiry_date||'', actionRequired:row.action_required||'', notes:row.notes||''};
 }
 
+let payEditingId = null;
+let resEditingId = null;
+function openPreviewModal(r){
+  const statusRow = `<div class="pv-row"><span class="pv-lbl">الحالة</span><span class="pv-val">${statusBadge(getStatus(r))}</span></div>`;
+  const rows = COLS.map(c=>{
+    const v = valOf(r, c.k);
+    let disp;
+    if(c.k === 'area' || c.k === 'value' || c.k === 'firstPayment' || c.k === 'transferPayment') disp = (v != null && v !== '') ? fmtMoney.format(v) : '—';
+    else if(c.k === 'pricePerMeter') disp = (v != null) ? fmtNum.format(v) : '—';
+    else disp = (v == null || v === '') ? '—' : esc(v);
+    return `<div class="pv-row"><span class="pv-lbl">${esc(c.t)}</span><span class="pv-val">${disp}</span></div>`;
+  }).join('');
+  const customs = customColDefs().filter(c=>!c.hidden);
+  const customRows = customs.map(c=>{
+    const rec = customVals[r.id];
+    const v = rec ? rec[c.k] : undefined;
+    return `<div class="pv-row"><span class="pv-lbl">${esc(c.t || c.k)}</span><span class="pv-val">${v == null || v === '' ? '—' : esc(v)}</span></div>`;
+  }).join('');
+  const buyers = Array.isArray(r.buyers) && r.buyers.length ? r.buyers : [];
+  const buyersHtml = buyers.length ? `<div style="margin-top:12px"><div class="hint" style="margin-bottom:6px">الشركاء في القطعة</div>${buyers.map(b=>`<div class="pv-row" style="border:1px solid var(--border);border-radius:8px;margin-bottom:4px"><span class="pv-lbl">${esc(b.name || '')}${b.type ? ' · ' + esc(b.type) : ''}</span><span class="pv-val">${esc(b.sharePct || '')}%</span></div>`).join('')}</div>` : '';
+  $('#previewTitle').textContent = `معاينة — بلك ${r.block || '—'} / أرض ${r.landNo || '—'}`;
+  $('#previewBody').innerHTML = `<div class="pv-grid">${statusRow}${rows}${customRows}</div>${buyersHtml}`;
+  $('#previewOverlay').classList.add('open');
+}
+function closePreviewModal(){ $('#previewOverlay').classList.remove('open'); }
+function openPayEdit(p){
+  payEditingId = p.id;
+  $('#payLandId').value = p.landId || '';
+  $('#payLand').value = `بلك ${p.block || '—'} / أرض ${p.landNo || '—'}` + (p.clientName ? ' — ' + p.clientName : '');
+  $('#payClient').value = p.clientName || '';
+  $('#payContract').value = p.contractNo || '';
+  $('#payNo').value = p.paymentNo || '';
+  $('#payDate').value = p.paymentDate || todayStr();
+  $('#payDue').value = p.dueAmount != null ? p.dueAmount : '';
+  $('#payPaid').value = p.paidAmount != null ? p.paidAmount : '';
+  $('#payMethod').value = p.method || '';
+  $('#payBank').value = p.bank || '';
+  $('#payRef').value = p.reference || '';
+  $('#payStatus').value = p.status || '';
+  $('#payNotes').value = p.notes || '';
+  $('#payModalOverlay').classList.add('open');
+}
+function openResEdit(r){
+  resEditingId = r.id;
+  $('#resLandId').value = r.landId || '';
+  $('#resLand').value = `بلك ${r.block || '—'} / أرض ${r.landNo || '—'}` + (r.clientName ? ' — ' + r.clientName : '');
+  $('#resClient').value = r.clientName || '';
+  $('#resReqDate').value = r.requestDate || todayStr();
+  $('#resDate').value = r.reserveDate || todayStr();
+  $('#resDuration').value = r.durationDays != null ? r.durationDays : '';
+  $('#resValue').value = r.landValue != null ? r.landValue : '';
+  $('#resDeposit').value = r.deposit != null ? r.deposit : '';
+  $('#resExpiry').value = r.expiryDate || '';
+  $('#resStatus').value = r.status || 'نشط';
+  $('#resAction').value = r.actionRequired || '';
+  $('#resNotes').value = r.notes || '';
+  $('#resModalOverlay').classList.add('open');
+}
 function openPayModal(record){
+  payEditingId = null;
   $('#payLandId').value = record ? record.id : '';
   $('#payLand').value = record ? (`بلك ${record.block || '—'} / أرض ${record.landNo || '—'}` + (record.clientName ? ' — ' + record.clientName : '')) : '';
   $('#payClient').value = record ? (record.clientName || '') : '';
@@ -5005,30 +5090,38 @@ function openPayModal(record){
 }
 function closePayModal(){ $('#payModalOverlay').classList.remove('open'); }
 function savePaymentFromUI(){
+  const wasEdit = payEditingId != null;
   const id = $('#payLandId').value;
   const rec = records.find(r=>String(r.id) === String(id));
-  if(!id || !rec){ toast('اختر أرضاً أولاً', 'err'); return; }
+  if(!wasEdit && !rec){ toast('اختر أرضاً أولاً', 'err'); return; }
   const paid = parseFloat($('#payPaid').value);
   if(isNaN(paid) || paid <= 0){ toast('أدخل مبلغ الدفعة المدفوع', 'err'); return; }
   const dueRaw = parseFloat($('#payDue').value);
-  payments.push({
-    id: payments.reduce((m,x)=>Math.max(m, x.id||0), 0) + 1,
-    landId: rec.id, landNo: rec.landNo || '', block: rec.block || '',
-    clientName: $('#payClient').value.trim() || rec.clientName || '',
-    contractNo: $('#payContract').value.trim() || rec.contractNo || '',
+  const payload = {
+    landId: rec ? rec.id : (id ? +id : 0), landNo: rec ? (rec.landNo || '') : '', block: rec ? (rec.block || '') : '',
+    clientName: $('#payClient').value.trim() || (rec ? rec.clientName : '') || '',
+    contractNo: $('#payContract').value.trim() || (rec ? rec.contractNo : '') || '',
     paymentNo: $('#payNo').value.trim(), paymentDate: $('#payDate').value || todayStr(),
     dueAmount: isNaN(dueRaw) ? null : dueRaw, paidAmount: paid,
     method: $('#payMethod').value.trim(), bank: $('#payBank').value.trim(), reference: $('#payRef').value.trim(),
     status: $('#payStatus').value.trim(), notes: $('#payNotes').value.trim()
-  });
+  };
+  if(wasEdit){
+    const p = payments.find(x=>x.id === payEditingId);
+    if(p){ if(!rec){ payload.landId = p.landId; payload.landNo = p.landNo; payload.block = p.block; if(!payload.clientName) payload.clientName = p.clientName; if(!payload.contractNo) payload.contractNo = p.contractNo; } Object.assign(p, payload); }
+  }else{
+    payments.push(Object.assign({id: payments.reduce((m,x)=>Math.max(m, x.id||0), 0) + 1}, payload));
+  }
+  payEditingId = null;
   savePayments();
   closePayModal();
   renderPaymentsReport();
   renderReceivablesReport();
-  toast('تم تسجيل الدفعة');
+  toast(wasEdit ? 'تم تحديث الدفعة' : 'تم تسجيل الدفعة');
 }
 
 function openResModal(record){
+  resEditingId = null;
   $('#resLandId').value = record ? record.id : '';
   $('#resLand').value = record ? (`بلك ${record.block || '—'} / أرض ${record.landNo || '—'}` + (record.clientName ? ' — ' + record.clientName : '')) : '';
   $('#resClient').value = record ? (record.clientName || '') : '';
@@ -5051,28 +5144,59 @@ function addDays(dateStr, days){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function saveReservationFromUI(){
+  const wasEdit = resEditingId != null;
   const id = $('#resLandId').value;
   const rec = records.find(r=>String(r.id) === String(id));
-  if(!id || !rec){ toast('اختر أرضاً أولاً', 'err'); return; }
+  if(!wasEdit && !rec){ toast('اختر أرضاً أولاً', 'err'); return; }
   const reserveDate = $('#resDate').value || todayStr();
   const dur = parseInt($('#resDuration').value, 10);
   let expiry = $('#resExpiry').value;
   if(!expiry && !isNaN(dur) && dur > 0) expiry = addDays(reserveDate, dur);
-  reservations.push({
-    id: reservations.reduce((m,x)=>Math.max(m, x.id||0), 0) + 1,
-    landId: rec.id, landNo: rec.landNo || '', block: rec.block || '',
-    clientName: $('#resClient').value.trim() || rec.clientName || '',
+  const payload = {
+    landId: rec ? rec.id : (id ? +id : 0), landNo: rec ? (rec.landNo || '') : '', block: rec ? (rec.block || '') : '',
+    clientName: $('#resClient').value.trim() || (rec ? rec.clientName : '') || '',
     requestDate: $('#resReqDate').value || todayStr(), reserveDate,
     durationDays: isNaN(dur) ? null : dur,
     landValue: parseFloat($('#resValue').value) || null,
     deposit: parseFloat($('#resDeposit').value) || null,
     status: $('#resStatus').value.trim() || 'نشط', expiryDate: expiry,
     actionRequired: $('#resAction').value.trim(), notes: $('#resNotes').value.trim()
-  });
+  };
+  if(wasEdit){
+    const r = reservations.find(x=>x.id === resEditingId);
+    if(r){ if(!rec){ payload.landId = r.landId; payload.landNo = r.landNo; payload.block = r.block; if(!payload.clientName) payload.clientName = r.clientName; } Object.assign(r, payload); }
+  }else{
+    reservations.push(Object.assign({id: reservations.reduce((m,x)=>Math.max(m, x.id||0), 0) + 1}, payload));
+  }
+  resEditingId = null;
   saveReservations();
   closeResModal();
   renderReservationsReport();
-  toast('تم تسجيل الحجز');
+  toast(wasEdit ? 'تم تحديث الحجز' : 'تم تسجيل الحجز');
+}
+
+function deletePayment(id){
+  const p = payments.find(x=>x.id === id);
+  if(!p) return;
+  if(!can('edit_records')){ toast('ليست لديك صلاحية التعديل', 'err'); return; }
+  if(!confirm(`حذف الدفعة${p.paymentNo ? ' رقم ' + p.paymentNo : ''} بقيمة ${fmtMoney.format(p.paidAmount)} ر.س؟`)) return;
+  payments = payments.filter(x=>x.id !== id);
+  savePayments();
+  moveToRecycle('payment', p);
+  renderPaymentsReport();
+  renderReceivablesReport();
+  toast('نُقلت الدفعة إلى سلة المحذوفات', 'warn');
+}
+function deleteReservation(id){
+  const r = reservations.find(x=>x.id === id);
+  if(!r) return;
+  if(!can('edit_records')){ toast('ليست لديك صلاحية التعديل', 'err'); return; }
+  if(!confirm(`حذف الحجز — بلك ${r.block || '—'} / أرض ${r.landNo || '—'}؟`)) return;
+  reservations = reservations.filter(x=>x.id !== id);
+  saveReservations();
+  moveToRecycle('reservation', r);
+  renderReservationsReport();
+  toast('نُقل الحجز إلى سلة المحذوفات', 'warn');
 }
 
 function repEmpty(t, s){ return `<div class="empty-state"><h4>${esc(t)}</h4><p>${esc(s)}</p></div>`; }
@@ -5107,9 +5231,9 @@ function renderPaymentsReport(){
   ].join('');
   if(!paymentsEnabled){ $('#payWrap').innerHTML = repUpgrade('جدول المدفوعات غير مفعّل'); return; }
   if(!rows.length){ $('#payWrap').innerHTML = repEmpty('لا توجد دفعات مطابقة للفترة', 'سجّل دفعات من أزرار «دفعة» في سجل الأراضي، أو وسّع نطاق الفترة'); return; }
-  $('#payWrap').innerHTML = `<table class="preview-tbl"><thead><tr><th>رقم الدفعة</th><th>التاريخ</th><th>البلك</th><th>الأرض</th><th>العميل</th><th>العقد</th><th>المستحق</th><th>المدفوع</th><th>الطريقة</th><th>البنك</th><th>المرجع</th><th>الحالة</th></tr></thead>
-  <tbody>${rows.map(p=>`<tr><td class="num">${esc(p.paymentNo || '—')}</td><td class="num">${esc(p.paymentDate || '—')}</td><td class="num">${esc(p.block || '—')}</td><td class="num">${esc(p.landNo || '—')}</td><td>${esc(p.clientName || '—')}</td><td class="num">${esc(p.contractNo || '—')}</td><td class="num">${money2(p.dueAmount)}</td><td class="num" style="color:var(--ok-txt);font-weight:800">${money2(p.paidAmount)}</td><td>${esc(p.method || '—')}</td><td>${esc(p.bank || '—')}</td><td>${esc(p.reference || '—')}</td><td>${esc(p.status || '—')}</td></tr>`).join('')}</tbody>
-  <tfoot><tr><td colspan="6">الإجمالي — ${rows.length} دفعة</td><td class="num">${fmtMoney.format(due)}</td><td class="num">${fmtMoney.format(paid)}</td><td colspan="4"></td></tr></tfoot></table>`;
+  $('#payWrap').innerHTML = `<table class="preview-tbl"><thead><tr><th>رقم الدفعة</th><th>التاريخ</th><th>البلك</th><th>الأرض</th><th>العميل</th><th>العقد</th><th>المستحق</th><th>المدفوع</th><th>الطريقة</th><th>البنك</th><th>المرجع</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+  <tbody>${rows.map(p=>`<tr><td class="num">${esc(p.paymentNo || '—')}</td><td class="num">${esc(p.paymentDate || '—')}</td><td class="num">${esc(p.block || '—')}</td><td class="num">${esc(p.landNo || '—')}</td><td>${esc(p.clientName || '—')}</td><td class="num">${esc(p.contractNo || '—')}</td><td class="num">${money2(p.dueAmount)}</td><td class="num" style="color:var(--ok-txt);font-weight:800">${money2(p.paidAmount)}</td><td>${esc(p.method || '—')}</td><td>${esc(p.bank || '—')}</td><td>${esc(p.reference || '—')}</td><td>${esc(p.status || '—')}</td><td>${can('edit_records') ? `<div class="row-actions"><button class="btn btn-soft btn-xs" data-pact="edit" data-pid="${p.id}" title="تعديل الدفعة"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button><button class="btn btn-danger btn-xs" data-pact="del" data-pid="${p.id}" title="حذف الدفعة"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>` : ''}</td></tr>`).join('')}</tbody>
+  <tfoot><tr><td colspan="6">الإجمالي — ${rows.length} دفعة</td><td class="num">${fmtMoney.format(due)}</td><td class="num">${fmtMoney.format(paid)}</td><td colspan="5"></td></tr></tfoot></table>`;
 }
 function exportPaymentsExcel(){
   const rows = paymentRows().map(p=>Object.assign({}, p, {pStatus: p.status || ''}));
@@ -5210,9 +5334,9 @@ function renderReservationsReport(){
   ].join('');
   if(!reservationsEnabled){ $('#resWrap').innerHTML = repUpgrade('جدول الحجوزات غير مفعّل'); return; }
   if(!rows.length){ $('#resWrap').innerHTML = repEmpty('لا توجد حجوزات مطابقة', 'سجّل حجوزاً من أزرار «حجز» في سجل الأراضي'); return; }
-  $('#resWrap').innerHTML = `<table class="preview-tbl"><thead><tr><th>البلك</th><th>الأرض</th><th>العميل</th><th>تاريخ الطلب</th><th>تاريخ الحجز</th><th>المدة (أيام)</th><th>قيمة الأرض</th><th>العربون</th><th>تاريخ الانتهاء</th><th>الحالة</th><th>الإجراء المطلوب</th></tr></thead>
-  <tbody>${rows.map(r=>`<tr><td class="num">${esc(r.block || '—')}</td><td class="num">${esc(r.landNo || '—')}</td><td>${esc(r.clientName || '—')}</td><td class="num">${esc(r.requestDate || '—')}</td><td class="num">${esc(r.reserveDate || '—')}</td><td class="num">${r.durationDays != null ? fmtInt.format(r.durationDays) : '—'}</td><td class="num">${money2(r.landValue)}</td><td class="num" style="color:var(--gold-txt);font-weight:800">${money2(r.deposit)}</td><td class="num">${esc(r.expiryDate || '—')}</td><td>${esc(r.status || 'نشط')}</td><td>${esc(r.actionRequired || '—')}</td></tr>`).join('')}</tbody>
-  <tfoot><tr><td colspan="6">الإجمالي — ${rows.length} حجز</td><td class="num">${fmtMoney.format(tVal)}</td><td class="num">${fmtMoney.format(tDep)}</td><td colspan="3"></td></tr></tfoot></table>`;
+  $('#resWrap').innerHTML = `<table class="preview-tbl"><thead><tr><th>البلك</th><th>الأرض</th><th>العميل</th><th>تاريخ الطلب</th><th>تاريخ الحجز</th><th>المدة (أيام)</th><th>قيمة الأرض</th><th>العربون</th><th>تاريخ الانتهاء</th><th>الحالة</th><th>الإجراء المطلوب</th><th>إجراءات</th></tr></thead>
+  <tbody>${rows.map(r=>`<tr><td class="num">${esc(r.block || '—')}</td><td class="num">${esc(r.landNo || '—')}</td><td>${esc(r.clientName || '—')}</td><td class="num">${esc(r.requestDate || '—')}</td><td class="num">${esc(r.reserveDate || '—')}</td><td class="num">${r.durationDays != null ? fmtInt.format(r.durationDays) : '—'}</td><td class="num">${money2(r.landValue)}</td><td class="num" style="color:var(--gold-txt);font-weight:800">${money2(r.deposit)}</td><td class="num">${esc(r.expiryDate || '—')}</td><td>${esc(r.status || 'نشط')}</td><td>${esc(r.actionRequired || '—')}</td><td>${can('edit_records') ? `<div class="row-actions"><button class="btn btn-soft btn-xs" data-ract="edit" data-rid="${r.id}" title="تعديل الحجز"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button><button class="btn btn-danger btn-xs" data-ract="del" data-rid="${r.id}" title="حذف الحجز"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>` : ''}</td></tr>`).join('')}</tbody>
+  <tfoot><tr><td colspan="6">الإجمالي — ${rows.length} حجز</td><td class="num">${fmtMoney.format(tVal)}</td><td class="num">${fmtMoney.format(tDep)}</td><td colspan="4"></td></tr></tfoot></table>`;
 }
 function exportReservationsExcel(){
   const rows = reservationRows().map(r=>Object.assign({}, r, {rStatus: r.status || 'نشط'}));
@@ -5996,7 +6120,7 @@ async function openUsersModal(){
       </div>
       <div class="hint" style="margin-top:8px">كلمة المرور 6 أحرف فأكثر، وسيتمكن المستخدم من تسجيل الدخول فوراً بنفس البريد وكلمة المرور من شاشة الدخول.</div>
     </fieldset>
-    ${lastCreatedUser ? `<div style="background:var(--ok-soft);border:1px solid #a7f3d0;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+    ${lastCreatedUser ? `<div style="background:var(--ok-soft);border:1px solid #d9b878;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
       <span style="font-size:.82rem;font-weight:700">آخر مستخدم أُضيف: <b style="direction:ltr;display:inline-block">${esc(lastCreatedUser.email)}</b> — كلمة المرور: <b style="direction:ltr;display:inline-block">${esc(lastCreatedUser.pw)}</b></span>
       <button class="btn btn-soft btn-xs" id="btnCopyCreds">نسخ بيانات الدخول</button>
     </div>` : ''}
@@ -6078,7 +6202,7 @@ function opsSummaryHtml(){
 }
 function opsSummaryPrintHtml(){
   const s = opsSummary();
-  return `<div style="margin-top:12px;background:#d1fae5;border:1px solid #a7f3d0;border-radius:11px;padding:11px 14px;display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;font-weight:800;color:#065f46">
+  return `<div style="margin-top:12px;background:#f6efe3;border:1px solid #d9b878;border-radius:11px;padding:11px 14px;display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;font-weight:800;color:#8a682f">
     <span>عدد القطع المفرغة: ${s.count}</span>
     <span>إجمالي المساحة: ${fmtMoney.format(s.area)} م²</span>
     <span>إجمالي قيمة الإفراغات: ${fmtMoney.format(s.value)} ر.س</span>
@@ -6192,7 +6316,7 @@ function buildOpsPrintDoc(){
       <div class="pd-meta">
         <span class="pd-item">تاريخ الإصدار: ${esc(todayStr())}</span>
         <span class="pd-item">الوضع: القطع المفرغة فقط</span>
-        <span class="pd-item" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0">إجمالي قيمة الإفراغات: ${fmtMoney.format(tTrVal)} ر.س (${tTr.length} قطعة)</span>
+        <span class="pd-item" style="background:#f6efe3;color:#8a682f;border-color:#d9b878">إجمالي قيمة الإفراغات: ${fmtMoney.format(tTrVal)} ر.س (${tTr.length} قطعة)</span>
       </div>
       <table class="pd-table"><thead><tr><th>رقم القطعة</th><th>القيمة (ر.س)</th><th>تاريخ الإفراغ</th></tr></thead>
       <tbody>${rows.map(r=>`<tr><td class="num">${esc(r.landNo||'—')}</td><td class="num">${fmtMoney.format(r.value||0)}</td><td class="num">${esc(r.transfer||'—')}</td></tr>`).join('')}</tbody></table>
@@ -6207,12 +6331,12 @@ function buildOpsPrintDoc(){
       <span class="pd-item">تاريخ الإصدار: ${esc(todayStr())}</span>
       <span class="pd-item">عدد القطع: ${opsRows.length}</span>
       <span class="pd-item">إجمالي القيمة: ${fmtMoney.format(tVal)} ر.س</span>
-      <span class="pd-item" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0">إجمالي الإفراغات: ${fmtMoney.format(tTrVal)} ر.س (${tTr.length} قطعة)</span>
+      <span class="pd-item" style="background:#f6efe3;color:#8a682f;border-color:#d9b878">إجمالي الإفراغات: ${fmtMoney.format(tTrVal)} ر.س (${tTr.length} قطعة)</span>
     </div>
     <table class="pd-table"><thead><tr><th>#</th><th>البلك</th><th>رقم القطعة</th><th>المشتري</th><th>آخر حالة تسجيل عيني</th><th>آخر حالة ضريبة تصرفات</th><th>الإفراغ</th><th>القيمة (ر.س)</th><th>تاريخ آخر عملية</th></tr></thead>
     <tbody>${opsRows.map((r,i)=>`<tr><td class="num">${i+1}</td><td class="num">${esc(r.block||'—')}</td><td class="num">${esc(r.landNo||'—')}</td><td>${esc(r.buyer||'—')}</td><td>${esc(r.regStatus||'—')}</td><td>${esc(r.taxStatus||'—')}</td><td class="num">${esc(r.transfer||'—')}</td><td class="num">${fmtMoney.format(r.value||0)}</td><td class="num">${esc(r.lastOpDate||'—')}</td></tr>`).join('')}</tbody>
     <tfoot><tr><td colspan="7">الإجمالي — ${opsRows.length} قطعة</td><td class="num">${fmtMoney.format(tVal)}</td><td></td></tr>
-    <tr style="background:#d1fae5"><td colspan="7" style="color:#065f46;font-weight:800">إجمالي الإفراغات — ${tTr.length} قطعة مفرغة</td><td class="num" style="color:#065f46;font-weight:800">${fmtMoney.format(tTrVal)}</td><td></td></tr></tfoot></table>
+    <tr style="background:#f6efe3"><td colspan="7" style="color:#8a682f;font-weight:800">إجمالي الإفراغات — ${tTr.length} قطعة مفرغة</td><td class="num" style="color:#8a682f;font-weight:800">${fmtMoney.format(tTrVal)}</td><td></td></tr></tfoot></table>
     ${opsSummaryPrintHtml()}
     <div class="pd-credit">أُصدر بواسطة نظام متابعة الأراضي — ${todayAr()}</div>`;
   document.body.appendChild(div);
@@ -6655,7 +6779,7 @@ function renderScenLive(){
   html += `<span>القيمة الأساسية: ${fmtMoney.format(c.cur)} ر.س · متوسط المتر الأساسي: ${fmtNum.format(c.curAvg)} ر.س/م²</span>`;
   if(hasP){
     html += `<span style="color:#8a682f">القيمة الجديدة: <b>${fmtMoney.format(c.newVal)} ر.س</b> · متوسط المتر الجديد: <b>${fmtNum.format(c.newAvg)} ر.س/م²</b></span>`;
-    html += `<span style="color:${c.delta >= 0 ? '#065f46' : '#991b1b'}">الفرق المتوقع: ${c.delta >= 0 ? '+' : ''}${fmtMoney.format(c.delta)} ر.س (${c.deltaPct >= 0 ? '+' : ''}${c.deltaPct.toFixed(1)}%)</span>`;
+    html += `<span style="color:${c.delta >= 0 ? '#8a682f' : '#122732'}">الفرق المتوقع: ${c.delta >= 0 ? '+' : ''}${fmtMoney.format(c.delta)} ر.س (${c.deltaPct >= 0 ? '+' : ''}${c.deltaPct.toFixed(1)}%)</span>`;
   } else {
     html += '<span>أدخل سعر المتر الجديد لاحتساب قيمة السيناريو.</span>';
   }
@@ -6688,14 +6812,14 @@ function renderScenPlan(){
   ].join('');
   const pct = v=>c.planBeforeVal ? (v/c.planBeforeVal*100).toFixed(2) : 0;
   const seg = (w, bg, tip)=>`<div class="spb-seg" style="width:${Math.max(+w,1.2)}%;background:${bg}" title="${tip}"></div>`;
-  const beforeSegs = seg(pct(c.cur), '#0ea5e9', 'النطاق المختار (بالأسعار الأساسية)') + seg(pct(c.restVal), '#e2e8f0', 'بقية المخطط (أسعار أصلية)');
+  const beforeSegs = seg(pct(c.cur), '#2f5a6e', 'النطاق المختار (بالأسعار الأساسية)') + seg(pct(c.restVal), '#e2e8f0', 'بقية المخطط (أسعار أصلية)');
   const afterSegs = hasP
     ? seg(pct(c.newVal), '#A7813E', 'النطاق المختار (بالسعر الجديد)') + seg(pct(c.restVal), '#e2e8f0', 'بقية المخطط (أسعار أصلية)')
     : seg(100, '#e2e8f0', 'لم يُحدد السعر بعد');
   bars.innerHTML = `
     <div class="spb-row"><span class="spb-lbl">المخطط قبل</span><div class="spb-track">${beforeSegs}</div><span class="spb-val">${fmtMoney.format(c.planBeforeVal)} ر.س · ${fmtNum.format(c.planBeforeAvg)} ر.س/م²</span></div>
     <div class="spb-row"><span class="spb-lbl">المخطط بعد</span><div class="spb-track">${afterSegs}</div><span class="spb-val">${hasP ? fmtMoney.format(c.planAfterVal) + ' ر.س · ' + fmtNum.format(c.planAfterAvg) + ' ر.س/م²' : '—'}</span></div>
-    <div class="spb-legend"><span><i style="background:#A7813E"></i>النطاق المعاد تسعيره</span><span><i style="background:#0ea5e9"></i>النطاق المختار (أساسي)</span><span><i style="background:#e2e8f0"></i>بقية المخطط — أسعار أصلية</span></div>`;
+    <div class="spb-legend"><span><i style="background:#A7813E"></i>النطاق المعاد تسعيره</span><span><i style="background:#2f5a6e"></i>النطاق المختار (أساسي)</span><span><i style="background:#e2e8f0"></i>بقية المخطط — أسعار أصلية</span></div>`;
 }
 function renderScenKpis(){
   const c = scenCompute();
@@ -6722,7 +6846,7 @@ let scenDrawTimer = null;
 function drawScenCharts(){
   const c = scenCompute();
   if(!c.count || typeof Chart === 'undefined'){ scenChartSig = ''; return; }
-  const golds = ['#8a682f','#A7813E','#f59e0b','#fbbf24','#fcd34d','#92400e','#fde68a'];
+  const golds = ['#122732','#1c3a48','#25495a','#2f5a6e','#8a682f','#A7813E','#c9a86a'];
   const byT = c.byType.map((o,i)=>({type:o.type, val:Math.round(o.newV||o.cur), col: TYPE_COLORS[o.type] || golds[i % golds.length]}));
   const bl = c.byBlock.slice(0, 10);
   const sig = JSON.stringify({ty:byT.map(o=>[o.type,o.val,o.col]), bl:bl.map(o=>[o.block,Math.round(o.cur),Math.round(o.newV)])});
@@ -6764,7 +6888,7 @@ function renderScenTable(){
   const hasPpm = scenHasPrices();
   const diffCell = (d, p, muted)=>{
     if(muted) return '<td class="num" style="color:var(--faint)">—</td><td class="num" style="color:var(--faint)">—</td>';
-    return `<td class="num" style="color:${d>=0?'#065f46':'#991b1b'};font-weight:800">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td>`;
+    return `<td class="num" style="color:${d>=0?'#8a682f':'#122732'};font-weight:800">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td>`;
   };
   const scopeTxt = `النطاق: ${scenSel.size ? [...scenSel].map(esc).join(' + ') : '—'}${scenType ? ' · نوع: ' + esc(scenType) : ''}${scenBlock ? ' · بلك: ' + esc(scenBlock) : ''} · السعر الجديد: ${esc(scenAppliedTxt())}`;
   const selRows = c.byBlock.map(o=>{
@@ -6784,7 +6908,7 @@ function renderScenTable(){
   </tbody>
   <tfoot>
   <tr class="tr-plan"><td>إجمالي المخطط بعد السيناريو</td><td class="num">${fmtInt.format(c.count + c.restCount)}</td><td class="num">${fmtMoney.format(c.area + c.restArea)}</td><td class="num">${fmtMoney.format(c.planBeforeVal)}</td><td class="num">${fmtMoney.format(c.planAfterVal)}</td>${diffCell(hasPpm ? c.planDelta : 0, hasPpm ? c.planDeltaPct : 0, !hasPpm)}</tr>
-  <tr class="tr-plan" style="opacity:.85"><td>متوسط سعر المتر للمخطط كله</td><td class="num">—</td><td class="num">—</td><td class="num">${fmtNum.format(c.planBeforeAvg)} ر.س/م²</td><td class="num">${hasPpm ? fmtNum.format(c.planAfterAvg) + ' ر.س/م²' : '—'}</td><td class="num" colspan="2" style="color:${hasPpm && (c.planAfterAvg - c.planBeforeAvg) >= 0 ? '#065f46' : '#991b1b'}">${hasPpm ? (c.planAfterAvg - c.planBeforeAvg >= 0 ? '+' : '') + fmtNum.format(c.planAfterAvg - c.planBeforeAvg) + ' ر.س/م²' : '—'}</td></tr>
+  <tr class="tr-plan" style="opacity:.85"><td>متوسط سعر المتر للمخطط كله</td><td class="num">—</td><td class="num">—</td><td class="num">${fmtNum.format(c.planBeforeAvg)} ر.س/م²</td><td class="num">${hasPpm ? fmtNum.format(c.planAfterAvg) + ' ر.س/م²' : '—'}</td><td class="num" colspan="2" style="color:${hasPpm && (c.planAfterAvg - c.planBeforeAvg) >= 0 ? '#8a682f' : '#122732'}">${hasPpm ? (c.planAfterAvg - c.planBeforeAvg >= 0 ? '+' : '') + fmtNum.format(c.planAfterAvg - c.planBeforeAvg) + ' ر.س/م²' : '—'}</td></tr>
   </tfoot></table>`;
 }
 function renderScenarioResults(){
@@ -6945,7 +7069,7 @@ function renderScenCompare(){
   wrap.style.display = 'block';
   const rows = sel.map(sc=>{
     const d = sc.snap.delta, p = sc.snap.deltaPct, pd = sc.snap.planDeltaPct;
-    return `<tr><td>${esc(sc.name)}</td><td class="num">${fmtInt.format(sc.snap.count)}</td><td class="num">${fmtMoney.format(sc.snap.area)}</td><td class="num">${fmtMoney.format(sc.snap.cur)}</td><td class="num">${fmtMoney.format(sc.snap.newVal)}</td><td class="num" style="color:${d>=0?'#065f46':'#991b1b'};font-weight:800">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td><td class="num" style="color:#8a682f;font-weight:800">${fmtNum.format(sc.snap.planAfterAvg)}</td><td class="num" style="color:${pd>=0?'#065f46':'#991b1b'};font-weight:800">${pd>=0?'+':''}${pd.toFixed(1)}%</td></tr>`;
+    return `<tr><td>${esc(sc.name)}</td><td class="num">${fmtInt.format(sc.snap.count)}</td><td class="num">${fmtMoney.format(sc.snap.area)}</td><td class="num">${fmtMoney.format(sc.snap.cur)}</td><td class="num">${fmtMoney.format(sc.snap.newVal)}</td><td class="num" style="color:${d>=0?'#8a682f':'#122732'};font-weight:800">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td><td class="num" style="color:#8a682f;font-weight:800">${fmtNum.format(sc.snap.planAfterAvg)}</td><td class="num" style="color:${pd>=0?'#8a682f':'#122732'};font-weight:800">${pd>=0?'+':''}${pd.toFixed(1)}%</td></tr>`;
   }).join('');
   $('#scenCompare').innerHTML = `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>السيناريو</th><th>القطع</th><th>المساحة (م²)</th><th>الأساسية (ر.س)</th><th>السيناريو (ر.س)</th><th>الفرق (ر.س)</th><th>نسبة الفرق</th><th>متوسط المخطط بعد (ر.س/م²)</th><th>أثر المحفظة</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
@@ -6993,8 +7117,8 @@ function buildScenBoardDoc(){
       <span class="pd-item">تاريخ الإصدار: ${esc(todayStr())}</span>
       <span class="pd-item">النطاق: ${scenSel.size ? [...scenSel].map(esc).join(' + ') : '—'}${scenType ? ' · ' + esc(scenType) : ''}${scenBlock ? ' · بلك ' + esc(scenBlock) : ''}</span>
       <span class="pd-item">الأسعار المطبقة: ${esc(scenAppliedTxt())}</span>
-      <span class="pd-item" style="background:#fde68a;color:#78350f;border-color:#f59e0b">قيمة السيناريو: ${fmtMoney.format(c.newVal)} ر.س (${fmtInt.format(c.count)} قطعة)</span>
-      <span class="pd-item" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0">الفرق عن الأساسي: ${c.delta>=0?'+':''}${fmtMoney.format(c.delta)} ر.س (${c.deltaPct>=0?'+':''}${c.deltaPct.toFixed(1)}%)</span>
+      <span class="pd-item" style="background:#d9b878;color:#8a682f;border-color:#A7813E">قيمة السيناريو: ${fmtMoney.format(c.newVal)} ر.س (${fmtInt.format(c.count)} قطعة)</span>
+      <span class="pd-item" style="background:#f6efe3;color:#8a682f;border-color:#d9b878">الفرق عن الأساسي: ${c.delta>=0?'+':''}${fmtMoney.format(c.delta)} ر.س (${c.deltaPct>=0?'+':''}${c.deltaPct.toFixed(1)}%)</span>
     </div>
     <div class="pd-sec-h"><h3>أثر السيناريو على المخطط ككل</h3></div>
     <div class="pd-board-metrics">${$('#scenPlanMetrics').innerHTML}</div>
@@ -7146,7 +7270,7 @@ function renderPlanReport(){
     <span class="prm-chip gold" style="font-weight:900">السيناريو الحالي: ${esc(name)}</span>
     <span class="prm-chip">الأسعار المطبقة: ${esc(scenAppliedTxt())}</span>
     <span class="prm-chip">تاريخ الإصدار: ${esc(todayStr())}</span>
-    ${!hasP ? '<span class="prm-chip" style="border-color:#fca5a5;color:#991b1b">لا أسعار سيناريو — المتاح بأسعاره الأصلية</span>' : ''}`;
+    ${!hasP ? '<span class="prm-chip" style="border-color:#c9d6de;color:#122732">لا أسعار سيناريو — المتاح بأسعاره الأصلية</span>' : ''}`;
   const icoSold = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
   const icoResv = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
   const icoAvail = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6.292a7 7 0 1 0 4 0V2"/><path d="M8.5 2h7"/><path d="M7 16h8"/></svg>';
@@ -7236,7 +7360,7 @@ function buildPlanRepPrintDoc(){
       <span class="avg-big">متوسط سعر المتر <b>${fmtNum.format(c.totalAvg)} ر.س/م²</b></span>
     </div>
   </div>`;
-  const stCellStyle = {'تم الإفراغ':['#e0f2fe','#075985'], 'محجوزة':['#fef3c7','#92400e'], 'متاحة':['#dcfce7','#166534']};
+  const stCellStyle = {'تم الإفراغ':['#f6efe3','#8a682f'], 'محجوزة':['#f6efe3','#A7813E'], 'متاحة':['#e4edf1','#122732']};
   const pdfStCell = o=>{
     const m = stCellStyle[o.st] || ['#eef1f6','#475569'];
     const mark = o.priced ? ' <span style="color:#8a682f">✦</span>' : '';
@@ -7385,7 +7509,7 @@ function bindEvents(){
   $('#btnCancel').addEventListener('click', closeModal);
   $('#modalOverlay').addEventListener('click', e=>{ if(e.target === $('#modalOverlay')) closeModal(); });
   $('#btnSave').addEventListener('click', saveModal);
-  document.addEventListener('keydown', e=>{ if(e.key === 'Escape'){ closeModal(); if($('#taxModalOverlay').classList.contains('open')) closeTaxModal(); if($('#regModalOverlay').classList.contains('open')) closeRegModal(); if($('#payModalOverlay').classList.contains('open')) closePayModal(); if($('#resModalOverlay').classList.contains('open')) closeResModal(); if($('#regTrackOverlay').classList.contains('open')) closeRegTrackModal(); if($('#taxTrackOverlay').classList.contains('open')) closeTaxTrackModal(); if($('#authOverlay').classList.contains('open') && !gateActive) finishAuthOverlay(); if($('#usersOverlay').classList.contains('open')) $('#usersOverlay').classList.remove('open'); if($('#rolesOverlay').classList.contains('open')) $('#rolesOverlay').classList.remove('open'); if($('#cloudEmptyOverlay').classList.contains('open')){ cloudEmptyDismissed = true; $('#cloudEmptyOverlay').classList.remove('open'); } } });
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape'){ closeModal(); if($('#taxModalOverlay').classList.contains('open')) closeTaxModal(); if($('#regModalOverlay').classList.contains('open')) closeRegModal(); if($('#payModalOverlay').classList.contains('open')) closePayModal(); if($('#resModalOverlay').classList.contains('open')) closeResModal(); if($('#previewOverlay').classList.contains('open')) closePreviewModal(); if($('#regTrackOverlay').classList.contains('open')) closeRegTrackModal(); if($('#taxTrackOverlay').classList.contains('open')) closeTaxTrackModal(); if($('#authOverlay').classList.contains('open') && !gateActive) finishAuthOverlay(); if($('#usersOverlay').classList.contains('open')) $('#usersOverlay').classList.remove('open'); if($('#rolesOverlay').classList.contains('open')) $('#rolesOverlay').classList.remove('open'); if($('#cloudEmptyOverlay').classList.contains('open')){ cloudEmptyDismissed = true; $('#cloudEmptyOverlay').classList.remove('open'); } } });
 
   $('#regSearch').addEventListener('input', e=>{ state.search = e.target.value; state.page = 1; renderRegistry(); if(tpl && tpl.scope === 'filtered') renderPreview(); });
   $('#fwrap').addEventListener('change', e=>{
@@ -7466,6 +7590,9 @@ function bindEvents(){
       if(btn.dataset.act === 'edit'){
         const r = records.find(x=>x.id === id);
         if(r) openModal(r);
+      }else if(btn.dataset.act === 'preview'){
+        const r = records.find(x=>x.id === id);
+        if(r) openPreviewModal(r);
       }else if(btn.dataset.act === 'tax'){
         openTaxModal([id]);
       }else if(btn.dataset.act === 'reg'){
@@ -7943,6 +8070,9 @@ function bindEvents(){
   $('#btnResCancel').addEventListener('click', closeResModal);
   $('#btnResSave').addEventListener('click', saveReservationFromUI);
   $('#resModalOverlay').addEventListener('click', e=>{ if(e.target === $('#resModalOverlay')) closeResModal(); });
+  $('#previewClose').addEventListener('click', closePreviewModal);
+  $('#btnPreviewClose').addEventListener('click', closePreviewModal);
+  $('#previewOverlay').addEventListener('click', e=>{ if(e.target === $('#previewOverlay')) closePreviewModal(); });
 
   $('#btnPayGen').addEventListener('click', renderPaymentsReport);
   $('#payFrom').addEventListener('change', renderPaymentsReport);
@@ -7961,6 +8091,21 @@ function bindEvents(){
   $('#btnResExcel').addEventListener('click', exportReservationsExcel);
   $('#btnResPdf').addEventListener('click', ()=>{ const doc = buildReservationsPrintDoc(); doExportPdf(doc, 'تقرير-الحجوزات', 3).then(()=>doc.remove()); });
   $('#btnResPng').addEventListener('click', ()=>{ const doc = buildReservationsPrintDoc(); doExportPng(doc, 'تقرير-الحجوزات', 3).then(()=>doc.remove()); });
+
+  $('#payWrap').addEventListener('click', e=>{
+    const b = e.target.closest('button[data-pact]');
+    if(!b) return;
+    const id = +b.dataset.pid;
+    if(b.dataset.pact === 'edit'){ const p = payments.find(x=>x.id === id); if(p) openPayEdit(p); }
+    else if(b.dataset.pact === 'del'){ deletePayment(id); }
+  });
+  $('#resWrap').addEventListener('click', e=>{
+    const b = e.target.closest('button[data-ract]');
+    if(!b) return;
+    const id = +b.dataset.rid;
+    if(b.dataset.ract === 'edit'){ const r = reservations.find(x=>x.id === id); if(r) openResEdit(r); }
+    else if(b.dataset.ract === 'del'){ deleteReservation(id); }
+  });
 
   $('#opsWrap').addEventListener('click', e=>{
     const b = e.target.closest('.ops-buyer-save');
