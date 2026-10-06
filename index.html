@@ -1290,27 +1290,6 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef2f6}
               </div>
             </div>
             <div class="kpis" id="scenKpis"></div>
-            <div class="scen-charts">
-              <div class="card">
-                <div class="card-h"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>توزيع قيمة السيناريو حسب نوع الأرض</h3></div>
-                <div class="card-b"><div class="chart-box"><canvas id="scChType"></canvas></div></div>
-              </div>
-              <div class="card">
-                <div class="card-h"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-8"/></svg>المقارنة حسب البلك (أساسي × سيناريو)</h3></div>
-                <div class="card-b"><div class="chart-box"><canvas id="scChBlock"></canvas></div></div>
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-h">
-                <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>تفاصيل السيناريو <span class="sub" id="scenDetailCount"></span></h3>
-                <div class="report-actions">
-                  <button class="btn btn-soft btn-sm" id="btnScenBoardPdf" title="تصدير اللمحة الكاملة بالشارتات PDF"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>لمحة PDF</button>
-                  <button class="btn btn-soft btn-sm" id="btnScenBoardPng" title="تصدير اللمحة الكاملة بالشارتات صورة"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L9 20"/></svg>لمحة صورة</button>
-                  <button class="btn btn-soft btn-sm" id="btnScenXlsx"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>إكسل تفصيلي</button>
-                </div>
-              </div>
-              <div class="card-b flush" style="overflow:auto;max-height:52vh"><div class="tbl-wrap" id="scenTblWrap"></div></div>
-            </div>
           </div>
         </div>
         </div>
@@ -6393,7 +6372,6 @@ let scenType = '';
 let scenBlock = '';
 let scenPpm = null;
 let scenCompare = new Set();
-let scenCharts = {};
 let scenTombstones = [];
 let scenDefaultId = null;
 let scenPriceMode = 'uniform';
@@ -6841,82 +6819,10 @@ function renderScenKpis(){
     scenKpiHtml(icDelta, '', 'الفرق المتوقع', hasP ? (up?'+':'') + fmtMoney.format(c.delta) : '—', hasP ? (up?'+':'') + c.deltaPct.toFixed(1) + '%' : 'ريال سعودي', '')
   ].join('');
 }
-let scenChartSig = '';
-let scenDrawTimer = null;
-function drawScenCharts(){
-  const c = scenCompute();
-  if(!c.count || typeof Chart === 'undefined'){ scenChartSig = ''; return; }
-  const golds = ['#122732','#1c3a48','#25495a','#2f5a6e','#8a682f','#A7813E','#c9a86a'];
-  const byT = c.byType.map((o,i)=>({type:o.type, val:Math.round(o.newV||o.cur), col: TYPE_COLORS[o.type] || golds[i % golds.length]}));
-  const bl = c.byBlock.slice(0, 10);
-  const sig = JSON.stringify({ty:byT.map(o=>[o.type,o.val,o.col]), bl:bl.map(o=>[o.block,Math.round(o.cur),Math.round(o.newV)])});
-  if(scenChartSig === sig) return;
-  scenChartSig = sig;
-  for(const k in scenCharts){ if(scenCharts[k]){ try{ scenCharts[k].destroy(); }catch(e){} } }
-  scenCharts = {};
-  try{ Chart.defaults.font.family = "'Tajawal','Segoe UI',sans-serif"; }catch(e){}
-  if(byT.length){
-    const fullTy = byT.map(o=>o.type);
-    scenCharts.ty = new Chart($('#scChType'), {
-      type:'doughnut',
-      data:{labels:fullTy.map(truncLabel), datasets:[{data:byT.map(o=>o.val), backgroundColor:byT.map(o=>o.col), ...donutCore}]},
-      options:{maintainAspectRatio:false, layout:{padding:6}, animation:{duration:200}, plugins:{legend:donutLegendOpts(), tooltip:{rtl:true, callbacks:{title:items=>fullTy[items[0].dataIndex], label:ctx=>` ${fmtMoney.format(ctx.raw)} ر.س`}}}}
-    });
-  }
-  if(bl.length){
-    scenCharts.bl = new Chart($('#scChBlock'), {
-      type:'bar',
-      data:{labels:bl.map(o=>o.block), datasets:[
-        {label:'القيمة الأساسية', data:bl.map(o=>Math.round(o.cur)), backgroundColor:'#e2e8f0', borderRadius:6, maxBarThickness:26},
-        {label:'قيمة السيناريو', data:bl.map(o=>Math.round(o.newV)), backgroundColor:'#A7813E', borderRadius:6, maxBarThickness:26}
-      ]},
-      options:{maintainAspectRatio:false, animation:{duration:200}, plugins:{legend:{position:'bottom', rtl:true, labels:{padding:10, usePointStyle:true}}, tooltip:{rtl:true, callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmtMoney.format(ctx.raw)} ر.س`}}}, scales:{y:{ticks:{callback:v=>fmtCompact.format(v)}}, x:{grid:{display:false}}}}
-    });
-  }
-}
-function scheduleScenCharts(){
-  if(scenDrawTimer) clearTimeout(scenDrawTimer);
-  scenDrawTimer = setTimeout(()=>{ scenDrawTimer = null; drawScenCharts(); }, 150);
-}
-function renderScenTable(){
-  const c = scenCompute();
-  const wrap = $('#scenTblWrap');
-  if(!wrap) return;
-  const cnt = $('#scenDetailCount');
-  if(cnt) cnt.textContent = c.count ? `(${fmtInt.format(c.count)} قطعة)` : '';
-  if(!c.count || !scenSel.size){ wrap.innerHTML = `<div class="empty"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6.292a7 7 0 1 0 4 0V2"/><path d="M8.5 2h7"/><path d="M7 16h8"/></svg><div class="t">لا توجد نتائج بعد</div><div class="s">اختر نطاق الحالات من لوحة البناء لترى التفاصيل هنا</div></div>`; return; }
-  const hasPpm = scenHasPrices();
-  const diffCell = (d, p, muted)=>{
-    if(muted) return '<td class="num" style="color:var(--faint)">—</td><td class="num" style="color:var(--faint)">—</td>';
-    return `<td class="num" style="color:${d>=0?'#8a682f':'#122732'};font-weight:800">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td>`;
-  };
-  const scopeTxt = `النطاق: ${scenSel.size ? [...scenSel].map(esc).join(' + ') : '—'}${scenType ? ' · نوع: ' + esc(scenType) : ''}${scenBlock ? ' · بلك: ' + esc(scenBlock) : ''} · السعر الجديد: ${esc(scenAppliedTxt())}`;
-  const selRows = c.byBlock.map(o=>{
-    const before = o.cur, after = hasPpm ? o.newV : o.cur;
-    const d = after - before, p = before ? d/before*100 : 0;
-    return `<tr><td><b>بلك ${esc(o.block)}</b> — مختار</td><td class="num">${fmtInt.format(o.count)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtMoney.format(before)}</td><td class="num">${fmtMoney.format(after)}</td>${diffCell(d, p, !hasPpm)}</tr>`;
-  }).join('');
-  const restRows = c.restByStatus.map(o=>
-    `<tr class="tr-rest"><td>حالة ${esc(o.status)} — بقية المخطط</td><td class="num">${fmtInt.format(o.count)}</td><td class="num">${fmtMoney.format(o.area)}</td><td class="num">${fmtMoney.format(o.cur)}</td><td class="num">${fmtMoney.format(o.cur)}</td>${diffCell(0, 0, true)}</tr>`
-  ).join('');
-  wrap.innerHTML = `<div class="scen-tbl-scope">${scopeTxt}</div>
-  <table class="tbl"><thead><tr><th>البلك / البيان</th><th>القطع</th><th>المساحة (م²)</th><th>القيمة قبل (ر.س)</th><th>القيمة بعد (ر.س)</th><th>الفرق (ر.س)</th><th>نسبة الفرق</th></tr></thead>
-  <tbody>${selRows}
-  <tr class="tr-scope"><td>النطاق المختار (إجمالي)</td><td class="num">${fmtInt.format(c.count)}</td><td class="num">${fmtMoney.format(c.area)}</td><td class="num">${fmtMoney.format(c.cur)}</td><td class="num">${fmtMoney.format(hasPpm ? c.newVal : c.cur)}</td>${diffCell(hasPpm ? c.delta : 0, hasPpm ? c.deltaPct : 0, !hasPpm)}</tr>
-  ${restRows}
-  <tr class="tr-rest" style="font-weight:800"><td>بقية القطع غير المختارة</td><td class="num">${fmtInt.format(c.restCount)}</td><td class="num">${fmtMoney.format(c.restArea)}</td><td class="num">${fmtMoney.format(c.restVal)}</td><td class="num">${fmtMoney.format(c.restVal)}</td>${diffCell(0, 0, true)}</tr>
-  </tbody>
-  <tfoot>
-  <tr class="tr-plan"><td>إجمالي المخطط بعد السيناريو</td><td class="num">${fmtInt.format(c.count + c.restCount)}</td><td class="num">${fmtMoney.format(c.area + c.restArea)}</td><td class="num">${fmtMoney.format(c.planBeforeVal)}</td><td class="num">${fmtMoney.format(c.planAfterVal)}</td>${diffCell(hasPpm ? c.planDelta : 0, hasPpm ? c.planDeltaPct : 0, !hasPpm)}</tr>
-  <tr class="tr-plan" style="opacity:.85"><td>متوسط سعر المتر للمخطط كله</td><td class="num">—</td><td class="num">—</td><td class="num">${fmtNum.format(c.planBeforeAvg)} ر.س/م²</td><td class="num">${hasPpm ? fmtNum.format(c.planAfterAvg) + ' ر.س/م²' : '—'}</td><td class="num" colspan="2" style="color:${hasPpm && (c.planAfterAvg - c.planBeforeAvg) >= 0 ? '#8a682f' : '#122732'}">${hasPpm ? (c.planAfterAvg - c.planBeforeAvg >= 0 ? '+' : '') + fmtNum.format(c.planAfterAvg - c.planBeforeAvg) + ' ر.س/م²' : '—'}</td></tr>
-  </tfoot></table>`;
-}
 function renderScenarioResults(){
   renderScenLive();
   renderScenPlan();
   renderScenKpis();
-  scheduleScenCharts();
-  renderScenTable();
   const planPanel = $('#panel-scenPanelPlan');
   if(planPanel && planPanel.classList.contains('active')) renderPlanReport();
 }
@@ -7072,79 +6978,6 @@ function renderScenCompare(){
     return `<tr><td>${esc(sc.name)}</td><td class="num">${fmtInt.format(sc.snap.count)}</td><td class="num">${fmtMoney.format(sc.snap.area)}</td><td class="num">${fmtMoney.format(sc.snap.cur)}</td><td class="num">${fmtMoney.format(sc.snap.newVal)}</td><td class="num" style="color:${d>=0?'#8a682f':'#122732'};font-weight:800">${d>=0?'+':''}${fmtMoney.format(d)}</td><td class="num">${p>=0?'+':''}${p.toFixed(1)}%</td><td class="num" style="color:#8a682f;font-weight:800">${fmtNum.format(sc.snap.planAfterAvg)}</td><td class="num" style="color:${pd>=0?'#8a682f':'#122732'};font-weight:800">${pd>=0?'+':''}${pd.toFixed(1)}%</td></tr>`;
   }).join('');
   $('#scenCompare').innerHTML = `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>السيناريو</th><th>القطع</th><th>المساحة (م²)</th><th>الأساسية (ر.س)</th><th>السيناريو (ر.س)</th><th>الفرق (ر.س)</th><th>نسبة الفرق</th><th>متوسط المخطط بعد (ر.س/م²)</th><th>أثر المحفظة</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-}
-function exportScenExcel(){
-  const c = scenCompute();
-  if(!c.count){ toast('اختر نطاقاً يشمل قطعاً أولاً', 'warn'); return; }
-  const name = ($('#scenName').value.trim() || 'سيناريو تسعير').slice(0,31);
-  const hasPpm = scenHasPrices();
-  const rows = c.byBlock.map(o=>{
-    const d = hasPpm ? o.newV - o.cur : 0, p = o.cur ? d/o.cur*100 : 0;
-    return {block:'بلك ' + o.block + ' (مختار)', count:o.count, area:Math.round(o.area*100)/100, cur:Math.round(o.cur*100)/100, newV:Math.round((hasPpm ? o.newV : o.cur)*100)/100, delta:Math.round(d*100)/100, pct:Math.round(p*100)/100};
-  });
-  rows.push({block:'النطاق المطبق', count:[...scenSel].join(' + ') + (scenType ? ' · ' + scenType : '') + (scenBlock ? ' · بلك ' + scenBlock : ''), area:'', cur:'', newV:'', delta:'', pct:''});
-  if(scenPriceMode === 'matrix'){
-    for(const r of scenRules.filter(scenRuleValid)) rows.push({block:'سعر: ' + scenRuleLabel(r), count:fmtNum.format(r.ppm) + ' ر.س/م²', area:'', cur:'', newV:'', delta:'', pct:''});
-    rows.push({block:'التركيبات غير المسعّرة', count:'تبقى بأسعارها الأصلية', area:'', cur:'', newV:'', delta:'', pct:''});
-  }else{
-    rows.push({block:'سعر المتر الجديد', count:fmtNum.format(scenPpm||0) + ' ر.س/م²', area:'', cur:'', newV:'', delta:'', pct:''});
-  }
-  rows.push({block:'النطاق المختار (إجمالي)', count:fmtInt.format(c.count) + ' قطعة', area:Math.round(c.area*100)/100, cur:Math.round(c.cur*100)/100, newV:Math.round(c.newVal*100)/100, delta:Math.round(c.delta*100)/100, pct:Math.round(c.deltaPct*100)/100});
-  for(const o of c.restByStatus) rows.push({block:'حالة ' + o.status + ' (بقية المخطط)', count:o.count, area:Math.round(o.area*100)/100, cur:Math.round(o.cur*100)/100, newV:Math.round(o.cur*100)/100, delta:0, pct:0});
-  rows.push({block:'بقية القطع غير المختارة', count:fmtInt.format(c.restCount) + ' قطعة', area:Math.round(c.restArea*100)/100, cur:Math.round(c.restVal*100)/100, newV:Math.round(c.restVal*100)/100, delta:0, pct:0});
-  rows.push({block:'إجمالي المخطط بعد السيناريو', count:fmtInt.format(c.count + c.restCount) + ' قطعة', area:Math.round((c.area + c.restArea)*100)/100, cur:Math.round(c.planBeforeVal*100)/100, newV:Math.round(c.planAfterVal*100)/100, delta:Math.round(c.planDelta*100)/100, pct:Math.round(c.planDeltaPct*100)/100});
-  rows.push({block:'متوسط المتر للمخطط كله (ر.س/م²)', count:'قبل ' + fmtNum.format(c.planBeforeAvg) + ' ← بعد ' + (hasPpm ? fmtNum.format(c.planAfterAvg) : '—'), area:'', cur:'', newV:'', delta:'', pct:''});
-  rows.push({block:'وزن النطاق في المخطط', count:`${c.weightArea.toFixed(1)}% مساحة · ${c.weightVal.toFixed(1)}% قيمة · ${c.weightCnt.toFixed(1)}% قطع`, area:'', cur:'', newV:'', delta:'', pct:''});
-  exportExcelRows(rows, [
-    {k:'block',t:'البلك / البيان'},{k:'count',t:'القطع'},{k:'area',t:'المساحة (م²)'},{k:'cur',t:'القيمة قبل (ر.س)'},{k:'newV',t:'القيمة بعد (ر.س)'},{k:'delta',t:'الفرق (ر.س)'},{k:'pct',t:'نسبة الفرق %'}
-  ], name, 'تقرير-سيناريو-' + name.slice(0,16), null, ['area','cur','newV','delta']);
-}
-function buildScenBoardDoc(){
-  const c = scenCompute();
-  const name = ($('#scenName').value.trim() || 'سيناريو تسعير');
-  const chartImgs = [];
-  if(typeof Chart !== 'undefined'){
-    for(const id of ['scChType','scChBlock']){
-      const cv = document.getElementById(id);
-      if(cv && cv.width){ try{ chartImgs.push(cv.toDataURL('image/png')); }catch(e){} }
-    }
-  }
-  const div = document.createElement('div');
-  div.className = 'print-doc pd-gold';
-  div.innerHTML = `
-    <div class="pd-band"><h2>${esc(name)}</h2><span class="pd-no">لمحة تنفيذية</span></div>
-    <div class="pd-meta">
-      <span class="pd-item">تاريخ الإصدار: ${esc(todayStr())}</span>
-      <span class="pd-item">النطاق: ${scenSel.size ? [...scenSel].map(esc).join(' + ') : '—'}${scenType ? ' · ' + esc(scenType) : ''}${scenBlock ? ' · بلك ' + esc(scenBlock) : ''}</span>
-      <span class="pd-item">الأسعار المطبقة: ${esc(scenAppliedTxt())}</span>
-      <span class="pd-item" style="background:#d9b878;color:#8a682f;border-color:#A7813E">قيمة السيناريو: ${fmtMoney.format(c.newVal)} ر.س (${fmtInt.format(c.count)} قطعة)</span>
-      <span class="pd-item" style="background:#f6efe3;color:#8a682f;border-color:#d9b878">الفرق عن الأساسي: ${c.delta>=0?'+':''}${fmtMoney.format(c.delta)} ر.س (${c.deltaPct>=0?'+':''}${c.deltaPct.toFixed(1)}%)</span>
-    </div>
-    <div class="pd-sec-h"><h3>أثر السيناريو على المخطط ككل</h3></div>
-    <div class="pd-board-metrics">${$('#scenPlanMetrics').innerHTML}</div>
-    <div class="pd-board-bars">${$('#scenPlanBars').innerHTML}</div>
-    <div class="pd-sec-h"><h3>نتائج السيناريو</h3></div>
-    <div class="pd-board-kpis">${$('#scenKpis').innerHTML}</div>
-    ${chartImgs.length ? `<div class="pd-charts">${chartImgs.map(src=>`<div class="pd-chart"><img src="${src}" alt="رسم بياني"></div>`).join('')}</div>` : ''}
-    <div class="pd-credit">أُصدر بواسطة نظام متابعة الأراضي — ${todayAr()} · لمحة افتراضية لا تغيّر الأسعار الأساسية</div>`;
-  document.body.appendChild(div);
-  return div;
-}
-function exportScenBoardPdf(){
-  const c = scenCompute();
-  if(!c.count || !scenSel.size){ toast('اختر نطاقاً يشمل قطعاً أولاً', 'warn'); return; }
-  if(!checkLib('jspdf') || !checkLib('html2canvas')) return;
-  const doc = buildScenBoardDoc();
-  const name = ($('#scenName').value.trim() || 'سيناريو').slice(0,24);
-  doExportPdf(doc, 'لمحة-سيناريو-' + name, 2.5).then(()=>doc.remove());
-}
-function exportScenBoardPng(){
-  const c = scenCompute();
-  if(!c.count || !scenSel.size){ toast('اختر نطاقاً يشمل قطعاً أولاً', 'warn'); return; }
-  if(!checkLib('html2canvas')) return;
-  const doc = buildScenBoardDoc();
-  const name = ($('#scenName').value.trim() || 'سيناريو').slice(0,24);
-  doExportPng(doc, 'لمحة-سيناريو-' + name, 2.5).then(()=>doc.remove());
 }
 function buildScenImpactDoc(){
   const name = ($('#scenName').value.trim() || 'سيناريو تسعير');
@@ -8550,9 +8383,6 @@ function bindEvents(){
     } else scenCompare.delete(id);
     renderScenLib();
   });
-  $('#btnScenXlsx').addEventListener('click', exportScenExcel);
-  $('#btnScenBoardPdf').addEventListener('click', exportScenBoardPdf);
-  $('#btnScenBoardPng').addEventListener('click', exportScenBoardPng);
   $('#btnScenImpactPdf').addEventListener('click', exportScenImpactPdf);
   $('#btnScenImpactPng').addEventListener('click', exportScenImpactPng);
   $('#btnPlanRepXlsx').addEventListener('click', exportPlanRepExcel);
