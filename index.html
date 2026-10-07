@@ -1417,7 +1417,7 @@ table.plr tbody tr:hover td:not(.st-cell){background:#eef2f6}
                 <div class="bi-ico" style="background:var(--sky-soft);color:var(--sky-txt)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></div>
                 <div>
                   <h4>إعادة تعيين البيانات</h4>
-                  <p>استعادة البيانات الأصلية المرفقة مع النظام (169 سجلاً) وحذف أي تعديلات محلية.</p>
+                  <p>مسح جميع السجلات والأرشيف وطلبات الضريبة والتسجيل وإعادة النظام لحالة فارغة.</p>
                   <div class="bi-actions">
                     <button class="btn btn-soft btn-sm" id="btnReset">إعادة تعيين</button>
                     <button class="btn btn-danger btn-sm" id="btnWipe">مسح الكل</button>
@@ -1969,7 +1969,7 @@ async function colCfgCloudSave(){
     for(const c of merged.cols) map.set(c.k, c);
     for(const c of colCfg.cols) map.set(c.k, c);
     const cols = [...map.values()];
-    await sbClient.from('app_settings').upsert({key:COL_CFG_CLOUD, value:{cols, updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''});
+    await sbOp(sbClient.from('app_settings').upsert({key:COL_CFG_CLOUD, value:{cols, updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}), 'حفظ إعدادات الأعمدة');
   }catch(e){}
 }
 function colCfgMergeFromCloud(v){
@@ -1996,7 +1996,7 @@ async function customValsCloudSave(){
     }
     for(const id of customValsTombstones) merged.delete(id);
     for(const key of [...merged.keys()]) if(!validIds.has(key)) merged.delete(key);
-    await sbClient.from('app_settings').upsert({key:CUSTOM_VALS_CLOUD, value:{items:[...merged.values()], updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''});
+    await sbOp(sbClient.from('app_settings').upsert({key:CUSTOM_VALS_CLOUD, value:{items:[...merged.values()], updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}), 'حفظ القيم المخصصة');
     customValsTombstones = [];
     try{ localStorage.setItem(CUSTOM_VALS_TOMB_KEY, '[]'); }catch(e){}
   }catch(e){}
@@ -5555,7 +5555,7 @@ async function migrateScenPermCloud(){
     const list = data || [];
     const todo = list.filter(r=>Array.isArray(r.permissions) && r.permissions.includes('manage_templates') && !r.permissions.includes('manage_scenarios'));
     for(const r of todo){
-      try{ await sbClient.from('roles').update({permissions:[...r.permissions, 'manage_scenarios']}).eq('name', r.name); }catch(e){}
+      await sbOp(sbClient.from('roles').update({permissions:[...r.permissions, 'manage_scenarios']}).eq('name', r.name), 'تحديث صلاحيات الدور');
     }
     if(todo.length){
       if(todo.some(r=>r.name === cloudUser.role) && !cloudUser.perms.includes('manage_scenarios')) cloudUser.perms = [...cloudUser.perms, 'manage_scenarios'];
@@ -5702,6 +5702,16 @@ async function loadAllCloud(){
     toast('تعذر تحميل بيانات السحابة: ' + (e.message || e), 'err');
   }
 }
+async function sbOp(promise, label){
+  try{
+    const {data, error} = await promise;
+    if(error){ toast((label ? label + ': ' : '') + (error.message || error), 'err'); return {ok:false, error, data}; }
+    return {ok:true, data};
+  }catch(e){
+    toast((label ? label + ': ' : '') + (e.message || e), 'err');
+    return {ok:false, error:e, data:null};
+  }
+}
 async function syncStore(store){
   if(!sbClient || !cloudReady) return;
   const snapKey = store === 'lands' ? 'lands' : (store === 'archive' ? 'archive' : (store === 'tax' ? 'tax' : (store === 'reg' ? 'reg' : (store === 'payments' ? 'payments' : 'reservations'))));
@@ -5714,10 +5724,11 @@ async function syncStore(store){
       for(const r of records){
         const cur = JSON.stringify(r);
         if(snap.get(r.id) !== cur){
-          await sbClient.from('lands').upsert(recordToRow(r));
-          snap.set(r.id, cur);
+          const res = await sbOp(sbClient.from('lands').upsert(recordToRow(r)), 'حفظ القطعة');
+          if(res.ok){ snap.set(r.id, cur); dirtyLands.delete(r.id); }
+        }else{
+          dirtyLands.delete(r.id);
         }
-        dirtyLands.delete(r.id);
       }
     }else if(store === 'archive'){
       const snap = cloudSnap.archive;
@@ -5725,8 +5736,8 @@ async function syncStore(store){
         const cur = JSON.stringify(x);
         if(snap.get(x.id) !== cur){
           const entry = Object.assign({}, x); delete entry.id;
-          await sbClient.from('archive').upsert({id:x.id, entry, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''});
-          snap.set(x.id, cur);
+          const res = await sbOp(sbClient.from('archive').upsert({id:x.id, entry, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}), 'حفظ الأرشيف');
+          if(res.ok) snap.set(x.id, cur);
         }
       }
     }else if(store === 'tax' || store === 'reg'){
@@ -5737,8 +5748,8 @@ async function syncStore(store){
         const cur = JSON.stringify(x);
         if(snap.get(x.id) !== cur){
           const entry = Object.assign({}, x); delete entry.id;
-          await sbClient.from(table).upsert({id:x.id, entry, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''});
-          snap.set(x.id, cur);
+          const res = await sbOp(sbClient.from(table).upsert({id:x.id, entry, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}), 'حفظ السجل');
+          if(res.ok) snap.set(x.id, cur);
         }
       }
     }else if(store === 'payments'){
@@ -5746,8 +5757,8 @@ async function syncStore(store){
       for(const p of payments){
         const cur = JSON.stringify(p);
         if(snap.get(p.id) !== cur){
-          await sbClient.from('payments').upsert(paymentToRow(p));
-          snap.set(p.id, cur);
+          const res = await sbOp(sbClient.from('payments').upsert(paymentToRow(p)), 'حفظ الدفعة');
+          if(res.ok) snap.set(p.id, cur);
         }
       }
     }else if(store === 'reservations'){
@@ -5755,8 +5766,8 @@ async function syncStore(store){
       for(const r of reservations){
         const cur = JSON.stringify(r);
         if(snap.get(r.id) !== cur){
-          await sbClient.from('reservations').upsert(reservationToRow(r));
-          snap.set(r.id, cur);
+          const res = await sbOp(sbClient.from('reservations').upsert(reservationToRow(r)), 'حفظ الحجز');
+          if(res.ok) snap.set(r.id, cur);
         }
       }
     }
@@ -5771,10 +5782,9 @@ function scheduleSync(store){
   syncTimers[store] = setTimeout(()=>{ syncStore(store); }, 500);
 }
 async function persistSetting(key, value){
-  if(!sbClient || !cloudReady) return;
-  try{
-    await sbClient.from('app_settings').upsert({key, value, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''});
-  }catch(e){}
+  if(!sbClient || !cloudReady) return false;
+  const res = await sbOp(sbClient.from('app_settings').upsert({key, value, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}), 'حفظ الإعداد');
+  return !!res.ok;
 }
 function subscribeCloud(){
   if(!sbClient || !cloudReady) return;
@@ -5812,7 +5822,8 @@ function tableForType(type){
 async function moveToRecycle(type, data){
   if(cloudReady && sbClient){
     const table = tableForType(type);
-    try{ await sbClient.from(table).update({deleted_at:new Date().toISOString()}).eq('id', data.id); }catch(e){ toast('تعذر النقل للسلة سحابياً: ' + e.message, 'err'); }
+    const res = await sbOp(sbClient.from(table).update({deleted_at:new Date().toISOString()}).eq('id', data.id), 'النقل للسلة');
+    if(!res.ok) return;
     if(type === 'land'){ const m = cloudSnap.lands; if(m) m.delete(data.id); }
     else if(type === 'payment'){ const m = cloudSnap.payments; if(m) m.delete(data.id); }
     else if(type === 'reservation'){ const m = cloudSnap.reservations; if(m) m.delete(data.id); }
@@ -5826,7 +5837,8 @@ async function moveToRecycle(type, data){
 async function restoreFromRecycle(item){
   if(cloudReady && sbClient){
     const table = tableForType(item.type);
-    try{ await sbClient.from(table).update({deleted_at:null}).eq('id', item.id); }catch(e){}
+    const res = await sbOp(sbClient.from(table).update({deleted_at:null}).eq('id', item.id), 'الاستعادة من السلة');
+    if(!res.ok) return;
     await loadAllCloud();
     renderAll();
     toast('تمت الاستعادة من السلة');
@@ -5860,7 +5872,8 @@ async function restoreFromRecycle(item){
 async function purgeFromRecycle(item){
   if(cloudReady && sbClient){
     const table = tableForType(item.type);
-    try{ await sbClient.from(table).delete().eq('id', item.id); }catch(e){}
+    const res = await sbOp(sbClient.from(table).delete().eq('id', item.id), 'الحذف النهائي');
+    if(!res.ok) return;
     await loadAllCloud();
     renderAll();
     toast('تم الحذف النهائي', 'warn');
@@ -5995,12 +6008,13 @@ async function uploadLocalToCloud(){
   if(!confirm(`سيتم رفع بياناتك المحلية الحالية إلى السحابة ودمجها: ${snap.records.length} قطعة · ${snap.archive.length} مؤرشف · ${snap.taxLog.length} طلب ضريبة · ${snap.regLog.length} طلب تسجيل. متابعة؟`)) return;
   busy(true, 'جارٍ رفع البيانات المحلية…');
   try{
-    for(const r of snap.records){ await sbClient.from('lands').upsert(recordToRow(r)); }
-    for(const x of snap.archive){ const e2 = Object.assign({}, x); delete e2.id; await sbClient.from('archive').upsert({id:x.id, entry:e2, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}); }
-    for(const x of snap.taxLog){ const e2 = Object.assign({}, x); delete e2.id; await sbClient.from('tax_log').upsert({id:x.id, entry:e2, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}); }
-    for(const x of snap.regLog){ const e2 = Object.assign({}, x); delete e2.id; await sbClient.from('reg_log').upsert({id:x.id, entry:e2, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}); }
-    for(const x of snap.payments){ await sbClient.from('payments').upsert(paymentToRow(x)); }
-    for(const x of snap.reservations){ await sbClient.from('reservations').upsert(reservationToRow(x)); }
+    const failed = [];
+    if(snap.records.length){ const res = await sbOp(sbClient.from('lands').upsert(snap.records.map(recordToRow)), 'رفع القطع'); if(!res.ok) failed.push('القطع'); }
+    if(snap.archive.length){ const rows = snap.archive.map(x=>{ const e2 = Object.assign({}, x); delete e2.id; return {id:x.id, entry:e2, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}; }); const res = await sbOp(sbClient.from('archive').upsert(rows), 'رفع الأرشيف'); if(!res.ok) failed.push('الأرشيف'); }
+    if(snap.taxLog.length){ const rows = snap.taxLog.map(x=>{ const e2 = Object.assign({}, x); delete e2.id; return {id:x.id, entry:e2, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}; }); const res = await sbOp(sbClient.from('tax_log').upsert(rows), 'رفع طلبات الضريبة'); if(!res.ok) failed.push('طلبات الضريبة'); }
+    if(snap.regLog.length){ const rows = snap.regLog.map(x=>{ const e2 = Object.assign({}, x); delete e2.id; return {id:x.id, entry:e2, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}; }); const res = await sbOp(sbClient.from('reg_log').upsert(rows), 'رفع طلبات التسجيل'); if(!res.ok) failed.push('طلبات التسجيل'); }
+    if(snap.payments.length){ const res = await sbOp(sbClient.from('payments').upsert(snap.payments.map(paymentToRow)), 'رفع الدفعات'); if(!res.ok) failed.push('الدفعات'); }
+    if(snap.reservations.length){ const res = await sbOp(sbClient.from('reservations').upsert(snap.reservations.map(reservationToRow)), 'رفع الحجوزات'); if(!res.ok) failed.push('الحجوزات'); }
     if(Array.isArray(snap.templates) && snap.templates.length) await persistSetting('templates', snap.templates);
     if(Array.isArray(snap.customStatuses) && snap.customStatuses.length) await persistSetting('customStatuses', snap.customStatuses);
     if(Array.isArray(snap.taxTrackStatuses) && snap.taxTrackStatuses.length) await persistSetting('taxTrackStatuses', snap.taxTrackStatuses);
@@ -6010,7 +6024,8 @@ async function uploadLocalToCloud(){
     await persistSetting('dataVersion', DATA_VERSION);
     await loadAllCloud();
     renderAll();
-    toast('تم رفع البيانات المحلية إلى السحابة بنجاح');
+    if(failed.length){ toast('اكتمل الرفع جزئياً — تعذر رفع: ' + failed.join('، '), 'warn'); }
+    else{ toast('تم رفع البيانات المحلية إلى السحابة بنجاح'); }
   }catch(e){
     toast('فشل الرفع: ' + (e.message || e), 'err');
   }
@@ -6151,7 +6166,7 @@ async function saveRolePermissions(name){
   document.querySelectorAll(`.picker-tools[data-role="${CSS.escape(name)}"] .perm-toggle`).forEach(l=>{
     if(l.classList.contains('on')) perms.push(l.dataset.perm);
   });
-  try{ await sbClient.from('roles').update({permissions:perms}).eq('name', name); toast('تم حفظ صلاحيات الدور: ' + name); }catch(e){ toast('فشل الحفظ', 'err'); }
+  const res = await sbOp(sbClient.from('roles').update({permissions:perms}).eq('name', name), 'حفظ صلاحيات الدور'); if(res.ok) toast('تم حفظ صلاحيات الدور: ' + name);
   openRolesModal();
 }
 
@@ -6435,14 +6450,14 @@ async function scenCloudSave(){
       if(!ex || String(s.updatedAt || s.createdAt || '') > String(ex.updatedAt || ex.createdAt || '')) merged.set(s.id, s);
     }
     for(const id of scenTombstones) merged.delete(id);
-    await sbClient.from('app_settings').upsert({key:'scen_lib', value:{items:[...merged.values()].slice(-300), updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''});
+    await sbOp(sbClient.from('app_settings').upsert({key:'scen_lib', value:{items:[...merged.values()].slice(-300), updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}), 'حفظ مكتبة السيناريوهات');
     scenTombstones = [];
     try{ localStorage.setItem(SCEN_TOMB_KEY, '[]'); }catch(e){}
   }catch(e){ toast('تعذر مزامنة السيناريوهات سحابياً', 'warn'); }
 }
 async function scenSetDefaultCloud(id){
   if(!sbClient || !cloudReady) return;
-  try{ await sbClient.from('app_settings').upsert({key:'scen_default', value:id, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}); }catch(e){}
+  await sbOp(sbClient.from('app_settings').upsert({key:'scen_default', value:id, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}), 'حفظ السيناريو الافتراضي');
 }
 async function scenCloudRefresh(){
   if(!sbClient || !cloudReady) return;
@@ -6525,7 +6540,7 @@ async function userNamesCloudSave(){
     let names = {};
     if(data && data.value && typeof data.value.names === 'object') names = Object.assign({}, data.value.names);
     for(const k in userNames) if(userNames[k]) names[k] = userNames[k];
-    await sbClient.from('app_settings').upsert({key:USER_NAMES_KEY, value:{names, updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''});
+    await sbOp(sbClient.from('app_settings').upsert({key:USER_NAMES_KEY, value:{names, updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}), 'حفظ أسماء المستخدمين');
   }catch(e){}
 }
 function userNamesMergeFromCloud(v){
@@ -6561,7 +6576,7 @@ async function buyersCloudSave(){
     for(const id of buyersTombstones) merged.delete(id);
     const validIds = new Set([...records.map(r=>r.id), ...archive.map(a=>a.id)]);
     for(const key of [...merged.keys()]) if(!validIds.has(key)) merged.delete(key);
-    await sbClient.from('app_settings').upsert({key:BUYERS_KEY, value:{items:[...merged.values()], updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''});
+    await sbOp(sbClient.from('app_settings').upsert({key:BUYERS_KEY, value:{items:[...merged.values()], updatedAt:new Date().toISOString()}, updated_at:new Date().toISOString(), updated_by:cloudUser ? cloudUser.email : ''}), 'حفظ قائمة المشترين');
     buyersTombstones = [];
     try{ localStorage.setItem(BUYERS_TOMB_KEY, '[]'); }catch(e){}
   }catch(e){}
@@ -7488,7 +7503,7 @@ function bindEvents(){
 
   $('#btnReset').addEventListener('click', ()=>{
     if(!can('reset_data')){ toast('إعادة التعيين للمالك فقط', 'err'); return; }
-    if(!confirm('سيتم استعادة البيانات الأصلية (169 سجلاً) وحذف جميع التعديلات الحالية والأرشيف وسجلات طلبات الضريبة والتسجيل العيني. متابعة؟')) return;
+    if(!confirm('سيتم مسح جميع السجلات والأرشيف وطلبات الضريبة والتسجيل العيني الحالية. متابعة؟')) return;
     try{ localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(ARCHIVE_KEY); localStorage.removeItem(TAX_LOG_KEY); localStorage.removeItem(REG_LOG_KEY); localStorage.removeItem(PAYMENTS_KEY); localStorage.removeItem(RESERVATIONS_KEY); }catch(e){}
     records = JSON.parse(JSON.stringify(DEFAULT_DATA)).map(r=>Object.assign({status:''}, r));
     archive = [];
@@ -7498,7 +7513,7 @@ function bindEvents(){
     reservations = [];
     save();
     renderAll();
-    toast('تمت إعادة التعيين للبيانات الأصلية');
+    toast('تمت إعادة التعيين');
   });
   $('#btnWipe').addEventListener('click', ()=>{
     if(!can('reset_data')){ toast('مسح الكل للمالك فقط', 'err'); return; }
@@ -8090,11 +8105,10 @@ function bindEvents(){
     if(!sel) return;
     const email = sel.dataset.uemail, role = sel.value;
     if(role === 'مالك' && !isCloudOwner()){ toast('منح المالك حصري للمالك الحالي', 'err'); openUsersModal(); return; }
-    try{
-      if(role === 'بدون دور'){ await sbClient.from('user_roles').delete().eq('email', email); }
-      else{ await sbClient.from('user_roles').upsert({email, role}); }
-      toast('تم تحديث دور ' + email);
-    }catch(err){ toast('فشل التحديث', 'err'); }
+    let res;
+    if(role === 'بدون دور'){ res = await sbOp(sbClient.from('user_roles').delete().eq('email', email), 'إزالة الدور'); }
+    else{ res = await sbOp(sbClient.from('user_roles').upsert({email, role}), 'تحديث الدور'); }
+    if(res.ok) toast('تم تحديث دور ' + email);
   });
 
   $('#rolesClose').addEventListener('click', ()=>$('#rolesOverlay').classList.remove('open'));
@@ -8103,7 +8117,7 @@ function bindEvents(){
     const del = e.target.closest('[data-roledel]');
     if(del){
       if(confirm(`حذف الدور «${del.dataset.roledel}»؟`)){
-        sbClient.from('roles').delete().eq('name', del.dataset.roledel).then(()=>{ toast('تم حذف الدور', 'warn'); openRolesModal(); });
+        sbOp(sbClient.from('roles').delete().eq('name', del.dataset.roledel), 'حذف الدور').then(res=>{ if(res.ok){ toast('تم حذف الدور', 'warn'); openRolesModal(); } });
       }
       return;
     }
